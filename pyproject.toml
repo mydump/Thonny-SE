@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "thonny-se"
+dynamic = ["version"]
+description = "Visual software modelling in Thonny with structured flowcharts, UML class diagrams and interactive object inspection"
+readme = "README.md"
+authors = [{name = "Sebastian Ladhoff"}]
+license = "GPL-3.0-only AND ISC AND MIT"
+license-files = ["LICENSE", "NOTICE", "src/thonnycontrib/thonny_se/icons/licenses/LICENSE-lucide.txt"]
+requires-python = ">=3.10"
+dependencies = ["thonny>=5.0,<5.1", "Pillow>=10.1"]
+
+[project.urls]
+Repository = "https://github.com/mydump/Thonny-SE"
+Issues = "https://github.com/mydump/Thonny-SE/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["thonnycontrib.*"]
+namespaces = true
+
+[tool.setuptools.dynamic]
+version = {attr = "thonnycontrib.thonny_se._version.__version__"}
+
+[tool.setuptools.package-data]
+"thonnycontrib.thonny_se" = ["icons/*.png", "icons/*.ttf", "icons/*.json", "icons/sources/*.svg", "icons/licenses/*.txt", "notices/*.json", "locales/*.json"]

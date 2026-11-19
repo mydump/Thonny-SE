@@ -1,0 +1,30 @@
+{
+  "family": "Thonny SE Icons",
+  "roles": {
+    "edit.undo": "",
+    "edit.redo": "",
+    "navigation.back": "",
+    "navigation.forward": "",
+    "document.new": "",
+    "document.open": "",
+    "document.save": "",
+    "export.image": "",
+    "export.python": "",
+    "export.python_selection": "",
+    "import.python": "",
+    "document.structogram": "",
+    "document.file": "",
+    "document.uml": "",
+    "visibility.public": "",
+    "visibility.protected": "",
+    "visibility.private": "",
+    "edit.rename": "",
+    "edit.cut": "",
+    "edit.copy": "",
+    "edit.paste": "",
+    "edit.delete": "",
+    "edit.add": "",
+    "class.instantiate": ""
+  },
+  "sha256": "8550a0e154b091b47a2af80797060dda00d6877d0eace30884486a15464e4daa"
+}

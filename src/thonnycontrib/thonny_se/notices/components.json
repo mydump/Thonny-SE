@@ -1,0 +1,59 @@
+{
+  "version": 1,
+  "components": [
+    {
+      "id": "thonny",
+      "name": "Thonny",
+      "kind": "host",
+      "distribution": "thonny",
+      "url": "https://thonny.org/",
+      "source_url": "https://github.com/thonny/thonny",
+      "license": "MIT",
+      "bundled_by_plugin": false
+    },
+    {
+      "id": "pillow",
+      "name": "Pillow",
+      "kind": "dependency",
+      "distribution": "Pillow",
+      "url": "https://python-pillow.github.io/",
+      "source_url": "https://github.com/python-pillow/Pillow",
+      "license": "MIT-CMU",
+      "bundled_by_plugin": false,
+      "notes": "PNG/WebP-Rasterausgabe; die installierte Distribution enthält weitere Lizenzhinweise zu ihren eingebundenen Bibliotheken."
+    },
+    {
+      "id": "python",
+      "name": "Python",
+      "kind": "host-runtime",
+      "url": "https://www.python.org/",
+      "source_url": "https://github.com/python/cpython",
+      "license": "PSF-2.0",
+      "bundled_by_plugin": false
+    },
+    {
+      "id": "tcl-tk",
+      "name": "Tcl/Tk",
+      "kind": "host-runtime",
+      "url": "https://www.tcl-lang.org/",
+      "license": "TCL",
+      "bundled_by_plugin": false
+    }
+  ],
+  "resources": [
+    {
+      "id": "lucide",
+      "name": "Lucide Icons",
+      "kind": "icon-assets",
+      "bundled_by_plugin": true,
+      "title": "Lucide",
+      "author": "Lucide Icons and Contributors; Cole Bemis (Feather-derived subset)",
+      "url": "https://github.com/lucide-icons/lucide",
+      "revision": "91a1359b5ea235f620ba3a9682015ab8d6ada3af",
+      "license": "ISC und MIT (von Feather abgeleitete Icons)",
+      "license_file": "icons/licenses/LICENSE-lucide.txt",
+      "modifications": "Original-SVGs unverändert. PNG-Rückfall mit ursprünglicher Strichstärke/Farbe direkt in Zielauflösung. Zusätzlich Vektorfont aus gefüllten SVG-Strichkonturen für Retina unter macOS; Originale und Lizenzen mitgeliefert."
+    }
+  ],
+  "notes": "Verwendete Ressourcen und Host-/Laufzeitkomponenten für die Über-Ansicht. Vollständige Lucide-Lizenz in icons/licenses/LICENSE-lucide.txt; SVGs in icons/sources/. Eigener Projektcode: GPL-3.0-only, Copyright (C) 2026 Sebastian Ladhoff; Drittressourcen behalten ihre eigenen Bedingungen."
+}

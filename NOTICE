@@ -1,0 +1,26 @@
+Thonny SE
+Copyright (C) 2026 Sebastian Ladhoff
+
+The original Thonny SE code and project-created resources are licensed under
+GNU General Public License version 3 only (SPDX: GPL-3.0-only).
+See LICENSE for the full terms, including the disclaimer of warranty.
+
+Thonny SE is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, version 3 of the License.
+
+Thonny SE is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+Third-party resources retain their own copyright notices and licenses.
+Lucide and Feather-derived icons, including their contributions to the derived
+icon font, are covered by ISC and MIT terms. See
+src/thonnycontrib/thonny_se/icons/licenses/LICENSE-lucide.txt and
+src/thonnycontrib/thonny_se/notices/components.json.
+Installed dependencies and host components retain their respective licenses.
+
+Using Thonny SE does not impose its license on user-created diagrams or Python
+code generated from them. Such output is not covered by this license solely
+because it was created with Thonny SE; any separately incorporated third-party
+material remains subject to its own terms.

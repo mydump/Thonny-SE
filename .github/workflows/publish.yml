@@ -1,0 +1,52 @@
+name: Publish approved packages
+
+on:
+  workflow_dispatch:
+    inputs:
+      destination:
+        description: Package index
+        required: true
+        type: choice
+        default: testpypi
+        options:
+          - testpypi
+          - pypi
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-1.0.0-${{ inputs.destination }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.destination }}
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Download approved 1.0.0 release files
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          mkdir -p packages
+          gh release download v1.0.0 --dir packages \
+            --pattern thonny_se-1.0.0-py3-none-any.whl \
+            --pattern thonny_se-1.0.0.tar.gz \
+            --pattern SHA256SUMS
+          cd packages
+          sha256sum --check SHA256SUMS
+          mkdir ../dist
+          mv thonny_se-1.0.0-py3-none-any.whl thonny_se-1.0.0.tar.gz ../dist/
+      - name: Publish to TestPyPI
+        if: inputs.destination == 'testpypi'
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+      - name: Publish to PyPI
+        if: inputs.destination == 'pypi'
+        uses: pypa/gh-action-pypi-publish@release/v1

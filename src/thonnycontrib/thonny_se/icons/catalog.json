@@ -1,0 +1,345 @@
+{
+  "version": 1,
+  "sources": {
+    "lucide": {
+      "title": "Lucide",
+      "author": "Lucide Icons and Contributors; Cole Bemis (Feather-derived subset)",
+      "url": "https://github.com/lucide-icons/lucide",
+      "revision": "91a1359b5ea235f620ba3a9682015ab8d6ada3af",
+      "license": "ISC; MIT for Feather-derived icons listed in upstream license",
+      "license_file": "licenses/LICENSE-lucide.txt",
+      "modifications": "Original-SVGs unverändert. PNG-Rückfall mit ursprünglicher Strichstärke/Farbe direkt in Zielauflösung. Zusätzlich Vektorfont aus gefüllten SVG-Strichkonturen für native Skalierung auf den unterstützten Tk-Zeichensystemen; Originale und Lizenzen mitgeliefert."
+    },
+    "project": {
+      "title": "Thonny SE – eigene Sichtbarkeitszeichen und Aktionssymbole",
+      "author": "Sebastian Ladhoff",
+      "license": "GPL-3.0-only",
+      "modifications": "Eigenständig gezeichnete SVG-Kreise mit +, − und # sowie ein Play-Symbol; PNGs in passenden Größen und prozessprivater Vektorfont."
+    }
+  },
+  "roles": {
+    "edit.undo": {
+      "file": "lucide-undo-2.png",
+      "dark_file": "lucide-undo-2-dark.png",
+      "menu_file": "lucide-undo-2-menu.png",
+      "dark_menu_file": "lucide-undo-2-dark-menu.png",
+      "source": "lucide",
+      "status": "available",
+      "upstream_name": "undo-2",
+      "original": "sources/undo-2.svg",
+      "sha256": "efad2edbbd2be6038cc23fd64df2d012fad5cc6460dfbf227cfa3d990e9e897f"
+    },
+    "edit.redo": {
+      "file": "lucide-redo-2.png",
+      "dark_file": "lucide-redo-2-dark.png",
+      "menu_file": "lucide-redo-2-menu.png",
+      "dark_menu_file": "lucide-redo-2-dark-menu.png",
+      "source": "lucide",
+      "status": "available",
+      "upstream_name": "redo-2",
+      "original": "sources/redo-2.svg",
+      "sha256": "4cbd2cdebc70b6b7979c681ed3f313d9cbb102465dcf7d0d2d6a72c937b344bc"
+    },
+    "navigation.back": {
+      "file": "lucide-arrow-left.png",
+      "dark_file": "lucide-arrow-left-dark.png",
+      "menu_file": "lucide-arrow-left-menu.png",
+      "dark_menu_file": "lucide-arrow-left-dark-menu.png",
+      "source": "lucide",
+      "status": "available",
+      "upstream_name": "arrow-left",
+      "original": "sources/arrow-left.svg",
+      "sha256": "c5f4b88076108eb1a0d95336e1aa7e7bb1419a3a92af96f6247d88cd3456f933"
+    },
+    "navigation.forward": {
+      "file": "lucide-arrow-right.png",
+      "dark_file": "lucide-arrow-right-dark.png",
+      "menu_file": "lucide-arrow-right-menu.png",
+      "dark_menu_file": "lucide-arrow-right-dark-menu.png",
+      "source": "lucide",
+      "status": "available",
+      "upstream_name": "arrow-right",
+      "original": "sources/arrow-right.svg",
+      "sha256": "288397fdb73bb4f783cf9eabb726ff47357df1d4e3f1201dd748090579f108b9"
+    },
+    "document.new": {
+      "file": "lucide-file-plus.png",
+      "dark_file": "lucide-file-plus-dark.png",
+      "menu_file": "lucide-file-plus-menu.png",
+      "dark_menu_file": "lucide-file-plus-dark-menu.png",
+      "source": "lucide",
+      "status": "available",
+      "upstream_name": "file-plus",
+      "original": "sources/file-plus.svg",
+      "sha256": "bbcf862a2a4425baa8a5bda39c7f16ec1d283816a3db77baf84f2e8766dd223e"
+    },
+    "document.open": {
+      "file": "lucide-folder-open.png",
+      "dark_file": "lucide-folder-open-dark.png",
+      "menu_file": "lucide-folder-open-menu.png",
+      "dark_menu_file": "lucide-folder-open-dark-menu.png",
+      "source": "lucide",
+      "status": "available",
+      "upstream_name": "folder-open",
+      "original": "sources/folder-open.svg",
+      "sha256": "ee57452b40e71df310214091dd9da1941a397c83197b8ff8d7ae66dd4242578b"
+    },
+    "document.save": {
+      "file": "lucide-save.png",
+      "dark_file": "lucide-save-dark.png",
+      "menu_file": "lucide-save-menu.png",
+      "dark_menu_file": "lucide-save-dark-menu.png",
+      "source": "lucide",
+      "status": "available",
+      "upstream_name": "save",
+      "original": "sources/save.svg",
+      "sha256": "ee9d56a7fec4b20dd6689546d41f68219ea8cbd67f99bd17a1bdaff5be6edb53"
+    },
+    "export.image": {
+      "file": "lucide-file-image.png",
+      "dark_file": "lucide-file-image-dark.png",
+      "menu_file": "lucide-file-image-menu.png",
+      "dark_menu_file": "lucide-file-image-dark-menu.png",
+      "source": "lucide",
+      "status": "available",
+      "upstream_name": "file-image",
+      "original": "sources/file-image.svg",
+      "sha256": "82a9140926814aa4287fb6f4b479da6f99e752ebde557e19ffb066a239eab2f9"
+    },
+    "export.python": {
+      "file": "lucide-file-code.png",
+      "dark_file": "lucide-file-code-dark.png",
+      "menu_file": "lucide-file-code-menu.png",
+      "dark_menu_file": "lucide-file-code-dark-menu.png",
+      "source": "lucide",
+      "status": "available",
+      "upstream_name": "file-code",
+      "original": "sources/file-code.svg",
+      "sha256": "8ac619671f53653a483c2d5e2e6afe6d009c3198918cf76632e2cb4abf0d6721"
+    },
+    "export.python_selection": {
+      "file": "lucide-square-code.png",
+      "dark_file": "lucide-square-code-dark.png",
+      "menu_file": "lucide-square-code-menu.png",
+      "dark_menu_file": "lucide-square-code-dark-menu.png",
+      "source": "lucide",
+      "status": "available",
+      "upstream_name": "square-code",
+      "original": "sources/square-code.svg",
+      "sha256": "a3098343d7966a906420f153f8efea3900f4003c130c08ae1a49d5971c4d8236"
+    },
+    "import.python": {
+      "file": "lucide-file-input.png",
+      "dark_file": "lucide-file-input-dark.png",
+      "menu_file": "lucide-file-input-menu.png",
+      "dark_menu_file": "lucide-file-input-dark-menu.png",
+      "source": "lucide",
+      "status": "available",
+      "upstream_name": "file-input",
+      "original": "sources/file-input.svg",
+      "sha256": "8c654aca5f51c6c814c75c686324d6ab3ce1f6bacfc70e7f4a8473cb063f4321"
+    },
+    "diagram.statement": {
+      "file": null,
+      "source": null,
+      "status": "planned"
+    },
+    "diagram.selection": {
+      "file": null,
+      "source": null,
+      "status": "planned"
+    },
+    "diagram.loop": {
+      "file": null,
+      "source": null,
+      "status": "planned"
+    },
+    "uml.class": {
+      "file": null,
+      "source": null,
+      "status": "planned"
+    },
+    "uml.association": {
+      "file": null,
+      "source": null,
+      "status": "planned"
+    },
+    "object.inspect": {
+      "file": null,
+      "source": null,
+      "status": "planned"
+    },
+    "export.png": {
+      "file": null,
+      "source": null,
+      "status": "planned",
+      "fallback": "export.image"
+    },
+    "export.svg": {
+      "file": null,
+      "source": null,
+      "status": "planned",
+      "fallback": "export.image"
+    },
+    "export.webp": {
+      "file": null,
+      "source": null,
+      "status": "planned",
+      "fallback": "export.image"
+    },
+    "document.structogram": {
+      "file": "lucide-panels-top-left.png",
+      "dark_file": "lucide-panels-top-left-dark.png",
+      "menu_file": "lucide-panels-top-left-menu.png",
+      "dark_menu_file": "lucide-panels-top-left-dark-menu.png",
+      "source": "lucide",
+      "status": "available",
+      "upstream_name": "panels-top-left",
+      "original": "sources/panels-top-left.svg",
+      "sha256": "321a2a5500f2b814a2e62eb73c4b01dc65c7334fe2e6f7d77517239383e26bb1"
+    },
+    "document.file": {
+      "file": "lucide-file.png",
+      "dark_file": "lucide-file-dark.png",
+      "menu_file": "lucide-file-menu.png",
+      "dark_menu_file": "lucide-file-dark-menu.png",
+      "source": "lucide",
+      "status": "available",
+      "upstream_name": "file",
+      "original": "sources/file.svg",
+      "sha256": "499039795d7412d67664ff79d2eb6b7412e746b24c18c8fd8aba383c24ddada0"
+    },
+    "document.python": {
+      "file": null,
+      "source": null,
+      "status": "alias",
+      "fallback": "export.python"
+    },
+    "document.image": {
+      "file": null,
+      "source": null,
+      "status": "alias",
+      "fallback": "export.image"
+    },
+    "document.uml": {
+      "file": "lucide-rows-3.png",
+      "dark_file": "lucide-rows-3-dark.png",
+      "menu_file": "lucide-rows-3-menu.png",
+      "dark_menu_file": "lucide-rows-3-dark-menu.png",
+      "source": "lucide",
+      "status": "available",
+      "upstream_name": "rows-3",
+      "original": "sources/rows-3.svg",
+      "sha256": "8b55ae6a22770c64db6568f6c92d9ce9f2e4f9b5e81e76e261603a4f8f515fa3"
+    },
+    "visibility.public": {
+      "file": "se-visibility-public.png",
+      "dark_file": "se-visibility-public-dark.png",
+      "menu_file": "se-visibility-public-menu.png",
+      "dark_menu_file": "se-visibility-public-dark-menu.png",
+      "source": "project",
+      "status": "available",
+      "asset_name": "se-visibility-public",
+      "original": "sources/se-visibility-public.svg",
+      "sha256": "9d7da8655ab5df93ccfc2785e1088695f1baee645a2075af9975166463a9aa2c"
+    },
+    "visibility.protected": {
+      "file": "se-visibility-protected.png",
+      "dark_file": "se-visibility-protected-dark.png",
+      "menu_file": "se-visibility-protected-menu.png",
+      "dark_menu_file": "se-visibility-protected-dark-menu.png",
+      "source": "project",
+      "status": "available",
+      "asset_name": "se-visibility-protected",
+      "original": "sources/se-visibility-protected.svg",
+      "sha256": "5794d54db51acd8e5c5d9c87869d3babb95fb6d365c5a7870a2803c73c79c3a1"
+    },
+    "visibility.private": {
+      "file": "se-visibility-private.png",
+      "dark_file": "se-visibility-private-dark.png",
+      "menu_file": "se-visibility-private-menu.png",
+      "dark_menu_file": "se-visibility-private-dark-menu.png",
+      "source": "project",
+      "status": "available",
+      "asset_name": "se-visibility-private",
+      "original": "sources/se-visibility-private.svg",
+      "sha256": "61884a77de2637eea0e43e588ca104b5cbfff6f0c0ff669a1fbe4164dbcec770"
+    },
+    "edit.rename": {
+      "file": "lucide-pencil.png",
+      "dark_file": "lucide-pencil-dark.png",
+      "menu_file": "lucide-pencil-menu.png",
+      "dark_menu_file": "lucide-pencil-dark-menu.png",
+      "source": "lucide",
+      "status": "available",
+      "upstream_name": "pencil",
+      "original": "sources/pencil.svg",
+      "sha256": "7e1ca7a6f5c1eb949671df762f2baadd32f5bd841d43153c3a15279af7d78d0c"
+    },
+    "edit.cut": {
+      "file": "lucide-scissors.png",
+      "dark_file": "lucide-scissors-dark.png",
+      "menu_file": "lucide-scissors-menu.png",
+      "dark_menu_file": "lucide-scissors-dark-menu.png",
+      "source": "lucide",
+      "status": "available",
+      "upstream_name": "scissors",
+      "original": "sources/scissors.svg",
+      "sha256": "4c831fc2c903825f68565c28ffab945c34b2c60b6c564e2ae54250e1099fa550"
+    },
+    "edit.copy": {
+      "file": "lucide-copy.png",
+      "dark_file": "lucide-copy-dark.png",
+      "menu_file": "lucide-copy-menu.png",
+      "dark_menu_file": "lucide-copy-dark-menu.png",
+      "source": "lucide",
+      "status": "available",
+      "upstream_name": "copy",
+      "original": "sources/copy.svg",
+      "sha256": "ea80e566c7a12628a447cb53179b19aea4f60b9143e2becd0d0f20bf260e5718"
+    },
+    "edit.paste": {
+      "file": "lucide-clipboard-paste.png",
+      "dark_file": "lucide-clipboard-paste-dark.png",
+      "menu_file": "lucide-clipboard-paste-menu.png",
+      "dark_menu_file": "lucide-clipboard-paste-dark-menu.png",
+      "source": "lucide",
+      "status": "available",
+      "upstream_name": "clipboard-paste",
+      "original": "sources/clipboard-paste.svg",
+      "sha256": "d2e4e6df0b2fecf97a95ef244f9031fb7c1deae0c9401df2a11d93379e8d361f"
+    },
+    "edit.delete": {
+      "file": "lucide-trash.png",
+      "dark_file": "lucide-trash-dark.png",
+      "menu_file": "lucide-trash-menu.png",
+      "dark_menu_file": "lucide-trash-dark-menu.png",
+      "source": "lucide",
+      "status": "available",
+      "upstream_name": "trash",
+      "original": "sources/trash.svg",
+      "sha256": "27299f69ad7c6272be64b1b8e2d48cbd6dcf0ef0d4f92827a1affa945c91700e"
+    },
+    "edit.add": {
+      "file": "lucide-plus.png",
+      "dark_file": "lucide-plus-dark.png",
+      "menu_file": "lucide-plus-menu.png",
+      "dark_menu_file": "lucide-plus-dark-menu.png",
+      "source": "lucide",
+      "status": "available",
+      "upstream_name": "plus",
+      "original": "sources/plus.svg",
+      "sha256": "7f6af73bf1ff6c4bca3f18351c8d1bdec6749c0c2530c4de5da85d520c21df17"
+    },
+    "class.instantiate": {
+      "file": "project-class-instantiate.png",
+      "dark_file": "project-class-instantiate-dark.png",
+      "menu_file": "project-class-instantiate-menu.png",
+      "dark_menu_file": "project-class-instantiate-dark-menu.png",
+      "source": "project",
+      "status": "available",
+      "original": "sources/class-instantiate.svg",
+      "sha256": "17da27e63ca3d9e5c89f837ad434f276f5c1c3a9a8a6e1b814ca8ef9bf94050d"
+    }
+  }
+}
