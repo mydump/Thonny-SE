@@ -1,6 +1,6 @@
 # Thonny SE
 
-English · [Deutsch](https://github.com/mydump/Thonny-SE/blob/v1.0.0/README.de.md)
+English · [Deutsch](https://github.com/mydump/Thonny-SE/blob/main/README.de.md)
 
 Design your software right in Thonny. With structured flowcharts, UML and an interactive object bench. Easy to get into, so you can focus on your ideas.
 
@@ -10,11 +10,11 @@ Design your software right in Thonny. With structured flowcharts, UML and an int
 
 ## What you can do
 
-- `Plan your algorithms` – Build Nassi–Shneiderman diagrams from statements, branches and loops. Move and edit the blocks to suit your plan.
+- `Plan algorithms with structograms` – Model algorithms as Nassi–Shneiderman diagrams with statements, branches and loops. Move and edit the blocks to suit your plan.
 
   <img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.0.0/images/readme/01-structogram.png" alt="Nested loops and a branch with the expanded block palette" width="1000">
 
-- `Design your classes` – Give your classes attributes and methods. Connect them and add comments.
+- `Design your classes` – Design UML class diagrams with attributes, methods and visibility. Model relationships such as inheritance or composition, and add roles and multiplicities.
 
   <img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.0.0/images/readme/02-uml.png" alt="Six-class cat shelter with inheritance, composition and multiplicities" width="1000">
 
@@ -30,7 +30,7 @@ Design your software right in Thonny. With structured flowcharts, UML and an int
 
   <img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.0.0/images/readme/05-objects.png" alt="UML model beside the object bench with expanded rooms and cat objects" width="1000">
 
-- `Learn and present comfortably` – Familiar commands, an uncluttered interface and clear visuals help you focus on your content. The aim is to keep everything sharp and easy to use across multiple displays with different scaling settings – while learning, explaining and presenting.
+- `Learn and present comfortably` – Familiar controls, an uncluttered interface and clear visuals help you focus on your content. The aim is to keep everything sharp and easy to use across multiple displays with different scaling settings – while learning, explaining and presenting.
 
   <img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.0.0/images/readme/06-thonny.png" alt="Method editing with three parameters, types and default values" width="1000">
 
@@ -43,7 +43,7 @@ Design your software right in Thonny. With structured flowcharts, UML and an int
 
 Thonny 5.0.x and Python 3.10 or later.
 
-Tested on Windows and macOS. Also runs on Linux. Feedback on using it on Linux is welcome.
+Tested on macOS and Windows. Also runs on Linux. Feedback on using it on Linux is welcome.
 
 Thonny SE is under active development.
 
@@ -122,12 +122,12 @@ As of 9 November 2026.
 - Switchable basic and full block palettes.
 - Activation and deactivation of blocks. Deactivated subtrees stay in the design and are omitted from Python and image exports.
 - Drag-and-drop, select all, contiguous multi-selection and clipboard operations, including between diagram tabs.
-- Undo/redo, keyboard navigation and keyboard editing.
+- Undo/redo, zoom and scrolling, plus keyboard navigation and keyboard editing.
 - Python import from the full editor content or a text selection. Constructs without a structural representation are retained as code blocks.
 - Python export of the full diagram or selected blocks. Non-executable statement text is retained as comments, while control expressions are validated.
-- Zoom, horizontal and vertical scrolling, and monochrome display.
-- Dedicated JSON file format with support for older model files.
-- PNG, SVG and WebP export with configurable raster resolution, transparency and monochrome output.
+- Monochrome display.
+- Readable, text-based JSON file format.
+- Straightforward PNG, SVG and WebP export with configurable raster resolution, transparency and monochrome output.
 
 ### UML class editor
 
@@ -153,8 +153,8 @@ As of 9 November 2026.
 - Navigation to the linked class, method or attribute definition in Python code.
 - Execution of the current diagram state using Thonny’s `Run` command / <kbd>F5</kbd>, without saving first or creating a Python file.
 - Undo/redo, zoom and scrolling.
-- Versioned JSON file format with support for older model versions.
-- PNG, SVG and WebP export with configurable raster resolution, transparency and monochrome output.
+- Readable, text-based JSON file format.
+- Straightforward PNG, SVG and WebP export with configurable raster resolution, transparency and monochrome output.
 
 ### Object bench
 

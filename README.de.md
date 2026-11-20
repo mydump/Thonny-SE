@@ -10,13 +10,13 @@ Plane deine Software direkt in Thonny. Mit Struktogrammen, UML und einer interak
 
 ## Das kannst du damit machen
 
-- `Abläufe planen` – Setze Anweisungen, Verzweigungen und Schleifen zu Struktogrammen zusammen. Verschiebe und bearbeite die Bausteine so, wie du sie brauchst.
+- `Abläufe mit Struktogrammen planen` – Modelliere Algorithmen als Nassi-Shneiderman-Diagramme mit Anweisungen, Verzweigungen und Schleifen. Verschiebe und bearbeite die Bausteine so, wie du sie brauchst.
 
   <img src="images/readme/01-structogram.png" alt="Verschachtelte Schleifen und Verzweigung mit geöffneter Bausteinpalette" width="1000">
 
-- `Klassen entwerfen` – Gib deinen Klassen Attribute und Methoden. Verbinde sie miteinander und ergänze Kommentare.
+- `Klassen entwerfen` – Entwirf UML-Klassendiagramme mit Attributen, Methoden und Sichtbarkeiten. Modelliere Beziehungen wie Vererbung oder Komposition und ergänze Rollen sowie Kardinalitäten/Multiplizitäten.
 
-  <img src="images/readme/02-uml.png" alt="Katzenheim mit sechs Klassen, Vererbung, Komposition und Kardinalitäten" width="1000">
+  <img src="images/readme/02-uml.png" alt="Katzenheim mit sechs Klassen, Vererbung, Komposition und Kardinalitäten/Multiplizitäten" width="1000">
 
 - `Zwischen Modell und Code wechseln` – Erzeuge Python-Code aus deinen Diagrammen oder Diagramme aus deinem Code. Bei verknüpften Klassen entscheidest du, welche Änderungen du übernimmst.
 
@@ -30,7 +30,7 @@ Plane deine Software direkt in Thonny. Mit Struktogrammen, UML und einer interak
 
   <img src="images/readme/05-objects.png" alt="UML-Modell neben der Objektbank mit aufgeklappten Räumen und Katzenobjekten" width="1000">
 
-- `Angenehm lernen und präsentieren` – Vertraute Befehle, eine übersichtliche Oberfläche und eine klare Darstellung helfen dir, dich auf deine Inhalte zu konzentrieren. Auch auf mehreren Displays mit unterschiedlichen Skalierungen soll alles scharf und gut bedienbar bleiben – beim Lernen, Erklären und Präsentieren.
+- `Angenehm lernen und präsentieren` – Vertraute Steuerung, eine übersichtliche Oberfläche und eine klare Darstellung helfen dir, dich auf deine Inhalte zu konzentrieren. Auch auf mehreren Displays mit unterschiedlichen Skalierungen soll alles scharf und gut bedienbar bleiben – beim Lernen, Erklären und Präsentieren.
 
   <img src="images/readme/06-thonny.png" alt="Methodenbearbeitung mit drei Parametern, Typen und Standardwerten" width="1000">
 
@@ -43,7 +43,7 @@ Plane deine Software direkt in Thonny. Mit Struktogrammen, UML und einer interak
 
 Thonny 5.0.x und Python ab 3.10.
 
-Getestet auf Windows und macOS. Auch unter Linux lauffähig. Rückmeldungen zur Nutzung unter Linux sind willkommen.
+Getestet auf macOS und Windows. Auch unter Linux lauffähig. Rückmeldungen zur Nutzung unter Linux sind willkommen.
 
 Thonny SE wird aktiv entwickelt.
 
@@ -122,12 +122,12 @@ Stand 9. November 2026.
 - Umschaltbare einfache und vollständige Bausteinpalette.
 - Bausteine aktivieren und deaktivieren. Deaktivierte Teilbäume bleiben im Entwurf erhalten und werden beim Python- und Grafikexport ausgelassen.
 - Drag-and-drop, Gesamt- und zusammenhängende Mehrfachauswahl sowie Zwischenablage, auch zwischen Diagramm-Tabs.
-- Rückgängig/Wiederholen sowie Tastaturnavigation und Tastaturbearbeitung.
+- Rückgängig/Wiederholen, Zoom und Scrollen sowie Tastaturnavigation und Tastaturbearbeitung.
 - Python-Import aus dem gesamten Editorinhalt oder einer Textauswahl. Nicht strukturell unterstützte Konstrukte werden als Codeblöcke übernommen.
 - Python-Export des gesamten Diagramms oder einer Bausteinauswahl. Nicht ausführbare Anweisungstexte werden als Kommentare übernommen, Kontrollausdrücke werden geprüft.
-- Zoom, horizontales und vertikales Scrollen sowie monochrome Ansicht.
-- Eigenes JSON-Dateiformat mit Unterstützung älterer Modelldateien.
-- PNG-, SVG- und WebP-Export mit einstellbarer Rasterauflösung, Transparenz und monochromer Ausgabe.
+- Monochrome Ansicht.
+- Lesbares, textbasiertes JSON-Dateiformat.
+- Unkomplizierter PNG-, SVG- und WebP-Export mit einstellbarer Rasterauflösung, Transparenz und monochromer Ausgabe.
 
 ### UML-Klasseneditor
 
@@ -138,8 +138,8 @@ Stand 9. November 2026.
 - Getter-/Setter-Erzeugung für Attribute.
 - Optionale statische Prüfung bekannter Typnamen.
 - Assoziation, gerichtete Assoziation, Aggregation, Komposition, Vererbung und Interface-Realisierung.
-- Rollen, Kardinalitäten und Beziehungsnamen.
-- Selbstbeziehungen für Assoziation, Aggregation und Komposition mit eigenen Rollen und Kardinalitäten.
+- Rollen, Kardinalitäten/Multiplizitäten und Beziehungsnamen.
+- Selbstbeziehungen für Assoziation, Aggregation und Komposition mit eigenen Rollen und Kardinalitäten/Multiplizitäten.
 - Frei positionierbare Klassenkarten und manuell verformbare Beziehungslinien.
 - Gemeinsames Auswählen und Verschieben mehrerer Klassen sowie Kopieren zwischen Diagrammen, einschließlich interner Beziehungen und angehefteter Kommentare.
 - Optionales sichtbares oder magnetisches Raster zum Einrasten der Klassen.
@@ -153,8 +153,8 @@ Stand 9. November 2026.
 - Navigation zur verknüpften Klassen-, Methoden- oder Attributdefinition im Python-Code.
 - Ausführung des aktuellen Diagrammstands über Thonnys Befehl `Ausführen` / <kbd>F5</kbd>, ohne vorheriges Speichern oder eigene Python-Datei.
 - Rückgängig/Wiederholen, Zoom und Scrollen.
-- Eigenes versioniertes JSON-Dateiformat mit Unterstützung älterer Modellversionen.
-- PNG-, SVG- und WebP-Export mit einstellbarer Rasterauflösung, Transparenz und monochromer Ausgabe.
+- Lesbares, textbasiertes JSON-Dateiformat.
+- Unkomplizierter PNG-, SVG- und WebP-Export mit einstellbarer Rasterauflösung, Transparenz und monochromer Ausgabe.
 
 ### Objektbank
 
