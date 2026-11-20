@@ -80,11 +80,11 @@ Danach bearbeitest du Diagramm und Python-Dokument jeweils für sich. Starte die
 
 Klicke auf die freie Fläche mit rechts und lege eine `Neue Klasse` an. Attribute beschreiben die Daten eines Objekts, Methoden sein Verhalten.
 
-Über das Kontextmenü einer Klasse ergänzt du Beziehungen. Wähle die passende Beziehungsart und die beteiligte Klasse. Rollen und Kardinalitäten beschreiben die Verbindung genauer. Kommentare kannst du über das Kontextmenü ergänzen.
+Über das Kontextmenü einer Klasse ergänzt du Beziehungen. Wähle die passende Beziehungsart und die beteiligte Klasse. Rollen und Kardinalitäten/Multiplizitäten beschreiben die Verbindung genauer. Kommentare kannst du über das Kontextmenü ergänzen.
 
 <img src="images/manual/classes.png" alt="Klassen Cat und CatShelter mit Attributen, Methoden und Beziehung" width="800">
 
-*`CatShelter` hält eine Sammlung von `Cat`-Objekten. Die Beziehung trägt den Rollennamen `cats` und die Kardinalität `0..*`.*
+*`CatShelter` hält eine Sammlung von `Cat`-Objekten. Die Beziehung trägt den Rollennamen `cats` und die Kardinalität/Multiplizität `0..*`.*
 
 ### Attribute, Methoden und Parameter bearbeiten
 
