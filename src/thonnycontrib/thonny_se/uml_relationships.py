@@ -4,6 +4,7 @@
 
 """UML relationship labels, geometry and inference from class cards."""
 from .i18n import tr
+from .diagram_preferences import relationship_count_label
 import ast
 from collections import defaultdict
 import math
@@ -23,7 +24,7 @@ def multiplicity(text):
             return str(int(lower))
         if upper == "*" or int(lower) <= int(upper):
             return f"{int(lower)}..{upper if upper == '*' else int(upper)}"
-    raise ValueError(tr('Please enter a multiplicity such as 1, 0..1, 0..* or 1..*.'))
+    raise ValueError(tr('Please enter a value for {term}, such as 1, 0..1, 0..* or 1..*.').format(term=relationship_count_label()))
 
 
 def card_edge_toward(bounds, point):

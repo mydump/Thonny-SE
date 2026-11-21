@@ -183,7 +183,7 @@
   "Move down": "Nach unten",
   "Move up": "Nach oben",
   "Multiple cards use the Python class name {p0!r}.": "Mehrere Karten verwenden den Python-Klassennamen {p0!r}.",
-  "Multiplicity": "Kardinalität",
+  "Multiplicity": "Multiplizität",
   "Multiway selection": "Mehrfachauswahl",
   "Name": "Name",
   "New UML diagram": "Neues UML-Diagramm",
@@ -482,5 +482,14 @@
   "Show all object methods instead of the Methods dropdown": "Alle Objektmethoden direkt anzeigen statt im Auswahlfeld „Methoden“",
   "Names of automatically generated methods": "Namen automatisch erzeugter Methoden",
   "Assign Python source file to diagram": "Python-Quelldatei dem Diagramm zuordnen",
-  "No diagram classes could be matched in this Python file.": "In dieser Python-Datei konnte keine Klasse des Diagramms eindeutig zugeordnet werden."
+  "No diagram classes could be matched in this Python file.": "In dieser Python-Datei konnte keine Klasse des Diagramms eindeutig zugeordnet werden.",
+  "Cardinality": "Kardinalität",
+  "Fill in initial values automatically when selecting an attribute type": "Beim Auswählen eines Attributtyps passende Anfangswerte automatisch eintragen",
+  "Call relationship counts multiplicity instead of cardinality": "Beziehungsanzahlen als Multiplizität statt Kardinalität bezeichnen",
+  "Please enter a value for {term}, such as 1, 0..1, 0..* or 1..*.": "Bitte für {term} einen Wert wie 1, 0..1, 0..* oder 1..* eingeben.",
+  "Check that initial values match their declared types": "Anfangswerte auf Übereinstimmung mit dem angegebenen Datentyp prüfen",
+  "This expression cannot be checked without running code. Use a literal value or turn off initial-value checking.": "Dieser Ausdruck lässt sich ohne Ausführen von Code nicht prüfen. Bitte einen direkten Wert eingeben oder die Anfangswertprüfung ausschalten.",
+  "The initial value is too complex to check.": "Der Anfangswert ist zu komplex für die Prüfung.",
+  "The initial value does not match type {type}.": "Der Anfangswert passt nicht zum Datentyp {type}.",
+  "Please enter a valid Python value.": "Bitte einen gültigen Python-Wert eingeben."
 }
