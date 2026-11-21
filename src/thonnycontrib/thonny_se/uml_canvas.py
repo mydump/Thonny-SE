@@ -915,7 +915,7 @@ class UmlCanvas(ttk.Frame):
             return
         self.before = before
         card = self.editor.card(cid)
-        self.original_text = card["name"] if section=="name" else next((r["text"] for r in card[section] if r["id"]==row), "")
+        self.original_text = card["name"]
         self.input_frame = tk.Frame(self)
         header_panel = edit_panel(self.input_frame,section="name")
         self.navigation_arrow(header_panel, -1).pack(side="top")

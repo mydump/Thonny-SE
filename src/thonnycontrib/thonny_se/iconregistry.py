@@ -59,7 +59,7 @@ def tab_role(editor):
     filename = (editor.get_filename() or "").lower()
     if filename.endswith(".uml.json"):
         return "document.uml"
-    if filename.endswith((".nsd.json", ".tse.json")):
+    if filename.endswith(".nsd.json"):
         return "document.structogram"
     if filename.endswith((".png", ".webp", ".svg", ".jpg", ".jpeg", ".gif", ".bmp", ".tif", ".tiff")):
         return "document.image"

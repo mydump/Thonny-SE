@@ -13,14 +13,13 @@ from pathlib import Path
 from .model import validate
 
 EXTENSION = ".nsd.json"
-LEGACY_EXTENSION = ".tse.json"
-_DIAGRAM_EXTENSIONS = (EXTENSION, LEGACY_EXTENSION, ".uml.json")
+_DIAGRAM_EXTENSIONS = (EXTENSION, ".uml.json")
 # Worst case: 1000 Blöcke mit je 10000 Zeichen, inklusive JSON-Escapes.
 MAX_FILE_CHARS = 64_000_000
 
 
 def is_model_path(path):
-    return str(path).lower().endswith((EXTENSION, LEGACY_EXTENSION))
+    return str(path).lower().endswith(EXTENSION)
 
 
 def is_diagram_path(path):
