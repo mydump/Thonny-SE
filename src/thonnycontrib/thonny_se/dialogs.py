@@ -11,6 +11,7 @@ from tkinter import font as tkfont, messagebox, simpledialog, ttk
 from .model import LOOP_FIELDS
 from .export_preferences import ExportOptions, load_options, save_options
 from .ui_style import FIELD_BORDER, SELECT
+from .diagram_preferences import relationship_count_label
 
 
 class EditDialog(simpledialog.Dialog):
@@ -401,7 +402,7 @@ class RelationshipDialog(EditDialog):
                                       state="readonly", width=26, style="SE.TCombobox")
         self.direction.set(self.directions[self.relation["direction"]])
         self.direction.grid(row=3, column=1, columnspan=2, sticky="ew", pady=(0, 8))
-        for column, label in ((1, tr('Role')), (2, tr('Multiplicity'))):
+        for column, label in ((1, tr('Role')), (2, relationship_count_label())):
             ttk.Label(master, text=label).grid(row=4, column=column, sticky="w", padx=(0, 7))
         self.entries = {}
         for row, (end, name) in enumerate(zip(("start", "end"), self.names), start=5):

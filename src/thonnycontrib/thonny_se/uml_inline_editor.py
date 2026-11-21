@@ -14,7 +14,8 @@ from thonny.ui_utils import create_tooltip
 from .ui_style import UML_SECTION_FILLS, DISABLED, ERROR, FIELD_BORDER, INK, MUTED, SELECT, SELECTION_FILL
 from .uml_edit_panel import DELETE_FILL, PANEL_INSET, DeleteButton, delete_switch, edit_panel, panel_badge, picker
 from .field_feedback import FieldFeedback
-from .diagram_preferences import UML_CHECK_TYPES, enabled
+from .diagram_preferences import UML_CHECK_TYPES, UML_AUTO_DEFAULTS, UML_CHECK_VALUES, enabled
+from .uml_initial_values import initial_value_for_type, initial_value_error, member_initial_fields, validate_member_initial_values
 from .uml_type_validation import TypeContext, member_type_fields, type_error, validate_member_types
 from .uml_accessors import accessor_kinds, set_accessors, manual_accessor_kinds
 from .uml_row_grip import RowGrip
@@ -53,10 +54,11 @@ class InlineMemberEditor(tk.Frame):
         self.typename = tk.StringVar(self, value=data.get("type", data.get("return_type", "")))
         self.kind = tk.StringVar(self, value=data.get("kind", "procedure"))
         self.default = tk.StringVar(self, value=data.get("default", ""))
-        self._automatic_list_default = False
-        self._setting_list_default = False
-        self.default.trace_add("write", self._list_default_edited)
-        self.typename.trace_add("write", self._update_list_default)
+        self._automatic_default = None
+        self._previous_type = self.typename.get().strip()
+        self._setting_default = False
+        self.default.trace_add("write", self._default_edited)
+        self.typename.trace_add("write", self._update_type_default)
         self.accessors = {}
         if section == "attributes":
             existing = accessor_kinds(card, row_id)
@@ -73,27 +75,36 @@ class InlineMemberEditor(tk.Frame):
         self.ready = True
         self._refresh_type_feedback()
 
-    def _list_default_edited(self, *args):
-        if not self._setting_list_default:
-            self._automatic_list_default = False
+    def _default_edited(self, *args):
+        if not self._setting_default:
+            self._automatic_default = None
 
-    def _update_list_default(self, *args):
-        # Defaults belong to instance attributes, never mutable parameter defaults.
+    def _update_type_default(self, *args):
+        # Initial values belong to instance attributes, never parameter defaults.
         if self.section != "attributes":
             return
         typename = self.typename.get().strip()
         is_list = typename == "list" or typename.startswith("list[")
+        previous_type = self.__dict__.get('_previous_type', '')
+        self._previous_type = typename
+        automatic = enabled(UML_AUTO_DEFAULTS)
+        suggested = "[]" if is_list else initial_value_for_type(typename) if automatic else None
         value = self.default.get()
-        self._setting_list_default = True
+        previous_default = initial_value_for_type(previous_type)
+        standard_value = (automatic and previous_type != typename and previous_default is not None
+                          and value.strip() == previous_default)
+        if value.strip() and self._automatic_default is None and not standard_value:
+            return
+        self._setting_default = True
         try:
-            if is_list and not value.strip():
-                self.default.set("[]")
-                self._automatic_list_default = True
-            elif not is_list and self._automatic_list_default:
+            if suggested is not None:
+                self.default.set(suggested)
+                self._automatic_default = suggested
+            elif self._automatic_default is not None or standard_value:
                 self.default.set("")
-                self._automatic_list_default = False
+                self._automatic_default = None
         finally:
-            self._setting_list_default = False
+            self._setting_default = False
 
     @property
     def font(self):
@@ -143,6 +154,12 @@ class InlineMemberEditor(tk.Frame):
             feedback = self.input_fields.get(str(variable))
             if feedback is not None:
                 feedback.set_error(type_error(text) if enabled(UML_CHECK_TYPES) and not self.type_context.check(text) else "")
+
+        for field, typename, text in member_initial_fields(self.payload(), self.section):
+            variable = self.parameters[field[0]][field[1]] if isinstance(field, tuple) else self.default
+            feedback = self.input_fields.get(str(variable))
+            if feedback is not None:
+                feedback.set_error(initial_value_error(typename, text, self.editor.document) if enabled(UML_CHECK_VALUES) else '')
 
     def _label(self, parent, text, color=INK):
         return tk.Label(parent, text=text, background=self.fill, foreground=color, font=self.font, borderwidth=0, padx=0, pady=0)
@@ -620,6 +637,8 @@ class InlineMemberEditor(tk.Frame):
             if self.section == 'methods' and value['name'] == '__new__':
                 raise ValueError(tr('__new__ must be edited directly in Python.'))
             (validate_attribute if self.section=="attributes" else validate_method)(value)
+            if enabled(UML_CHECK_VALUES):
+                validate_member_initial_values(value, self.section, self.editor.document)
             if enabled(UML_CHECK_TYPES):
                 from .integration import read_python_source
                 self.type_context = TypeContext(self.editor.document, self.editor.card(self.cid), read_python_source)

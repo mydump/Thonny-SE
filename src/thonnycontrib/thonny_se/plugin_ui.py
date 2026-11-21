@@ -20,7 +20,7 @@ from thonny.ui_utils import (
 )
 
 from ._version import __version__
-from .diagram_preferences import STRUCTOGRAM_CAT_BLOCKS, STRUCTOGRAM_HINTS, UML_EARS, UML_HINTS, OBJECT_METHODS, UML_CONSTRUCTOR_NAME, UML_CHECK_TYPES, UML_METHOD_STYLE
+from .diagram_preferences import STRUCTOGRAM_CAT_BLOCKS, STRUCTOGRAM_HINTS, UML_EARS, UML_HINTS, OBJECT_METHODS, UML_CONSTRUCTOR_NAME, UML_CHECK_TYPES, UML_METHOD_STYLE, UML_AUTO_DEFAULTS, UML_USE_MULTIPLICITY, UML_CHECK_VALUES
 
 
 PROJECT_URL = "https://github.com/mydump/Thonny-SE"
@@ -108,6 +108,9 @@ class ThonnySEOptionsPage(ConfigurationPage):
                 (UML_HINTS, tr('Hide introductory hints in this editor')),
                 (UML_CONSTRUCTOR_NAME, tr('Display __init__ as the class name in diagrams')),
                 (UML_CHECK_TYPES, tr('Reject unknown type names in attributes, parameters and return values')),
+                (UML_CHECK_VALUES, tr('Check that initial values match their declared types')),
+                (UML_AUTO_DEFAULTS, tr('Fill in initial values automatically when selecting an attribute type')),
+                (UML_USE_MULTIPLICITY, tr('Call relationship counts multiplicity instead of cardinality')),
                 (UML_METHOD_STYLE, tr('Names of automatically generated methods')),
                 (UML_EARS, tr('Cats')),
             )),
@@ -143,7 +146,7 @@ class ThonnySEOptionsPage(ConfigurationPage):
         for editor in workbench.get_editor_notebook().get_all_editors():
             if isinstance(editor, StructogramEditor) and changed & {STRUCTOGRAM_CAT_BLOCKS, STRUCTOGRAM_HINTS}:
                 editor.diagram.draw()
-            elif isinstance(editor, UmlEditor) and changed & {UML_HINTS, UML_EARS, UML_CONSTRUCTOR_NAME, UML_CHECK_TYPES, UML_METHOD_STYLE}:
+            elif isinstance(editor, UmlEditor) and changed & {UML_HINTS, UML_EARS, UML_CONSTRUCTOR_NAME, UML_CHECK_TYPES, UML_METHOD_STYLE, UML_AUTO_DEFAULTS, UML_USE_MULTIPLICITY, UML_CHECK_VALUES}:
                 editor.diagram.draw()
                 member = editor.diagram.member_editor
                 if member is not None and hasattr(member, "_refresh_type_feedback"):
@@ -156,9 +159,9 @@ class ThonnySEOptionsPage(ConfigurationPage):
 
 def install():
     workbench = get_workbench()
-    for option in (STRUCTOGRAM_CAT_BLOCKS, STRUCTOGRAM_HINTS, UML_HINTS, UML_EARS, OBJECT_METHODS):
+    for option in (STRUCTOGRAM_CAT_BLOCKS, STRUCTOGRAM_HINTS, UML_HINTS, UML_EARS, OBJECT_METHODS, UML_USE_MULTIPLICITY):
         workbench.set_default(option, False)
-    for option in (UML_CONSTRUCTOR_NAME, UML_CHECK_TYPES):
+    for option in (UML_CONSTRUCTOR_NAME, UML_CHECK_TYPES, UML_AUTO_DEFAULTS, UML_CHECK_VALUES):
         workbench.set_default(option, True)
     workbench.set_default(UML_METHOD_STYLE, "snake_case")
     from .diagram_preferences import UML_GRID
