@@ -6,37 +6,37 @@ Design your software right in Thonny. With structured flowcharts, UML and an int
 
 ## Contents
 
-[Features](#what-you-can-do) · [Requirements](#what-you-need) · [Getting started](#get-started) · [Manual](https://github.com/mydump/Thonny-SE/blob/v1.0.0/MANUAL.md) · [Planned features](#planned-features) · [Educational references](#educational-references) · [Technical feature list](#technical-features)
+[Features](#what-you-can-do) · [Requirements](#what-you-need) · [Getting started](#get-started) · [Manual](https://github.com/mydump/Thonny-SE/blob/v1.0.1/MANUAL.md) · [Planned features](#planned-features) · [Educational references](#educational-references) · [Technical feature list](#technical-features)
 
 ## What you can do
 
 - `Plan algorithms with structograms` – Model algorithms as Nassi–Shneiderman diagrams with statements, branches and loops. Move and edit the blocks to suit your plan.
 
-  <img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.0.0/images/readme/01-structogram.png" alt="Nested loops and a branch with the expanded block palette" width="1000">
+  <img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.0.1/images/readme/01-structogram.png" alt="Nested loops and a branch with the expanded block palette" width="1000">
 
 - `Design your classes` – Design UML class diagrams with attributes, methods and visibility. Model relationships such as inheritance or composition, and add roles and multiplicities.
 
-  <img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.0.0/images/readme/02-uml.png" alt="Six-class cat shelter with inheritance, composition and multiplicities" width="1000">
+  <img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.0.1/images/readme/02-uml.png" alt="Six-class cat shelter with inheritance, composition and multiplicities" width="1000">
 
 - `Move between models and code` – Turn your diagrams into Python code or your code into diagrams. For linked classes, you choose which changes to apply.
 
-  <img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.0.0/images/readme/03-code-model.png" alt="Change preview with file name, transfer direction and selectable updates" width="759">
+  <img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.0.1/images/readme/03-code-model.png" alt="Change preview with file name, transfer direction and selectable updates" width="759">
 
 - `Take your diagrams with you` – Save your designs as PNG, SVG or WebP. Ready for a worksheet, a presentation or your documentation.
 
-  <img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.0.0/images/readme/04-export.png" alt="PNG export with image size, transparency and monochrome options" width="267">
+  <img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.0.1/images/readme/04-export.png" alt="PNG export with image size, transparency and monochrome options" width="267">
 
 - `Try your objects` – Create objects from your UML classes. Explore their values, call methods and expand lists and nested objects.
 
-  <img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.0.0/images/readme/05-objects.png" alt="UML model beside the object bench with expanded rooms and cat objects" width="1000">
+  <img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.0.1/images/readme/05-objects.png" alt="UML model beside the object bench with expanded rooms and cat objects" width="1000">
 
 - `Learn and present comfortably` – Familiar controls, an uncluttered interface and clear visuals help you focus on your content. The aim is to keep everything sharp and easy to use across multiple displays with different scaling settings – while learning, explaining and presenting.
 
-  <img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.0.0/images/readme/06-thonny.png" alt="Method editing with three parameters, types and default values" width="1000">
+  <img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.0.1/images/readme/06-thonny.png" alt="Method editing with three parameters, types and default values" width="1000">
 
 - `Cats`
 
-  <img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.0.0/images/readme/07-cat.png" alt="Waving cat head" width="250">
+  <img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.0.1/images/readme/07-cat.png" alt="Waving cat head" width="250">
 
 
 ## What you need
@@ -47,11 +47,17 @@ Tested on macOS and Windows. Also runs on Linux. Feedback on using it on Linux i
 
 Thonny SE is under active development.
 
+## File format baseline
+
+Version 1.0.1 establishes format version 1 for UML diagrams. Structograms already use format version 1. Internal pre-release UML formats and the old `.tse.json` extension are no longer supported.
+
+UML files saved with 1.0.0 contain `"version": 13`. Before opening them in 1.0.1, **manually change this entry to `"version": 1`** in the JSON file. No other changes are needed for files with the current structured schema. Only format version 1 is accepted; the complete file structure is still validated. Older development schemas and free-text UML members are not supported. No converter is provided.
+
 ## Get started
 
-Installation through PyPI and the wheel download on GitHub will be available with the release.
+Install through PyPI or download a wheel from GitHub.
 
-[Download wheel for 1.0.0](https://github.com/mydump/Thonny-SE/releases/download/v1.0.0/thonny_se-1.0.0-py3-none-any.whl) · [All releases](https://github.com/mydump/Thonny-SE/releases)
+[Download wheel for 1.0.1](https://github.com/mydump/Thonny-SE/releases/download/v1.0.1/thonny_se-1.0.1-py3-none-any.whl) · [All releases](https://github.com/mydump/Thonny-SE/releases)
 
 ### Through Thonny’s plug-in manager
 
@@ -90,7 +96,7 @@ Then install the plug-in through the plug-in manager or the wheel file.
 
 ## Bring your classes to life
 
-Run your UML design and try its objects. You do not need your own Python file yet. The [manual](https://github.com/mydump/Thonny-SE/blob/v1.0.0/MANUAL.md) walks you through getting started and explains how diagrams, code and the object bench work together.
+Run your UML design and try its objects. You do not need your own Python file yet. The [manual](https://github.com/mydump/Thonny-SE/blob/v1.0.1/MANUAL.md) walks you through getting started and explains how diagrams, code and the object bench work together.
 
 ## Planned features
 

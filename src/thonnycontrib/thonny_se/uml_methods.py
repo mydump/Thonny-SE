@@ -4,9 +4,7 @@
 
 """Strukturierte UML-Mitglieder und kompakte Signaturdarstellung."""
 from .i18n import tr
-import ast
 import copy
-import re
 
 VISIBILITIES = {"public": "+", "protected": "#", "private": "−"}
 
@@ -71,13 +69,6 @@ def constructor_display_name(class_name):
 
 
 def member_text(row, class_name):
-    if "text" in row:
-        text = row["text"]
-        match = re.match(r"([#−-]\s*)(\w+)", text)
-        if match:
-            visibility = "protected" if text.startswith("#") else "private"
-            return match[1] + display_member_name(match[2], visibility) + text[match.end():]
-        return text
     if "attribute" in row:
         data = row["attribute"]
         return VISIBILITIES[data["visibility"]] + " " + display_member_name(data["name"], data["visibility"]) + (": " + data["type"] if data["type"] else "") + (" = " + data["default"] if data["default"] else "")
@@ -125,9 +116,6 @@ def member_parts(row, section, class_name=""):
             "default": " = " + data["default"] if data["default"] else "",
         }
     data, unparsed = draft_from_row(row)
-    if unparsed:
-        text = row["text"].strip()
-        return {"name": text[1:].lstrip() if text[:1] in ("+", "-", "−", "#") else text}
     return {
         "name": display_member_name(data["name"], data["visibility"]),
         "parameters": parameter_text(data["parameters"]),
@@ -136,49 +124,15 @@ def member_parts(row, section, class_name=""):
 
 
 def draft_from_row(row):
-    draft = dict(kind="procedure", name="", visibility="public", parameters=[], return_type="")
     if row is None:
-        return draft, False
-    if "method" in row:
-        return copy.deepcopy(row["method"]), False
-    # Nur einfache Signaturen übernehmen. Freitext bleibt bei Abbruch unangetastet.
-    text = row["text"].strip()
-    visibility = {"+": "public", "#": "protected", "-": "private", "−": "private"}
-    if text and text[0] in visibility:
-        draft["visibility"], text = visibility[text[0]], text[1:].strip()
-    try:
-        closing = text.rindex(")")
-        signature, suffix = text[:closing+1], text[closing+1:].strip()
-        if suffix and not suffix.startswith(":"):
-            raise ValueError()
-        result = suffix[1:].strip() if suffix else ""
-        node = ast.parse("def " + signature + (" -> " + result if result else "") + ":\n    pass").body[0]
-        if node.args.posonlyargs or node.args.kwonlyargs or node.args.vararg or node.args.kwarg:
-            raise ValueError()
-        draft.update(name=node.name, kind="function" if result else "procedure", return_type=result)
-        defaults = [None]*(len(node.args.args)-len(node.args.defaults))+node.args.defaults
-        for arg, default in zip(node.args.args, defaults):
-            draft["parameters"].append(dict(name=arg.arg, type=ast.unparse(arg.annotation) if arg.annotation else "", default=ast.unparse(default) if default is not None else ""))
-        validate_method(draft)
-        return draft, False
-    except (ValueError, SyntaxError, IndexError, TypeError):
-        return dict(kind="procedure", name="", visibility="public", parameters=[], return_type=""), True
-
+        return dict(kind="procedure", name="", visibility="public", parameters=[], return_type=""), False
+    return copy.deepcopy(row["method"]), False
 
 
 def attribute_draft(row):
-    if row and "attribute" in row:
-        return copy.deepcopy(row["attribute"])
-    data = dict(name="", type="", default="", visibility="private")
-    if row:
-        text = row["text"].strip()
-        symbols = {"+":"public", "-":"private", "−":"private", "#":"protected"}
-        if text and text[0] in symbols:
-            data["visibility"], text = symbols[text[0]], text[1:].strip()
-        text, sep, default = text.partition("=")
-        name, colon, typename = text.partition(":")
-        data.update(name=name.strip(), type=typename.strip(), default=default.strip())
-    return data
+    if row is None:
+        return dict(name="", type="", default="", visibility="private")
+    return copy.deepcopy(row["attribute"])
 
 
 def validate_attribute(data):
@@ -194,15 +148,8 @@ def validate_attribute(data):
 
 
 def is_constructor(row):
-    if "method" in row:
-        return row["method"]["kind"] == "constructor" or row["method"]["name"] in ("__init__", "__new__")
-    text = row.get("text", "")
-    if text.startswith(("«Konstruktor»", "«Constructor»")):
-        return True
-    if "__init__" not in text and "__new__" not in text:
-        return False
-    draft, unparsed = draft_from_row(row)
-    return not unparsed and draft["name"] in ("__init__", "__new__")
+    method = row.get("method", {})
+    return method.get("kind") == "constructor" or method.get("name") in ("__init__", "__new__")
 
 
 def visible_methods(card):
@@ -211,12 +158,7 @@ def visible_methods(card):
 
 
 def member_visibility(row, section):
-    if "method" in row:
-        return row["method"]["visibility"]
-    if "attribute" in row:
-        return row["attribute"]["visibility"]
-    prefix = row.get("text", "").strip()[:1]
-    return {"+":"public", "−":"private", "-":"private", "#":"protected"}.get(prefix, "private" if section=="attributes" else "public")
+    return row["attribute" if section == "attributes" else "method"]["visibility"]
 
 
 def constructor_parameters(row):

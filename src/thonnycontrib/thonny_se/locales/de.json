@@ -293,7 +293,7 @@
   "Structogram from Python code": "Struktogramm aus Python-Code",
   "Structogram from file": "Struktogramm aus Datei",
   "Structogram from selection": "Struktogramm aus Auswahl",
-  "Structograms (*.nsd.json; legacy *.tse.json)": "Struktogramme (*.nsd.json; bisher *.tse.json)",
+  "Structograms (*.nsd.json)": "Struktogramme (*.nsd.json)",
   "Suggested for deletion because this entry is no longer present in the source. Select it to delete it.": "Zum Löschen vorgeschlagen, weil dieser Eintrag in der Quelle nicht mehr vorhanden ist. Zum Löschen ankreuzen.",
   "Target: Code": "Ziel: Code",
   "Target: Diagram": "Ziel: Diagramm",
@@ -482,5 +482,6 @@
   "Show all object methods instead of the Methods dropdown": "Alle Objektmethoden direkt anzeigen statt im Auswahlfeld „Methoden“",
   "Names of automatically generated methods": "Namen automatisch erzeugter Methoden",
   "Assign Python source file to diagram": "Python-Quelldatei dem Diagramm zuordnen",
-  "No diagram classes could be matched in this Python file.": "In dieser Python-Datei konnte keine Klasse des Diagramms eindeutig zugeordnet werden."
+  "No diagram classes could be matched in this Python file.": "In dieser Python-Datei konnte keine Klasse des Diagramms eindeutig zugeordnet werden.",
+  "Unsupported UML format version. This version requires format 1.": "Nicht unterstützte UML-Formatversion. Diese Programmversion benötigt Format 1."
 }
