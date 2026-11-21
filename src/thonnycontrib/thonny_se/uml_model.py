@@ -11,7 +11,7 @@ import math
 from uuid import uuid4
 
 
-VERSION = 13
+VERSION = 1
 COMMENT_MIN_SIZE = (100, 56)
 COMMENT_MAX_SIZE = 1600
 CLASS_KINDS = {"class": "Class", "abstract": "Abstract class", "interface": "Interface"}
@@ -37,16 +37,14 @@ def new_class(name, x, y):
             "attributes": [], "methods": []}
 
 
-def new_member(text):
-    return {"id": uuid4().hex, "text": text.strip()}
-
-
 def validate(document):
     def require(condition):
         if not condition:
             raise ValueError(tr('Invalid UML model.'))
     require(isinstance(document, dict) and set(document) - {"removed_classes"} == {"format", "version", "classes", "relationships", "comments"})
-    require(document["format"] == "thonny-se-uml" and type(document["version"]) is int and document["version"] == VERSION)
+    require(document["format"] == "thonny-se-uml")
+    if type(document["version"]) is not int or document["version"] != VERSION:
+        raise ValueError(tr('Unsupported UML format version. This version requires format 1.'))
     classes = document["classes"]
     require(isinstance(classes, list) and len(classes) <= 200)
     ids, names, count = set(), set(), 0
@@ -74,7 +72,7 @@ def validate(document):
             for row in card[section]:
                 require(isinstance(row, dict))
                 keys = set(row) - ({"abstract"} if section == "methods" else set()) - ({"accessor"} if section == "methods" and "method" in row else set())
-                require((keys == {"id", "text"} or (section == "methods" and keys == {"id", "method"}) or (section == "attributes" and set(row) == {"id", "attribute"})))
+                require((section == "methods" and keys == {"id", "method"}) or (section == "attributes" and set(row) == {"id", "attribute"}))
                 require(isinstance(row["id"], str) and 0 < len(row["id"]) <= 100 and row["id"] not in ids)
                 ids.add(row["id"])
                 if "attribute" in row:
@@ -87,7 +85,6 @@ def validate(document):
                     parameter_count += len(row["method"]["parameters"])
                     require(parameter_count <= 5000)
                     continue
-                require(isinstance(row["text"], str) and 0 < len(row["text"]) <= 500 and row["text"] == row["text"].strip() and "\n" not in row["text"] and "\r" not in row["text"])
         constructors = [r for r in card["methods"] if "method" in r and r["method"]["kind"] == "constructor"]
         require(len(constructors) <= 1)
         attributes = {row["id"] for row in card["attributes"] if "attribute" in row}
