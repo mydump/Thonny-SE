@@ -32,6 +32,7 @@ class Entry:
     plan: object = None
     header: tuple | None = None
     action: str = ''
+    file_error: bool = False
 
     @property
     def cid(self):
@@ -110,6 +111,7 @@ def prepare(document, direction, read_source, *, cids=None):
                                     {**python, 'class_kind': python_kind}, conflict)
         except (OSError, ValueError, RecursionError) as exc:
             entry.error = str(exc)
+            entry.file_error = entry.key in failures
     return batch
 
 

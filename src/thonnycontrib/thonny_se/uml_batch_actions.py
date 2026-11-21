@@ -119,7 +119,12 @@ def update(editor, direction, *, cids=None):
         if not ensure_source_files(editor, cids):
             return
         batch = prepare(editor.document,direction,read_python_source,cids=cids)
-        choices = BatchUpdateDialog(editor,batch).result
+        dialog = BatchUpdateDialog(editor,batch)
+        if dialog.relink_cids is not None:
+            if relink(editor, cids=dialog.relink_cids):
+                update(editor, direction, cids=cids)
+            return
+        choices = dialog.result
         if choices is None or not selected_entries(batch,choices):
             return
         if editor.document != before[0]:
@@ -139,7 +144,7 @@ def update(editor, direction, *, cids=None):
         messagebox.showerror(title(direction),str(exc),parent=editor)
 
 
-def relink(editor):
+def relink(editor, *, cids=None):
     """Link matching diagram cards to one chosen file after explicit review."""
     from tkinter import filedialog
     from .uml_batch import prepare_relink
@@ -155,6 +160,8 @@ def relink(editor):
     try:
         text = read_python_source(path)
         batch = prepare_relink(editor.document, path, text)
+        if cids is not None:
+            batch.entries = [entry for entry in batch.entries if entry.cid in cids]
         if not any(not entry.error for entry in batch.entries):
             errors = '\n'.join(entry.error for entry in batch.entries)
             raise ValueError(tr('No diagram classes could be matched in this Python file.')+'\n'+errors)
@@ -169,5 +176,6 @@ def relink(editor):
         editor.document = candidate
         editor._record(before)
         editor.source_status.schedule()
+        return True
     except (OSError, ValueError, RecursionError, tk.TclError) as exc:
         messagebox.showerror(label, str(exc), parent=editor)
