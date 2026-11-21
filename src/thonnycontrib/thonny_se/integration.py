@@ -446,7 +446,7 @@ def install():
 
     # Nur den Öffnen-Dialog erweitern: Thonny verwendet seine Filterliste auch
     # beim Speichern von Python. Native macOS-Dialoge filtern nach .json statt
-    # nach der zusammengesetzten Endung .tse.json.
+    # nach der zusammengesetzten Endung .nsd.json.
     import thonny.editors
     original_open_dialog = thonny.editors.askopenfilename
 
@@ -455,7 +455,7 @@ def install():
         original_types = list(options.get("filetypes", thonny.editors._dialog_filetypes))
         options["filetypes"] = [
             (tr('Python and diagrams'), ".py .pyw .pyi .pyde .pyx .json"),
-            (tr('Structograms (*.nsd.json; legacy *.tse.json)'), ".json"),
+            (tr('Structograms (*.nsd.json)'), ".json"),
             (tr('Thonny SE UML diagrams (*.uml.json)'), ".json"),
             *original_types,
         ]

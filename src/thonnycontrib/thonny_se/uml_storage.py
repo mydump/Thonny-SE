@@ -9,35 +9,15 @@ import os
 from pathlib import Path
 from functools import partial
 from . import storage
-from .uml_model import VERSION, class_name, validate
+from .uml_model import validate
 
 EXTENSION = ".uml.json"
 dumps = partial(storage.dumps, validator=validate)
 def _read_validate(document):
-    # Frühere Schreibweisen bis auf den Anfangsbuchstaben beibehalten.
     document = copy.deepcopy(document)
-    if isinstance(document, dict) and isinstance(document.get("classes"), list):
-        for card in document["classes"]:
-            if isinstance(card, dict) and isinstance(card.get("name"), str):
-                card["name"] = class_name(card["name"])
-        names = [card.get("name") for card in document["classes"] if isinstance(card, dict) and isinstance(card.get("name"), str)]
-        if len(names) != len(set(names)):
-            raise ValueError(tr('Capitalizing the first letter produces duplicate class names. Please give these classes distinct names in the file.'))
-    if isinstance(document, dict) and type(document.get("version")) is int and document["version"] in (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12):
-        document["version"] = VERSION
-        document.setdefault("comments", [])
-        document.setdefault("relationships", [])
-        if isinstance(document["relationships"], list):
-            for relation in document["relationships"]:
-                if isinstance(relation, dict):
-                    relation.setdefault("kind", "association")
-                    relation.setdefault("direction", "")
-                    relation.setdefault("label", "")
-                    relation.setdefault("start_role", "")
-                    relation.setdefault("end_role", "")
     validate(document)
     # Class kinds determine whether a base link is inheritance or realization.
-    # This updates the notation of older files without changing Python headers.
+    # Keep relationship notation consistent without changing Python headers.
     from .uml_relationships import BASE_RELATIONSHIPS, base_relationship_kind
     for relation in document['relationships']:
         if relation['kind'] in BASE_RELATIONSHIPS:
