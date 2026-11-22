@@ -11,7 +11,7 @@ from tkinter import ttk
 from uuid import uuid4
 from thonny import get_workbench
 from thonny.ui_utils import create_tooltip
-from .ui_style import UML_SECTION_FILLS, DISABLED, ERROR, FIELD_BORDER, INK, MUTED, SELECT, SELECTION_FILL
+from .ui_style import ui_color, uses_dark_ui, UML_SECTION_FILLS, DISABLED, ERROR, FIELD_BORDER, INK, MUTED, SELECT
 from .uml_edit_panel import DELETE_FILL, PANEL_INSET, DeleteButton, delete_switch, edit_panel, panel_badge, picker
 from .field_feedback import FieldFeedback
 from .diagram_preferences import UML_CHECK_TYPES, UML_AUTO_DEFAULTS, UML_CHECK_VALUES, enabled
@@ -30,10 +30,10 @@ ACCESSOR_STYLE = "SE.Accessor.TCheckbutton"
 
 class InlineMemberEditor(tk.Frame):
     def __init__(self, diagram, cid, section, row_id):
-        super().__init__(diagram, background="white", borderwidth=0,
-                         highlightthickness=2, highlightbackground=SELECT, highlightcolor=SELECT)
+        super().__init__(diagram, background=ui_color("white"), borderwidth=0,
+                         highlightthickness=2, highlightbackground=ui_color(SELECT), highlightcolor=ui_color(SELECT))
         self.diagram, self.editor, self.cid, self.section, self.row_id = diagram, diagram.editor, cid, section, row_id
-        self.fill = UML_SECTION_FILLS[section]
+        self.fill = ui_color(UML_SECTION_FILLS[section])
         self.ready, self.dirty = False, False
         self.reorder_mode = False
         self.reorder_anchor = None
@@ -162,11 +162,11 @@ class InlineMemberEditor(tk.Frame):
                 feedback.set_error(initial_value_error(typename, text, self.editor.document) if enabled(UML_CHECK_VALUES) else '')
 
     def _label(self, parent, text, color=INK):
-        return tk.Label(parent, text=text, background=self.fill, foreground=color, font=self.font, borderwidth=0, padx=0, pady=0)
+        return tk.Label(parent, text=text, background=self.fill, foreground=ui_color(color), font=self.font, borderwidth=0, padx=0, pady=0)
 
     def _entry(self, parent, variable, width, tooltip, *, border=None):
         entry = tk.Entry(parent, textvariable=variable, font=self.font, width=width, relief="flat", borderwidth=0,
-                         background="white", foreground=INK, insertbackground=INK, cursor="xterm",
+                         background=ui_color("white"), foreground=ui_color(INK), insertbackground=ui_color(INK), cursor="xterm",
                          highlightthickness=0 if border is not None else 1)
         self.diagram.bind_row_navigation(entry)
         entry.bind("<Escape>", lambda e: self._cancel())
@@ -177,7 +177,7 @@ class InlineMemberEditor(tk.Frame):
         entry.bind("<Tab>", lambda e, widget=entry: self._tab(widget, 1))
         entry.bind("<Shift-Tab>", lambda e, widget=entry: self._tab(widget, -1))
         entry.bind("<ISO_Left_Tab>", lambda e, widget=entry: self._tab(widget, -1))
-        self.input_fields[str(variable)] = FieldFeedback(entry, tooltip, border=border)
+        self.input_fields[str(variable)] = FieldFeedback(entry, tooltip, border=border, color=ui_color)
         entry.bind("<Destroy>", lambda event: self.input_fields.pop(str(variable), None), add=True)
         return entry
 
@@ -185,8 +185,8 @@ class InlineMemberEditor(tk.Frame):
         # Native macOS buttons keep a bezel even with relief=flat. A focusable
         # label provides the deliberately unobtrusive action inside the text row.
         options = dict(text=text, font=self.font, relief="flat", borderwidth=0, highlightthickness=1,
-                       highlightbackground=self.fill, highlightcolor=FIELD_BORDER, background=self.fill,
-                       foreground=MUTED, disabledforeground=DISABLED, cursor="arrow", padx=2, pady=0, takefocus=1)
+                       highlightbackground=self.fill, highlightcolor=ui_color(FIELD_BORDER), background=self.fill,
+                       foreground=ui_color(MUTED), disabledforeground=ui_color(DISABLED), cursor="arrow", padx=2, pady=0, takefocus=1)
         if width is not None:
             options['width'] = width
         button = tk.Label(parent, **options)
@@ -203,7 +203,7 @@ class InlineMemberEditor(tk.Frame):
         button.bind("<space>", activate)
         if tooltip:
             create_tooltip(button, tooltip)
-        button.bind("<Enter>", lambda e: button.configure(background="#dceaff"), add=True)
+        button.bind("<Enter>", lambda e: button.configure(background=ui_color("#dceaff")), add=True)
         button.bind("<Leave>", lambda e: button.configure(background=self.fill), add=True)
         button.bind("<Escape>", lambda e: self._cancel())
         button.bind("<Tab>", lambda e, widget=button: self._tab(widget, 1))
@@ -229,7 +229,7 @@ class InlineMemberEditor(tk.Frame):
         tooltip = tr('Return type') if result else tr('Type')
         empty_label = tr('No return value (procedure)') if result else tr('No type annotation')
         control, entry = picker(frame, lambda border: self._entry(border, variable, 7, tooltip, border=border),
-                                ((value, value or empty_label) for value in dict.fromkeys(values)), choose)
+                                ((value, value or empty_label) for value in dict.fromkeys(values)), choose, color=ui_color)
         control.pack(side="left", fill="x", expand=True)
         frame.entry = entry
         if result:
@@ -249,13 +249,13 @@ class InlineMemberEditor(tk.Frame):
         button = self._button(parent, "", command, tooltip=tooltip)
         if retina_icons.enabled(self):
             button.configure(text=retina_icons.glyph("edit.delete"),
-                             font=retina_icons.font_for(self, self.font), foreground=MUTED)
+                             font=retina_icons.font_for(self, self.font), foreground=ui_color(MUTED))
         else:
             button.configure(image=get_workbench().get_image(icon_path("edit.delete", size=16)))
         return button
 
     def build_row(self):
-        self.panel = edit_panel(self,section=self.section)
+        self.panel = edit_panel(self, section=self.section, color=ui_color)
         self.up_arrow = self.diagram.navigation_arrow(self.panel, -1)
         self.up_arrow.pack(side="top")
         self.down_arrow = self.diagram.navigation_arrow(self.panel, 1)
@@ -280,7 +280,7 @@ class InlineMemberEditor(tk.Frame):
             self.name_control, self.name_entry = picker(self.form,
                 lambda border: self._entry(border, self.name, 12, tr('Name'), border=border),
                 ((name, name) for name in method_suggestions(self.editor.card(self.cid), self.row_id)),
-                self.choose_method)
+                self.choose_method, color=ui_color)
             self._cell(self.name_control, 1)
         else:
             self.name_entry = self._entry(self.form, self.name, 12, tr('Name'))
@@ -310,9 +310,9 @@ class InlineMemberEditor(tk.Frame):
             self.default_entry = self._entry(self.form, self.default, 9, tr('Initial value'))
             self._cell(self.default_entry, column+2)
             style = ttk.Style(self)
-            style.configure(ACCESSOR_STYLE, background=self.fill, foreground=INK)
+            style.configure(ACCESSOR_STYLE, background=self.fill, foreground=ui_color(INK))
             style.map(ACCESSOR_STYLE, background=[("active", self.fill), ("!active", self.fill)],
-                      foreground=[("active", INK), ("!active", INK)])
+                      foreground=[("active", ui_color(INK)), ("!active", ui_color(INK))])
             for offset, (kind, label) in enumerate((("get", "Getter"), ("set", "Setter")), start=3):
                 checkbox = ttk.Checkbutton(self.form, text=label, variable=self.accessors[kind],
                                            style=ACCESSOR_STYLE)
@@ -334,7 +334,7 @@ class InlineMemberEditor(tk.Frame):
             self.grip = RowGrip(strip, self)
             badge = self.grip
         else:
-            badge = panel_badge(strip, self.section, self.diagram.display_bold)
+            badge = panel_badge(strip, self.section, self.diagram.display_bold, color=ui_color)
         badge.pack(side="left", before=self.form_canvas, padx=(2, 8))
         self.section_badge = badge
 
@@ -342,13 +342,13 @@ class InlineMemberEditor(tk.Frame):
         actions.pack(side="right")
         self.action_font = self.diagram.action_font()
         self.apply_button = self._button(actions, "✓", self._accept, tooltip=tr('Apply (Enter)'))
-        self.apply_button.configure(foreground='#28794e',font=self.action_font,padx=4,pady=1)
+        self.apply_button.configure(foreground=ui_color('#28794e'),font=self.action_font,padx=4,pady=1)
         self._cell(self.apply_button, 0)
         self.cancel_button = self._button(actions, "×", self._cancel, tooltip=tr('Cancel (Esc)'))
-        self.cancel_button.configure(foreground=ERROR,font=self.action_font,padx=4,pady=1)
+        self.cancel_button.configure(foreground=ui_color(ERROR),font=self.action_font,padx=4,pady=1)
         self._cell(self.cancel_button, 1)
         if self.row_id is not None:
-            self.trash_button = delete_switch(actions, False, self.diagram.toggle_delete_mode,background=self.fill)
+            self.trash_button = delete_switch(actions, False, self.diagram.toggle_delete_mode, background=self.fill)
             self.trash_button.inline_action = True
             self.diagram.bind_row_navigation(self.trash_button)
             self.trash_button.bind("<Escape>", lambda event: self._cancel())
@@ -543,14 +543,14 @@ class InlineMemberEditor(tk.Frame):
 
     def _sync_visibility_icon(self):
         if self.section == 'methods' and canonical_method_name(self.editor.card(self.cid), self.name.get().strip()) == '__init__':
-            self.visibility_button.configure(image='', text='c', font=self.font, foreground=MUTED, disabledforeground=MUTED, state="disabled", takefocus=0, width=0)
+            self.visibility_button.configure(image='', text='c', font=self.font, foreground=ui_color(MUTED), disabledforeground=ui_color(MUTED), state="disabled", takefocus=0, width=0)
             return
         self.visibility_button.configure(state="normal", takefocus=1)
         if retina_icons.enabled(self):
             self.visibility_button.configure(image="", text=retina_icons.glyph("visibility." + self.visibility.get()),
-                                             font=retina_icons.font_for(self, self.font), foreground=MUTED, width=0)
+                                             font=retina_icons.font_for(self, self.font), foreground=ui_color(MUTED), width=0)
         else:
-            self.visibility_button.configure(image=paper_icon(self, self.visibility.get(), 16), text="", width=0)
+            self.visibility_button.configure(image=menu_icon(get_workbench(), "visibility." + self.visibility.get()) if uses_dark_ui() else paper_icon(self, self.visibility.get(), 16), text="", width=0)
 
     def _focusables(self):
         def children(widget):
@@ -725,10 +725,10 @@ class DeleteMemberPanel(tk.Frame):
     def __init__(self, diagram, cid, section, row_id):
         super().__init__(diagram, borderwidth=0)
         self.diagram = diagram
-        panel = edit_panel(self, deleting=True)
+        panel = edit_panel(self, deleting=True, color=ui_color)
         self.diagram.navigation_arrow(panel, -1).pack(side="top")
         self.diagram.navigation_arrow(panel, 1).pack(side="bottom")
-        row = tk.Frame(panel, background=DELETE_FILL)
+        row = tk.Frame(panel, background=ui_color(DELETE_FILL))
         row.pack(fill="both", expand=True)
         card = diagram.editor.card(cid)
         member = next(item for item in card[section] if item["id"] == row_id)
@@ -737,18 +737,18 @@ class DeleteMemberPanel(tk.Frame):
         self.switch.pack(side="right", padx=(5, 0))
         button = DeleteButton(row, diagram.display_normal, diagram.delete_current_member)
         button.pack(side="right", padx=4)
-        panel_badge(row, section, diagram.display_bold, deleting=True).pack(side="left", padx=(2, 3))
+        panel_badge(row, section, diagram.display_bold, deleting=True, color=ui_color).pack(side="left", padx=(2, 3))
         self.delete_button = button
         size = max(22, diagram.display_normal.metrics("linespace")+4)
-        mark = tk.Canvas(row, width=size, height=size, background=DELETE_FILL, highlightthickness=0)
+        mark = tk.Canvas(row, width=size, height=size, background=ui_color(DELETE_FILL), highlightthickness=0)
         if section == "methods" and is_constructor(member):
-            mark.create_text(size/2,size/2,text="c",font=diagram.display_normal,fill=MUTED)
+            mark.create_text(size/2,size/2,text="c",font=diagram.display_normal,fill=ui_color(MUTED))
         else:
-            draw_visibility_icon(mark, size/2, size/2, visibility, diagram.display_normal, diagram.zoom)
+            draw_visibility_icon(mark, size/2, size/2, visibility, diagram.display_normal, diagram.zoom, color=ui_color(MUTED))
         mark.pack(side="left")
         self.signature = tk.Label(row, text=diagram._member_signature(member, section),
-                                  justify="left", anchor="w", padx=5, background=DELETE_FILL,
-                                  foreground=ERROR, font=diagram.display_normal)
+                                  justify="left", anchor="w", padx=5, background=ui_color(DELETE_FILL),
+                                  foreground=ui_color(ERROR), font=diagram.display_normal)
         self.signature.pack(side="left", fill="both", expand=True)
         for widget in (button, self.switch):
             diagram.bind_row_navigation(widget)

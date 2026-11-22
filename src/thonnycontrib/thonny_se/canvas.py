@@ -15,9 +15,10 @@ from tkinter import ttk
 
 from .cat_head import draw_cat_head
 from .diagram_hint import DiagramHint
-from .diagram_preferences import STRUCTOGRAM_CAT_BLOCKS, STRUCTOGRAM_HINTS, enabled
+from .diagram_preferences import uses_dark_diagrams, STRUCTOGRAM_CAT_BLOCKS, STRUCTOGRAM_HINTS, enabled
 from .model import IF_KINDS, LOOP_KINDS, Selection, body_at, child_bodies
-from .ui_style import EDGE, INK, MUTED, SELECT, SELECTION_WIDTH
+from .ui_style import DARK_CANVAS, DARK_DIAGRAM_COLORS, EDGE, INK, MUTED, SELECT, SELECTION_WIDTH
+from .ui_style import DARK_MONOCHROME_CANVAS, DARK_MONOCHROME_CONTROLS, DARK_MONOCHROME_INK, DARK_MONOCHROME_SURFACE
 
 from .graphics import badge, clear_shapes
 from .ui_style import HINT_BADGE, HINT_INK
@@ -42,6 +43,7 @@ class StructogramCanvas(ttk.Frame):
         self.insertion_regions = {}
         self.monochrome = False
         self.exporting = False
+        self._colors = {}
         self.render_width = None
         self.zoom = 1.0
         self.cat_seed = getrandbits(64)
@@ -56,7 +58,7 @@ class StructogramCanvas(ttk.Frame):
         vertical.grid(row=0, column=1, sticky="ns")
         horizontal = ttk.Scrollbar(self, orient="horizontal", command=self.canvas.xview)
         horizontal.grid(row=1, column=0, sticky="ew")
-        self.info_hint = DiagramHint(self.canvas, STRUCTOGRAM_HINTS)
+        self.info_hint = DiagramHint(self.canvas, STRUCTOGRAM_HINTS, color=self._color)
         from .tooltips import CanvasToolTip
         self.try_tip = CanvasToolTip(self.canvas)
         self._try_info_regions = []
@@ -238,7 +240,15 @@ class StructogramCanvas(ttk.Frame):
         self._body_height_cache[key] = height
         return height
 
+    def _color(self, color):
+        return self._colors.get(color, color)
+
     def draw(self):
+        dark = not self.exporting and uses_dark_diagrams()
+        dark_mono = dark and self.monochrome
+        self._colors = (DARK_MONOCHROME_CONTROLS if self.monochrome else DARK_DIAGRAM_COLORS) if dark else {}
+        background = DARK_MONOCHROME_CANVAS if dark_mono else DARK_CANVAS if dark else "#ffffff"
+        self.canvas.configure(background=background)
         clear_shapes(self.canvas,'try-info')
         self._try_info_points=[]
         self._try_info_regions=[]
@@ -259,9 +269,10 @@ class StructogramCanvas(ttk.Frame):
         top = 60 if cat_blocks else 16
         self._render_body(("body",), 16, top, width, height, tr('Diagram'))
         if cat_blocks:
-            fill = HEADER[body[0]["kind"]] if body else "#ffffff"
+            fill = self._color(HEADER[body[0]["kind"]]) if body else self._color("#ffffff")
             draw_cat_head(self.canvas, 16, top, 16 + width, self.cat_seed,
-                          scale=1.3, fill=fill, bottom=top + height)
+                          scale=1.3, fill=fill, bottom=top + height,
+                          ink=self._color("#000000"), detail=self._color("#ffffff"))
         # Auswahlrahmen zuletzt zeichnen, damit er auch Körper vollständig umfasst.
         selections = [self.selection]
         if self.selection.index is not None and self.selection.end_index is not None:
@@ -271,28 +282,28 @@ class StructogramCanvas(ttk.Frame):
             if region:
                 x1, y1, x2, y2 = (self.insertion_regions[selection.path] if selection.index is None and not selection.at_start else region.bounds)
                 if selection.at_start:
-                    self.canvas.create_line(x1+3, y1+3, x2-3, y1+3, fill=SELECT, width=4, tags="selection")
+                    self.canvas.create_line(x1+3, y1+3, x2-3, y1+3, fill=self._color(SELECT), width=4, tags="selection")
                 else:
-                    self.canvas.create_rectangle(x1+2, y1+2, x2-2, y2-2, outline=SELECT, width=SELECTION_WIDTH, tags="selection")
+                    self.canvas.create_rectangle(x1+2, y1+2, x2-2, y2-2, outline=self._color(SELECT), width=SELECTION_WIDTH, tags="selection")
         if not self.exporting and self.selection.index is not None:
             last = self.selection.end_index if self.selection.end_index is not None else self.selection.index
             target = next((r for r in self.regions if r.selection == Selection(self.selection.path, last)), None)
             if target:
                 x1, _, x2, y = target.bounds
-                self.canvas.create_line(x1+4, y, x2-4, y, fill=SELECT, width=SELECTION_WIDTH, tags="insertion-marker")
+                self.canvas.create_line(x1+4, y, x2-4, y, fill=self._color(SELECT), width=SELECTION_WIDTH, tags="insertion-marker")
         if self.monochrome:
+            ink = DARK_MONOCHROME_INK if dark_mono else "#000000"
+            surface = DARK_MONOCHROME_SURFACE if dark_mono else "#ffffff"
             for item in self.canvas.find_all():
                 # Monochrome applies to diagram content, not editor interaction cues.
                 if {'selection','insertion-marker'}.intersection(self.canvas.gettags(item)):
                     continue
-                if self.canvas.type(item) == "text":
-                    self.canvas.itemconfigure(item, fill="#000000")
-                elif self.canvas.type(item) == "line":
-                    self.canvas.itemconfigure(item, fill="#000000")
+                if self.canvas.type(item) in ("text", "line"):
+                    self.canvas.itemconfigure(item, fill=ink)
                 else:
-                    self.canvas.itemconfigure(item, outline="#000000")
+                    self.canvas.itemconfigure(item, outline=ink)
                     if self.canvas.itemcget(item, "fill"):
-                        self.canvas.itemconfigure(item, fill="#ffffff")
+                        self.canvas.itemconfigure(item, fill=surface)
         if self.zoom != 1.0:
             self.canvas.scale("all", 0, 0, self.zoom, self.zoom)
             for region in self.regions:
@@ -302,8 +313,8 @@ class StructogramCanvas(ttk.Frame):
             u=self.typography.units
             for cx,cy in self._try_info_points:
                 cx,cy=cx*self.zoom,cy*self.zoom
-                badge(self.canvas,cx,cy,radius=u(11),fill=HINT_BADGE,
-                      outline=HINT_INK,group='try-info',exclamation=True)
+                badge(self.canvas,cx,cy,radius=u(11),fill=self._color(HINT_BADGE),
+                      outline=self._color(HINT_INK),group='try-info',exclamation=True)
                 self._try_info_regions.append((cx-u(16),cy-u(16),cx+u(16),cy+u(16)))
         cat_bounds = self.canvas.bbox("cat-head") if cat_blocks else None
         bottom = max((top+height+16)*self.zoom, cat_bounds[3]+16 if cat_bounds else 0)
@@ -347,16 +358,16 @@ class StructogramCanvas(ttk.Frame):
         last=self.canvas.create_line(0,0,0,0,state='hidden')
         for item in range(marker+1,last):
             kind=self.canvas.type(item)
-            if kind in ('text','line'):self.canvas.itemconfigure(item,fill=NSD_DISABLED_INK)
+            if kind in ('text','line'):self.canvas.itemconfigure(item,fill=self._color(NSD_DISABLED_INK))
             elif kind in ('rectangle','polygon'):
-                self.canvas.itemconfigure(item,outline=NSD_DISABLED_EDGE)
-                if self.canvas.itemcget(item,'fill'):self.canvas.itemconfigure(item,fill=NSD_DISABLED_FILL)
+                self.canvas.itemconfigure(item,outline=self._color(NSD_DISABLED_EDGE))
+                if self.canvas.itemcget(item,'fill'):self.canvas.itemconfigure(item,fill=self._color(NSD_DISABLED_FILL))
         self.canvas.delete(marker,last)
 
     def _render_body(self, path, x, y, width, height, name):
         body = body_at(self.document, path)
         selection = Selection(path)
-        self.canvas.create_rectangle(x, y, x+width, y+height, fill="#ffffff", outline=EDGE)
+        self.canvas.create_rectangle(x, y, x+width, y+height, fill=self._color("#ffffff"), outline=self._color(EDGE))
         self.regions.append(Region((x, y, x+width, y+height), selection))
         current_y = y
         for index, node in enumerate(body):
@@ -364,12 +375,12 @@ class StructogramCanvas(ttk.Frame):
             if node['kind']=='try':
                 parts=self._try_sections(node,width)
                 node_height=sum(header+size for _,_,_,header,size in parts)
-                self.canvas.create_rectangle(x,current_y,x+width,current_y+node_height,fill=HEADER['try'],outline=EDGE)
+                self.canvas.create_rectangle(x,current_y,x+width,current_y+node_height,fill=self._color(HEADER['try']),outline=self._color(EDGE))
                 self.regions.append(Region((x,current_y,x+width,current_y+node_height),Selection(path,index)))
                 if not self.exporting:
                     self._try_info_points.append((x+width-self.typography.units(20)/self.zoom,current_y+parts[0][3]/2))
                 for relative,_,label,header,size in parts:
-                    self._text(x+10,current_y+header/2,text=label,width=width-20,fill=INK,anchor='w')
+                    self._text(x+10,current_y+header/2,text=label,width=width-20,fill=self._color(INK),anchor='w')
                     current_y+=header
                     self._render_body(path+(index,)+relative,x+20,current_y,width-20,size,label)
                     current_y+=size
@@ -385,13 +396,13 @@ class StructogramCanvas(ttk.Frame):
                     x, current_y, x+width, current_y,
                     x+width, current_y+head_height, x+20, current_y+head_height,
                     x+20, current_y+node_height, x, current_y+node_height,
-                    fill=HEADER["while"], outline=EDGE, tags="loop-shell",
+                    fill=self._color(HEADER["while"]), outline=self._color(EDGE), tags="loop-shell",
                 )
             else:
                 if node["kind"] in IF_KINDS or node["kind"] == "switch":
                     node_height += max(self._body_height(b, w) for _, b, _, w in self._branch_layout(node, width))
                 self.canvas.create_rectangle(x, current_y, x+width, current_y+head_height,
-                                             fill=HEADER[node["kind"]], outline=EDGE)
+                                             fill=self._color(HEADER[node["kind"]]), outline=self._color(EDGE))
             # Der ganze Baustein ist die Auswahlfläche. Körper und Kinder werden
             # später darübergelegt und behalten ihre eigenen Trefferbereiche.
             self.regions.append(Region((x, current_y, x+width, current_y+node_height), head))
@@ -401,25 +412,25 @@ class StructogramCanvas(ttk.Frame):
                 band = self._case_label_height(node, width) if node["kind"] == "switch" else 0
                 triangle_height = head_height-band
                 self.canvas.create_line(x, current_y, joint, current_y+triangle_height,
-                                        x+width, current_y, fill=EDGE)
+                                        x+width, current_y, fill=self._color(EDGE))
                 if band:
-                    self.canvas.create_line(joint, current_y+triangle_height, joint, current_y+head_height, fill=EDGE)
+                    self.canvas.create_line(joint, current_y+triangle_height, joint, current_y+head_height, fill=self._color(EDGE))
                 self._text((x+width/2+joint)/2, current_y+8, text=self._label(node),
-                                        width=width*0.48, fill=INK, anchor="n")
+                                        width=width*0.48, fill=self._color(INK), anchor="n")
                 bx = x
                 for column, (_, _, label, bw) in enumerate(layout):
                     self._text(bx+bw/2, current_y+head_height-(band/2 if band else 12),
-                                            text=label, width=bw-12, fill=INK)
+                                            text=label, width=bw-12, fill=self._color(INK))
                     bx += bw
                     if node["kind"] == "switch" and column < len(layout)-2:
                         diagonal_y = current_y + triangle_height * (bx-x) / max(joint-x, 1)
-                        self.canvas.create_line(bx, diagonal_y, bx, current_y+head_height, fill=EDGE)
+                        self.canvas.create_line(bx, diagonal_y, bx, current_y+head_height, fill=self._color(EDGE))
             else:
                 self._text(x+12, current_y+head_height/2, text=self._label(node),
-                                        width=width-24, fill=INK, anchor="w")
+                                        width=width-24, fill=self._color(INK), anchor="w")
             if node["kind"] == "call":
-                self.canvas.create_line(x+8, current_y, x+8, current_y+head_height, fill=EDGE)
-                self.canvas.create_line(x+width-8, current_y, x+width-8, current_y+head_height, fill=EDGE)
+                self.canvas.create_line(x+8, current_y, x+8, current_y+head_height, fill=self._color(EDGE))
+                self.canvas.create_line(x+width-8, current_y, x+width-8, current_y+head_height, fill=self._color(EDGE))
             current_y += head_height
             if node["kind"] in LOOP_KINDS:
                 h = self._body_height(node["body"], width-20)
@@ -431,7 +442,7 @@ class StructogramCanvas(ttk.Frame):
                 bx = x
                 for relative_path, _, label, bw in layout:
                     if relative_path is None:
-                        self.canvas.create_rectangle(bx, current_y, bx+bw, current_y+h, fill="#ffffff", outline=EDGE)
+                        self.canvas.create_rectangle(bx, current_y, bx+bw, current_y+h, fill=self._color("#ffffff"), outline=self._color(EDGE))
                     else:
                         self._render_body(path+(index,)+relative_path, bx, current_y, bw, h, label)
                     bx += bw
@@ -442,4 +453,4 @@ class StructogramCanvas(ttk.Frame):
         if self.exporting:
             return
         self._text(x+width/2, current_y+(y+height-current_y)/2,
-                                text=tr('Insert block here') if path == ("body",) else tr('{body} · Insert block').format(body=name), width=width-16, fill=MUTED)
+                                text=tr('Insert block here') if path == ("body",) else tr('{body} · Insert block').format(body=name), width=width-16, fill=self._color(MUTED))

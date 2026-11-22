@@ -15,6 +15,7 @@ from tkinter import font as tkfont
 from .canvas import StructogramCanvas
 from .model import Selection, active_body
 from .storage import write_bytes
+from .ui_style import DARK_CANVAS, DARK_DIAGRAM_COLORS
 
 
 def snapshot(diagram, *, monochrome=None):
@@ -102,18 +103,27 @@ def styled_scene(scene, options):
         item = dict(original)
         kind = item['kind']
         background = item.get('model_fill', kind in ('rectangle', 'polygon'))
+        # Preserve the interior of hollow UML diamonds and triangles.
+        hollow = kind == 'polygon' and item.get('fill', '').lower() in ('white', '#ffffff')
         if options.monochrome:
-            # White polygon interiors encode hollow UML diamonds/triangles.
-            # They are semantic fills, not foreground ink to turn black.
-            hollow = kind == 'polygon' and item.get('fill', '').lower() in ('white', '#ffffff')
             if item.get('fill'):
                 item['fill'] = 'white' if background or hollow else 'black'
             if item.get('outline'):
                 item['outline'] = 'black'
-        if options.transparent_models and background:
+        elif options.dark:
+            for key in ('fill', 'outline'):
+                if color := item.get(key):
+                    item[key] = DARK_DIAGRAM_COLORS.get(color.lower(), color)
+            if hollow and not background:
+                item['fill'] = DARK_CANVAS
+        if options.models_are_transparent and background:
             item['fill'] = ''
         styled.append(item)
     return width, height, styled
+
+
+def _background_color(options):
+    return DARK_CANVAS if options is not None and options.dark else 'white'
 
 
 @lru_cache(maxsize=128)
@@ -158,7 +168,7 @@ def svg_content(scene, *, options=None):
     ET.register_namespace('', ns)
     root = ET.Element('{'+ns+'}svg', dict(width=str(width), height=str(height), viewBox=f'0 0 {width} {height}'))
     if options is None or not options.transparent_background:
-        ET.SubElement(root, 'rect', dict(width='100%', height='100%', fill='white'))
+        ET.SubElement(root, 'rect', dict(width='100%', height='100%', fill=_background_color(options)))
     for item in items:
         kind, coords = item['kind'], item['coords']
         if kind == 'text':
@@ -204,7 +214,7 @@ def raster_content(scene, width, height, format="PNG", *, options=None):
     sampling = 2 if width*height <= 6_000_000 else 1
     transparent = options is not None and options.transparent_background
     image = Image.new('RGBA' if transparent else 'RGB', (width*sampling, height*sampling),
-                      (0, 0, 0, 0) if transparent else 'white')
+                      (0, 0, 0, 0) if transparent else _background_color(options))
     draw = ImageDraw.Draw(image)
     scale = min(width/sw, height/sh)*sampling
     dx, dy = (width*sampling-sw*scale)/2, (height*sampling-sh*scale)/2

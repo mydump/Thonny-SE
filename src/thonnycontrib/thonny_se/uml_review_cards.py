@@ -117,6 +117,14 @@ class CardReview(ttk.Frame):
         background = ttk.Style(self).lookup('TFrame','background')
         dark = get_workbench().uses_dark_ui_theme()
         self.muted = '#b5beca' if dark else '#667383'
+        self.colors = {
+            'same': '#e2e6eb', 'add': '#a3d9b8', 'delete': '#ffb0aa',
+            'conflict': '#eed195', 'blocked': '#eed195', 'update': '#a9caff',
+        } if dark else COLORS
+        self.fills = {
+            'same': '#2b3139', 'add': '#293d34', 'delete': '#483236',
+            'conflict': '#403626', 'blocked': '#403626', 'update': '#2c3d53',
+        } if dark else FILLS
         group_colors = {'add':'#79c99a','delete':'#f28c87','conflict':'#e4bc6e','update':'#83b5f4'} if dark else COLORS
         for status,label in labels.items():
             active = [self.variables[id(row)] for row in [self.header, *self.rows]
@@ -172,12 +180,12 @@ class CardReview(ttk.Frame):
         row_tag = 'review-row:'+str(id(row))
         for x,text,lines in ((MARGIN,row.after,left),(right_x,row.before,right)):
             status = row.status if text else 'same'
-            canvas.create_rectangle(x+1,y,x+CARD_WIDTH-1,y+height,fill=FILLS[status],outline='',tags=(row_tag,))
+            canvas.create_rectangle(x+1,y,x+CARD_WIDTH-1,y+height,fill=self.fills[status],outline='',tags=(row_tag,))
             for index,(line,inset) in enumerate(lines):
                 if not line:
                     continue
                 canvas.create_text(x+CARD_WIDTH/2 if header else x+12+inset,y+(height-max(len(left),len(right))*face.metrics('linespace'))/2+index*face.metrics('linespace'),text=line,
-                    font=face,fill=COLORS[status],anchor='n' if header else 'nw',tags=('review-text',row.status,row_tag))
+                    font=face,fill=self.colors[status],anchor='n' if header else 'nw',tags=('review-text',row.status,row_tag))
         if row.selectable:
             check = TransferChoice(canvas, self.variables[id(row)])
             self.checkboxes.append(check)
@@ -248,11 +256,11 @@ class CardReview(ttk.Frame):
             for x in (MARGIN,MARGIN+CARD_WIDTH+GAP):
                 canvas.create_line(x,line_y,x+CARD_WIDTH,line_y,fill=EDGE)
         for x in (MARGIN,MARGIN+CARD_WIDTH+GAP):
-            background = canvas.create_rectangle(x,top,x+CARD_WIDTH,y,fill='white',outline='')
+            background = canvas.create_rectangle(x,top,x+CARD_WIDTH,y,fill=self.fills['same'],outline='')
             canvas.tag_lower(background)
             canvas.create_rectangle(x,top,x+CARD_WIDTH,y,outline=EDGE,width=1)
         if not any(row.kind!='same' for row in [self.header,*self.rows]):
             canvas.create_text(TOTAL_WIDTH/2,y+12,text=tr('No changes for this class.'),font=self.small,
-                               fill='#667383',anchor='n')
+                               fill=self.muted,anchor='n')
             y += self.small.metrics('linespace')+16
         canvas.configure(height=y+3)

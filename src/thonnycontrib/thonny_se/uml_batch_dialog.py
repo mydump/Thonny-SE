@@ -15,6 +15,7 @@ from .iconregistry import menu_icon
 from .scrolling import ScrollArea
 from .tooltips import attach_tip
 from .uml_transfer_indicator import TransferIndicator
+from .ui_style import HINT_BADGE, HINT_BORDER, HINT_FILL, HINT_INK, HINT_TEXT, ui_color
 from .uml_batch import TO_CODE
 from .uml_review_cards import CardReview, TOTAL_WIDTH, CARD_WIDTH, MARGIN, GAP
 
@@ -165,22 +166,21 @@ class BatchUpdateDialog(EditDialog):
                             continue
                         shown_file_errors.add(entry.error)
                     if entry.file_error:
-                        from .ui_style import HINT_FILL, HINT_BORDER, HINT_INK, HINT_TEXT, HINT_BADGE
-                        error = tk.Frame(file_frame, background=HINT_FILL, highlightbackground=HINT_BORDER,
+                        error = tk.Frame(file_frame, background=ui_color(HINT_FILL), highlightbackground=ui_color(HINT_BORDER),
                                          highlightthickness=1, padx=14, pady=12)
-                        badge = tk.Canvas(error,width=30,height=30,background=HINT_FILL,highlightthickness=0)
+                        badge = tk.Canvas(error,width=30,height=30,background=ui_color(HINT_FILL),highlightthickness=0)
                         badge.grid(row=0,column=0,rowspan=3,sticky='n',padx=(0,10))
-                        badge.create_oval(2,2,28,28,fill=HINT_BADGE,outline=HINT_INK)
-                        badge.create_text(15,15,text='!',font=('TkDefaultFont',16,'bold'),fill=HINT_INK)
-                        tk.Label(error,text=tr('Source file unavailable'),background=HINT_FILL,
-                                 foreground=HINT_TEXT,font='TkHeadingFont').grid(row=0,column=1,sticky='w')
-                        tk.Label(error,text=entry.error,background=HINT_FILL,foreground=HINT_TEXT,
+                        badge.create_oval(2,2,28,28,fill=ui_color(HINT_BADGE),outline=ui_color(HINT_INK))
+                        badge.create_text(15,15,text='!',font=('TkDefaultFont',16,'bold'),fill=ui_color(HINT_INK))
+                        tk.Label(error,text=tr('Source file unavailable'),background=ui_color(HINT_FILL),
+                                 foreground=ui_color(HINT_TEXT),font='TkHeadingFont').grid(row=0,column=1,sticky='w')
+                        tk.Label(error,text=entry.error,background=ui_color(HINT_FILL),foreground=ui_color(HINT_TEXT),
                                  wraplength=TOTAL_WIDTH-100,justify='left').grid(row=1,column=1,sticky='w',pady=(5,8))
                         names=', '.join(item.card['name'] for item in entries if item.file_error)
-                        tk.Label(error,text=tr('Affected classes: {names}').format(names=names),background=HINT_FILL,
-                                 foreground=HINT_TEXT,wraplength=TOTAL_WIDTH-100,justify='left').grid(row=2,column=1,sticky='w')
+                        tk.Label(error,text=tr('Affected classes: {names}').format(names=names),background=ui_color(HINT_FILL),
+                                 foreground=ui_color(HINT_TEXT),wraplength=TOTAL_WIDTH-100,justify='left').grid(row=2,column=1,sticky='w')
                         cids=tuple(item.cid for item in entries if item.file_error)
-                        action = tk.Frame(error, background=HINT_FILL)
+                        action = tk.Frame(error, background=ui_color(HINT_FILL))
                         action.grid(row=3,column=1,sticky='w',pady=(10,0))
                         self._action_button(action, 0, tr('Relink Python source file …'),
                                             lambda ids=cids:self._request_relink(ids))

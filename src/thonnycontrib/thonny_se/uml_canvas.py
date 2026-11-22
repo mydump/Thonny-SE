@@ -2,12 +2,13 @@
 # SPDX-License-Identifier: GPL-3.0-only
 # See LICENSE in the project root for the full license text.
 
-"""UML-Klassenkarten auf weißem Papier mit direkter Textbearbeitung."""
+"""UML-Klassenkarten mit direkter Textbearbeitung."""
 from .scrolling import ScrollArea
 from .zooming import capture_anchor, restore_anchor, event_position
 from .display_context import context_for
 from .visual_metrics import Typography, preserve_scroll
-from .ui_style import UML_SECTION_FILLS, UML_SECTION_INKS
+from .ui_style import DARK_CANVAS, DARK_DIAGRAM_COLORS, UML_SECTION_FILLS, UML_SECTION_INKS
+from .ui_style import DARK_MONOCHROME_CANVAS, DARK_MONOCHROME_CONTROLS, DARK_MONOCHROME_INK, DARK_MONOCHROME_SURFACE
 from .graphics import clear_shapes, rounded, clear_icon_images, icon
 from .i18n import tr
 from collections import defaultdict
@@ -16,10 +17,10 @@ import tkinter as tk
 from tkinter import ttk, font
 from thonny import get_workbench
 from thonny.ui_utils import create_tooltip
-from .ui_style import DISABLED, EDGE, ERROR, HINT_FILL, INK, MUTED, SELECT, SELECTION_FILL, SELECTION_WIDTH, draw_chevron
+from .ui_style import DISABLED, EDGE, ERROR, HINT_FILL, INK, MUTED, SELECT, SELECTION_WIDTH, draw_chevron, ui_color
 from .cat_head import draw_cat_head
 from .diagram_hint import DiagramHint
-from .diagram_preferences import UML_EARS, UML_HINTS, enabled
+from .diagram_preferences import uses_dark_diagrams, UML_EARS, UML_HINTS, enabled
 from .field_feedback import FieldFeedback
 from .uml_model import CLASS_KINDS, COMMENT_MAX_SIZE, COMMENT_MIN_SIZE, initial_upper
 from .uml_methods import member_parts, member_text, visible_methods, member_visibility, is_constructor
@@ -58,8 +59,10 @@ class UmlCanvas(ttk.Frame):
         self.relationship_drag = None
         self.pending_relationship_edit = False
         self.exporting = False
+        self._colors = {}
         self._export_widths = {}
         self.monochrome = False
+        self._dark_monochrome = False
         self.member_selection = None
         self.name_regions = {}
         self.on_zoom = None
@@ -95,7 +98,7 @@ class UmlCanvas(ttk.Frame):
         self.drag = None
         self.relationship_origin = None
         self.relationship_pointer = None
-        self.info_hint = DiagramHint(self.canvas, UML_HINTS)
+        self.info_hint = DiagramHint(self.canvas, UML_HINTS, color=self._color)
         self.intro_context_seen = False
         self.intro_edit_seen = False
         self.relationship_hint_dismissed = False
@@ -255,7 +258,7 @@ class UmlCanvas(ttk.Frame):
             for index in range(first,first+int((high-low)/step)+3):
                 coordinate=origin+index*step
                 points=(coordinate,top,coordinate,bottom) if axis == 0 else (left,coordinate,right,coordinate)
-                canvas.create_line(*points,fill='#edf0f3',width=1,tags=('uml-grid',))
+                canvas.create_line(*points,fill=self._color('#edf0f3'),width=1,tags=('uml-grid',))
         canvas.tag_lower('uml-grid')
 
     def point(self, event):
@@ -326,7 +329,13 @@ class UmlCanvas(ttk.Frame):
                        for card in row)
             y += rows + 24
 
+    def _color(self, color):
+        return self._colors.get(color, color)
+
     def draw(self):
+        dark = not self.exporting and uses_dark_diagrams()
+        self._dark_monochrome = dark and self.monochrome
+        self._colors = (DARK_MONOCHROME_CONTROLS if self.monochrome else DARK_DIAGRAM_COLORS) if dark else {}
         canvas = self.canvas
         clear_shapes(canvas, "add-control")
         canvas.delete("drawing")
@@ -338,7 +347,10 @@ class UmlCanvas(ttk.Frame):
         self.save_regions = {}
         self.add_regions = {}
         focused = self.editing[0] if self.editing is not None and not self.exporting else None
-        canvas.configure(background=PANEL_SURROUND if focused is not None else "white")
+        background = DARK_MONOCHROME_CANVAS if self._dark_monochrome else DARK_CANVAS if dark else "white"
+        if focused is not None and not self._dark_monochrome:
+            background = self._color(PANEL_SURROUND)
+        canvas.configure(background=background)
         right, bottom = 0, 0
         show_cats = enabled(UML_EARS)
         for card in self.editor.document["classes"]:
@@ -351,42 +363,43 @@ class UmlCanvas(ttk.Frame):
             member_rows = max(1, len(card["attributes"])) + max(1, len(methods))
             height = heading_height + self.row_height * member_rows
             self.cards[cid] = (x, y, x+width, y+height)
-            canvas.create_rectangle(x, y, x+width, y+height, fill="white", outline="", width=0, tags=(*tags, "class-card"))
+            canvas.create_rectangle(x, y, x+width, y+height, fill=self._color("white"), outline="", width=0, tags=(*tags, "class-card"))
             colored = not self.monochrome and (focused is None or cid == focused)
             canvas.create_rectangle(x,y,x+width,y+heading_height,
-                fill=UML_SECTION_FILLS['name'] if colored else 'white',outline='',
+                fill=self._color(UML_SECTION_FILLS['name']) if colored else self._color('white'),outline='',
                 tags=(*tags,'class-header-fill'))
             name_right = x+width-8
             name_y = y
             if card.get("class_kind") == "interface":
                 line = self.normal.metrics("linespace")
                 canvas.create_text(x+width/2, y+line*.7, text=details.pop(0),
-                                   font=self.display_normal, fill=MUTED, tags=tags)
+                                   font=self.display_normal, fill=self._color(MUTED), tags=tags)
                 name_y += line
             self.fields[cid, "name", None] = (x+8, name_y+2, name_right, name_y+self.row_height-2)
             title_font = self.display_abstract if card.get("class_kind") == "abstract" else self.display_bold
             name_item = canvas.create_text(x+width/2, name_y+self.row_height/2, text=card["name"], width=max(20,(width-(24 if self.exporting else 66))*self.zoom), font=title_font,
-                               fill=INK, tags=tags)
+                               fill=self._color(INK), tags=tags)
             self._name_items.append((name_item, (cid, "name", None), card["name"], title_font))
             for index, detail in enumerate(details):
                 detail_y = name_y+self.row_height + (index+.2)*self.normal.metrics("linespace")
                 canvas.create_text(x+width/2, detail_y, text=detail, font=self.display_normal,
-                                   fill=MUTED, tags=tags)
+                                   fill=self._color(MUTED), tags=tags)
             cursor = y+heading_height
             for section in ("attributes", "methods"):
                 rows = card[section] if section=="attributes" else methods
                 section_rows = max(1,len(rows))
                 canvas.create_rectangle(x,cursor,x+width,cursor+section_rows*self.row_height,
-                    fill=UML_SECTION_FILLS[section] if colored else 'white',outline='',
+                    fill=self._color(UML_SECTION_FILLS[section]) if colored else self._color('white'),outline='',
                     tags=(*tags,'class-'+section+'-fill'))
-                canvas.create_line(x, cursor, x+width, cursor, fill=EDGE, tags=tags)
+                divider = "#626e7d" if dark else EDGE
+                canvas.create_line(x, cursor, x+width, cursor, fill=divider, tags=tags)
                 for row in rows:
                     active = self.member_editor is not None and self.editing == (cid, section, row["id"]) and not self.exporting
                     row_height = self.row_height
                     self.fields[cid, section, row["id"]] = (x+8, cursor+2, x+width-8, cursor+row_height-2)
                     if active:
                         canvas.create_rectangle(x+2, cursor+2, x+width-2, cursor+row_height-2,
-                                                fill=DELETE_FILL if self.delete_mode else UML_SECTION_FILLS[section] if colored else "white", outline="", tags=tags)
+                                                fill=self._color(DELETE_FILL) if self.delete_mode else self._color(UML_SECTION_FILLS[section]) if colored else self._color("white"), outline="", tags=tags)
                     self._draw_member(card, section, row, cursor, tags)
                     cursor += row_height
                 if not rows:
@@ -397,12 +410,13 @@ class UmlCanvas(ttk.Frame):
                     self.fields[cid, section, None] = (x+8, cursor-self.row_height+2,
                                                        x+width-8, cursor-2)
             # Paint the contour last, over full-bleed section fills, including at zoom.
-            canvas.create_rectangle(x,y,x+width,y+height,fill='',outline=EDGE,width=1,
+            canvas.create_rectangle(x,y,x+width,y+height,fill='',outline=self._color(EDGE),width=1,
                                     tags=(*tags,'class-border'))
             if show_cats:
                 draw_cat_head(canvas, x, y, x + width, cid, scale=0.64,
-                              fill=UML_SECTION_FILLS['name'] if colored else 'white',
-                              bottom=y + height, tags=tags)
+                              fill=self._color(UML_SECTION_FILLS['name']) if colored else self._color('white'),
+                              bottom=y + height, tags=tags, ink=self._color("#000000"),
+                              detail=self._color("#ffffff"))
             if not self.exporting:
                 tracker = getattr(self.editor, 'source_status', None)
                 state = tracker.states.get(cid, 'new' if not card.get('source') else '') if tracker else 'new' if not card.get('source') else ''
@@ -412,13 +426,15 @@ class UmlCanvas(ttk.Frame):
                     center_y = name_y+self.row_height/2
                     if retina_icons.enabled(self):
                         canvas.create_text(x+width-18, center_y, text=retina_icons.glyph('document.save'),
-                            font=retina_icons.font_for(self, self.display_normal), fill=MUTED, tags=(*tags, 'source-save'))
+                            font=retina_icons.font_for(self, self.display_normal),
+                            fill=DARK_MONOCHROME_INK if self._dark_monochrome else self._color(MUTED),
+                            tags=(*tags, 'source-save'))
                     else:
-                        self.save_image = get_workbench().get_image(icon_path('document.save',size=16,dark=False))
+                        self.save_image = get_workbench().get_image(icon_path('document.save',size=16,dark=dark))
                         canvas.create_image(x+width-18, center_y,image=self.save_image,tags=(*tags, 'source-save'))
                     self.save_regions[cid] = (x+width-32,center_y-14,x+width-4,center_y+14,state)
             if not self.exporting and cid in self.editor.selected_class_ids():
-                canvas.create_rectangle(x-2, y-2, x+width+2, y+height+2, outline=SELECT, width=SELECTION_WIDTH, tags=(*tags, "class_selection"))
+                canvas.create_rectangle(x-2, y-2, x+width+2, y+height+2, outline=self._color(SELECT), width=SELECTION_WIDTH, tags=(*tags, "class_selection"))
             right, bottom = max(right, x+width+60), max(bottom, y+height+60)
         if self.relationship_origin not in self.cards:
             self.relationship_origin = None
@@ -459,13 +475,13 @@ class UmlCanvas(ttk.Frame):
                 bounds = (right+u(5), cy-u(12), right+u(37), cy+u(12))
                 self.add_regions[field] = bounds
                 tags = ('drawing', 'add-control')
-                accent = UML_SECTION_INKS[section]
+                accent = self._color(UML_SECTION_INKS[section])
                 # Draw UI surfaces in final display coordinates, like the editor
                 # overlay: scaling a contour afterwards defeats pixel alignment
                 # and cannot resize raster fallbacks on Windows/X11.
                 display_bounds = tuple(value*self.zoom for value in bounds)
                 surface = rounded(self.canvas, *display_bounds, radius=u(5)*self.zoom,
-                        fill=UML_SECTION_FILLS[section], outline=accent, group='add-control')
+                        fill=self._color(UML_SECTION_FILLS[section]), outline=accent, group='add-control')
                 self.canvas.addtag_withtag('drawing', 'add-control')
                 # Center on the rendered contour after its pixel alignment,
                 # rather than rounding the glyph and its container separately.
@@ -493,7 +509,7 @@ class UmlCanvas(ttk.Frame):
             self.member_selection = None
         if field in self.name_regions and self.editor.selection == field[0] and self.editing is None and not self.exporting:
             item = next(item for item, key, _, _ in self._name_items if key == field)
-            canvas.itemconfigure(item, fill=SELECT, tags=(*canvas.gettags(item), 'member-selection'))
+            canvas.itemconfigure(item, fill=self._color(SELECT), tags=(*canvas.gettags(item), 'member-selection'))
 
     def _name_at(self, x, y):
         for field, box in reversed([*self.name_regions.items(), *self.symbol_regions.items()]):
@@ -502,8 +518,11 @@ class UmlCanvas(ttk.Frame):
         return None
 
     def _apply_monochrome(self):
-        """Pure black/white model, retaining blue selection and editor-only cues."""
+        """Render the model in grayscale, retaining editor selection cues."""
         canvas = self.canvas
+        ink = DARK_MONOCHROME_INK if self._dark_monochrome else "#000000"
+        surface = DARK_MONOCHROME_SURFACE if self._dark_monochrome else "#ffffff"
+        selection = self._color(SELECT)
         for item in canvas.find_withtag("drawing"):
             tags = canvas.gettags(item)
             if "class_selection" in tags or "source-save" in tags or "add-control" in tags:
@@ -514,15 +533,18 @@ class UmlCanvas(ttk.Frame):
                 value = canvas.itemcget(item, option)
                 if not value:
                     continue
-                if value == SELECT and ("selected-member-icon" in tags or any(tag.startswith("relationship:") for tag in tags)):
+                if value == selection and ("selected-member-icon" in tags or any(tag.startswith("relationship:") for tag in tags)):
                     continue
                 if option == "fill" and kind in ("rectangle", "polygon", "oval"):
                     # Preserve filled diamonds and dark details, remove pastel fills.
                     rgb = canvas.winfo_rgb(value)
                     filled_symbol = "relationship-filled" in tags
-                    value = "#000000" if filled_symbol or max(rgb) < 32768 else "#ffffff"
+                    if self._dark_monochrome and "relationship-hollow" in tags:
+                        value = DARK_MONOCHROME_CANVAS
+                    else:
+                        value = ink if filled_symbol or max(rgb) < 32768 else surface
                 else:
-                    value = "#000000"
+                    value = ink
                 canvas.itemconfigure(item, **{option: value})
 
     def _dim_background(self):
@@ -554,7 +576,7 @@ class UmlCanvas(ttk.Frame):
             editing = self.comment_note is note
             text = canvas.create_text(x+10, y+8, text=note["text"] or " ", anchor="nw",
                                       width=(width-30 if width else 240)*self.zoom,
-                                      font=self.display_normal, fill=INK, tags=tags)
+                                      font=self.display_normal, fill=self._color(INK), tags=tags)
             left, top, right, bottom = canvas.bbox(text)
             if width is None:
                 width = max(250 if editing and self.new_comment else 86, (right-left)/self.zoom + 28)
@@ -565,9 +587,9 @@ class UmlCanvas(ttk.Frame):
             right, bottom = x+width, y+height
             self.notes[note["id"]] = (x, y, right, bottom)
             selected = self.editor.selection == note["id"] and not self.exporting
-            edge = SELECT if selected else EDGE
+            edge = self._color(SELECT) if selected else self._color(EDGE)
             shape = canvas.create_polygon(x, y, right-12, y, right, y+12, right, bottom, x, bottom,
-                                          fill=HINT_FILL, outline=edge, width=2 if selected else 1, tags=tags)
+                                          fill=self._color(HINT_FILL), outline=edge, width=2 if selected else 1, tags=tags)
             canvas.tag_lower(shape, text)
             canvas.create_line(right-12, y, right-12, y+12, right, y+12, fill=edge, tags=tags)
             if not self.exporting:
@@ -576,7 +598,7 @@ class UmlCanvas(ttk.Frame):
             if note["target"] in self.cards:
                 points = association_points(self.notes[note["id"]], self.cards[note["target"]])
                 connector = canvas.create_line(*(value for point in points for value in point),
-                                               fill=EDGE, dash=(4, 4), tags=tags)
+                                               fill=self._color(EDGE), dash=(4, 4), tags=tags)
                 canvas.tag_lower(connector, shape)
                 if canvas.find_withtag("class-card"):
                     canvas.tag_lower(connector, "class-card")
@@ -637,8 +659,8 @@ class UmlCanvas(ttk.Frame):
         elif relation.get('bend'):
             points = curved_points(self.cards[relation['start']], self.cards[relation['end']], relation['bend'])
         selected = relation["id"] == self.editor.selection and not self.exporting
-        color = SELECT if selected else EDGE
-        text_color = SELECT if selected else INK
+        color = self._color(SELECT) if selected else self._color(EDGE)
+        text_color = self._color(SELECT) if selected else self._color(INK)
         thickness = 3 if selected else 1.5
         tags = ("drawing", "relationship:" + relation["id"])
         canvas.create_line(*(coordinate for point in points for coordinate in point),
@@ -659,9 +681,13 @@ class UmlCanvas(ttk.Frame):
             if key == symbol_end:
                 shape = endpoint_symbol(kind, first, next_point, scale=context_for(self).state.ui_scale)
                 if shape:
-                    canvas.create_polygon(*shape, fill=color if kind == "composition" else "white",
+                    hollow_fill = canvas.cget("background") if self._colors and not self.monochrome else "white"
+                    symbol_tags = ("relationship-filled",) if kind == "composition" else ()
+                    if self._dark_monochrome and kind != "composition":
+                        symbol_tags = ("relationship-hollow",)
+                    canvas.create_polygon(*shape, fill=color if kind == "composition" else hollow_fill,
                                           outline=color, width=thickness, tags=(*tags, "relationship-geometry",
-                                          *( ("relationship-filled",) if kind == "composition" else () )))
+                                          *symbol_tags))
             navigable = relation["direction"] in (key, "both")
             if navigable:
                 shape = association_arrow(first, next_point, scale=context_for(self).state.ui_scale)
@@ -709,7 +735,7 @@ class UmlCanvas(ttk.Frame):
         else:
             start = card_edge_toward(scaled, (x, y))
             coordinates = (*start, x, y)
-        canvas.create_line(*coordinates, fill=SELECT, width=2, dash=(6, 4), tags=tag)
+        canvas.create_line(*coordinates, fill=self._color(SELECT), width=2, dash=(6, 4), tags=tag)
         if canvas.find_withtag(DiagramHint.TAG):
             canvas.tag_lower(tag, DiagramHint.TAG)
 
@@ -757,7 +783,8 @@ class UmlCanvas(ttk.Frame):
         visibility = member_visibility(row, section)
         selected = (self.member_selection == (card['id'], section, row['id'])
                     and self.editor.selection == card['id'] and self.editing is None and not self.exporting)
-        icon_color = SELECT if selected else "#000000" if self.monochrome else MUTED
+        monochrome_ink = DARK_MONOCHROME_INK if self._dark_monochrome else "#000000"
+        icon_color = self._color(SELECT) if selected else monochrome_ink if self.monochrome else self._color(MUTED)
         row_tags = (*tags, 'member-row:'+card['id']+':'+row['id'])
         icon_tags = (*row_tags, 'selected-member-icon') if selected else row_tags
         from .uml_python_semantics import abstract_method
@@ -770,7 +797,7 @@ class UmlCanvas(ttk.Frame):
         self._symbol_items.append((symbol_item, (card['id'], section, row['id'])))
         parts = member_parts(row, section, card['name'])
         name_item = canvas.create_text(left+u(28), center, anchor="w", text=''.join(parts.values()),
-                           font=face, fill=INK, tags=(*row_tags, "member-label"))
+                           font=face, fill=self._color(INK), tags=(*row_tags, "member-label"))
         name = parts['name']
         self._name_items.append((name_item, (card['id'], section, row['id']), name, face))
 
@@ -851,16 +878,16 @@ class UmlCanvas(ttk.Frame):
             center = x+width/2
             arrow_y = y-34 if direction < 0 else y+height+34
             arrow_y = max(min_y+15, min(arrow_y, min_y+max_height-15))
-            direction_arrow(canvas, center, arrow_y, direction, 30, SELECT, tags=tag)
+            direction_arrow(canvas, center, arrow_y, direction, 30, self._color(SELECT), tags=tag)
             if not editor.can_reorder():
                 canvas.create_line(center-17, arrow_y+17, center+17, arrow_y-17,
-                                   fill=SELECT, width=3, tags=tag)
+                                   fill=self._color(SELECT), width=3, tags=tag)
         if grip.preview_row is not None:
             _, target_top, _, target_bottom = self.fields[editor.cid, editor.section, grip.preview_row]
             line_y = (target_top-2)*self.zoom if target_top*self.zoom < top else (target_bottom+2)*self.zoom
-            canvas.create_line(card_left+3, line_y, card_right-3, line_y, fill=SELECT, width=SELECTION_WIDTH, tags=tag)
+            canvas.create_line(card_left+3, line_y, card_right-3, line_y, fill=self._color(SELECT), width=SELECTION_WIDTH, tags=tag)
             for endpoint in (card_left+3, card_right-3):
-                canvas.create_oval(endpoint-3, line_y-3, endpoint+3, line_y+3, fill=SELECT, outline="", tags=tag)
+                canvas.create_oval(endpoint-3, line_y-3, endpoint+3, line_y+3, fill=self._color(SELECT), outline="", tags=tag)
 
     def snapshot(self):
         from types import SimpleNamespace
@@ -917,27 +944,27 @@ class UmlCanvas(ttk.Frame):
         card = self.editor.card(cid)
         self.original_text = card["name"]
         self.input_frame = tk.Frame(self)
-        header_panel = edit_panel(self.input_frame,section="name")
+        header_panel = edit_panel(self.input_frame, section="name", color=self._color)
         self.navigation_arrow(header_panel, -1).pack(side="top")
         self.navigation_arrow(header_panel, 1).pack(side="bottom")
         self.original_header, self.header_baseline = self.editor.class_header_settings(cid)
         self.original_kind = tr(CLASS_KINDS[card.get("class_kind", "class")])
         self.header_kind = tk.StringVar(self.input_frame, value=self.original_kind)
         self.header_bases = tk.StringVar(self.input_frame, value=self.original_header["bases"])
-        header_controls = tk.Frame(header_panel, background=UML_SECTION_FILLS["name"])
+        header_controls = tk.Frame(header_panel, background=self._color(UML_SECTION_FILLS["name"]))
         header_controls.pack(fill="x", padx=8, pady=4)
-        panel_badge(header_controls, "name", self.display_bold).pack(side="left", padx=(0, 6))
-        kind_frame, kind_field = header_picker(header_controls, self.header_kind, tuple(tr(label) for label in CLASS_KINDS.values()), width=16)
+        panel_badge(header_controls, "name", self.display_bold, color=self._color).pack(side="left", padx=(0, 6))
+        kind_frame, kind_field = header_picker(header_controls, self.header_kind, tuple(tr(label) for label in CLASS_KINDS.values()), width=16, color=self._color)
         kind_frame.pack(side="left", padx=(0, 5))
         self.input = tk.Text(header_controls, width=12, height=1, wrap="none", undo=True, borderwidth=0,
-                             background="white", foreground=INK, insertbackground=INK,
+                             background=self._color("white"), foreground=self._color(INK), insertbackground=self._color(INK),
                              cursor="xterm", font=self.display_bold, padx=5, pady=2)
         self.input.pack(side="left", fill="x", expand=True)
-        tk.Label(header_controls, text=tr('inherits from'), background=UML_SECTION_FILLS["name"], foreground=INK,
+        tk.Label(header_controls, text=tr('inherits from'), background=self._color(UML_SECTION_FILLS["name"]), foreground=self._color(INK),
                  padx=7).pack(side="left")
         choices = ("", *(item.get("header", {}).get("name", item["name"])
                          for item in self.editor.document["classes"] if item["id"] != cid))
-        bases_frame, bases_field = header_picker(header_controls, self.header_bases, choices, width=13, editable=True)
+        bases_frame, bases_field = header_picker(header_controls, self.header_bases, choices, width=13, editable=True, color=self._color)
         bases_frame.pack(side="left")
         for field in (kind_field, bases_field):
             field.bind("<Return>", lambda event: self._commit_event())
@@ -996,7 +1023,7 @@ class UmlCanvas(ttk.Frame):
         self.comment_selection = self.editor.selection
         self.editor.selection = note["id"]
         self.comment_input = tk.Text(self, wrap="word", undo=True, borderwidth=0,
-                                     background=HINT_FILL, foreground=INK, insertbackground=INK,
+                                     background=self._color(HINT_FILL), foreground=self._color(INK), insertbackground=self._color(INK),
                                      font=self.display_normal, padx=2, pady=2)
         self.scrolling.bind(self.comment_input)
         self.comment_feedback = FieldFeedback(self.comment_input, tr('Ctrl+Enter to apply · Esc to cancel'))
@@ -1149,7 +1176,9 @@ class UmlCanvas(ttk.Frame):
 
     def navigation_arrow(self, parent, direction):
         accent, hover = (ERROR, "#8f2019") if self.delete_mode else (SELECT, "#124e9e")
-        background = DELETE_FILL if self.delete_mode else UML_SECTION_FILLS[self.editing[1]] if self.editing else SELECTION_FILL
+        background = parent.cget("background")
+        color = self._color if self.editing is not None and self.editing[1] == "name" else ui_color
+        accent, hover = color(accent), color(hover)
         arrow = tk.Canvas(parent, width=42, height=ROW_ARROW_HEIGHT, background=background, highlightthickness=0)
         enabled = self._adjacent_row(direction) is not None or (
             direction > 0 and not self.delete_mode and self.editing is not None
@@ -1158,7 +1187,8 @@ class UmlCanvas(ttk.Frame):
         def draw(event):
             arrow.delete("all")
             x, y = event.width/2, event.height/2
-            draw_chevron(arrow, x, y, direction, accent if enabled else DISABLED,
+            disabled = color(DISABLED)
+            draw_chevron(arrow, x, y, direction, accent if enabled else disabled,
                          tags=("chevron", "insert"))
 
         arrow.bind("<Configure>", draw)

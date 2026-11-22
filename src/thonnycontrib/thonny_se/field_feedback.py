@@ -9,12 +9,13 @@ from .ui_style import ERROR, FIELD_BORDER as BORDER, SELECT
 
 
 class FieldFeedback:
-    def __init__(self, widget, label, *, border=None):
+    def __init__(self, widget, label, *, border=None, color=lambda value: value):
         self.widget = widget
         self.label = label
         self.error = ""
+        self.color = color
         self.border = border if border is not None else widget
-        self.border.configure(highlightthickness=1, highlightbackground=BORDER, highlightcolor=SELECT)
+        self.border.configure(highlightthickness=1, highlightbackground=color(BORDER), highlightcolor=color(SELECT))
         if border is not None:
             widget.bind("<FocusIn>", lambda event: self._paint_border(focused=True), add=True)
             widget.bind("<FocusOut>", lambda event: self._paint_border(focused=False), add=True)
@@ -46,5 +47,5 @@ class FieldFeedback:
         self._paint_border(focused=self.border is not self.widget and self.widget.focus_get() is self.widget)
 
     def _paint_border(self, *, focused):
-        self.border.configure(highlightbackground=ERROR if self.error else SELECT if focused else BORDER,
-                              highlightcolor=ERROR if self.error else SELECT)
+        self.border.configure(highlightbackground=self.color(ERROR if self.error else SELECT if focused else BORDER),
+                              highlightcolor=self.color(ERROR if self.error else SELECT))
