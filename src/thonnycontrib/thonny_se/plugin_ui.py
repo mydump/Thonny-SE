@@ -243,9 +243,9 @@ def install():
     workbench = get_workbench()
     for key, value in APPEARANCE_DEFAULTS.items():
         workbench.set_default(key, value)
-    for option in (STRUCTOGRAM_CAT_BLOCKS, STRUCTOGRAM_HINTS, UML_HINTS, UML_EARS, OBJECT_METHODS, UML_USE_MULTIPLICITY):
+    for option in (STRUCTOGRAM_CAT_BLOCKS, STRUCTOGRAM_HINTS, UML_HINTS, UML_EARS, UML_USE_MULTIPLICITY):
         workbench.set_default(option, False)
-    for option in (UML_CONSTRUCTOR_NAME, UML_CHECK_TYPES, UML_AUTO_DEFAULTS, UML_CHECK_VALUES):
+    for option in (OBJECT_METHODS, UML_CONSTRUCTOR_NAME, UML_CHECK_TYPES, UML_AUTO_DEFAULTS, UML_CHECK_VALUES):
         workbench.set_default(option, True)
     workbench.set_default(UML_METHOD_STYLE, "snake_case")
     from .diagram_preferences import UML_GRID
