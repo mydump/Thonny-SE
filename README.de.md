@@ -6,37 +6,50 @@ Plane deine Software direkt in Thonny. Mit Struktogrammen, UML und einer interak
 
 ## Inhalt
 
-[Features](#das-kannst-du-damit-machen) · [Voraussetzungen](#das-brauchst-du) · [Einstieg](#so-legst-du-los) · [Manual](MANUAL.de.md) · [Geplante Funktionen](#geplante-funktionen) · [Schulischer Bezug](#schulischer-bezug) · [Technische Featureliste](#technische-features)
+[Features](#das-kannst-du-damit-machen) · [Voraussetzungen](#das-brauchst-du) · [Einstieg](#so-legst-du-los) · [Manual](MANUAL.de.md) · [Schulischer Bezug](#schulischer-bezug) · [Technische Featureliste](#technische-features)
 
 ## Das kannst du damit machen
 
-- `Abläufe mit Struktogrammen planen` – Modelliere Algorithmen als Nassi-Shneiderman-Diagramme mit Anweisungen, Verzweigungen und Schleifen. Verschiebe und bearbeite die Bausteine so, wie du sie brauchst.
+`Abläufe mit Struktogrammen planen` – Modelliere Algorithmen als Nassi-Shneiderman-Diagramme mit Anweisungen, Verzweigungen und Schleifen. Verschiebe und bearbeite die Bausteine so, wie du sie brauchst.
 
-  <img src="images/readme/01-structogram.png" alt="Verschachtelte Schleifen und Verzweigung mit geöffneter Bausteinpalette" width="1000">
+| Hell | Dunkel |
+| --- | --- |
+| <a href="images/readme/01-structogram.png?raw=true"><img src="images/readme/01-structogram.png" alt="Verschachtelte Schleifen und Verzweigung mit geöffneter Bausteinpalette (helle Darstellung)" width="500"></a> | <a href="images/readme/01-structogram-dark.png?raw=true"><img src="images/readme/01-structogram-dark.png" alt="Verschachtelte Schleifen und Verzweigung mit geöffneter Bausteinpalette (dunkle Darstellung)" width="500"></a> |
 
-- `Klassen entwerfen` – Entwirf UML-Klassendiagramme mit Attributen, Methoden und Sichtbarkeiten. Modelliere Beziehungen wie Vererbung oder Komposition und ergänze Rollen sowie Kardinalitäten/Multiplizitäten.
+`Klassen entwerfen` – Entwirf UML-Klassendiagramme mit Attributen, Methoden und Sichtbarkeiten. Modelliere Beziehungen wie Vererbung oder Komposition und ergänze Rollen sowie Kardinalitäten/Multiplizitäten.
 
-  <img src="images/readme/02-uml.png" alt="Katzenheim mit sechs Klassen, Vererbung, Komposition und Kardinalitäten/Multiplizitäten" width="1000">
+| Hell | Dunkel |
+| --- | --- |
+| <a href="images/readme/02-uml.png?raw=true"><img src="images/readme/02-uml.png" alt="Katzenheim mit sechs Klassen, Vererbung, Komposition und Kardinalitäten/Multiplizitäten (helle Darstellung)" width="500"></a> | <a href="images/readme/02-uml-dark.png?raw=true"><img src="images/readme/02-uml-dark.png" alt="Katzenheim mit sechs Klassen, Vererbung, Komposition und Kardinalitäten/Multiplizitäten (dunkle Darstellung)" width="500"></a> |
 
-- `Zwischen Modell und Code wechseln` – Erzeuge Python-Code aus deinen Diagrammen oder Diagramme aus deinem Code. Bei verknüpften Klassen entscheidest du, welche Änderungen du übernimmst.
+`Zwischen Modell und Code wechseln` – Erzeuge Python-Code aus deinen Diagrammen oder Diagramme aus deinem Code. Bei verknüpften Klassen entscheidest du, welche Änderungen du übernimmst.
 
-  <img src="images/readme/03-code-model.png" alt="Änderungsvorschau mit Dateiname, Übertragungsrichtung und auswählbaren Änderungen" width="759">
+| Hell | Dunkel |
+| --- | --- |
+| <a href="images/readme/03-code-model.png?raw=true"><img src="images/readme/03-code-model.png" alt="Änderungsvorschau mit Dateiname, Übertragungsrichtung und auswählbaren Änderungen (helle Darstellung)" width="500"></a> | <a href="images/readme/03-code-model-dark.png?raw=true"><img src="images/readme/03-code-model-dark.png" alt="Änderungsvorschau mit Dateiname, Übertragungsrichtung und auswählbaren Änderungen (dunkle Darstellung)" width="500"></a> |
 
-- `Diagramme mitnehmen` – Speichere deine Entwürfe als PNG, SVG oder WebP. Für dein Arbeitsblatt, deine Präsentation oder deine Dokumentation.
+`Diagramme mitnehmen` – Speichere deine Entwürfe als PNG, SVG oder WebP. Für dein Arbeitsblatt, deine Präsentation oder deine Dokumentation.
 
-  <img src="images/readme/04-export.png" alt="PNG-Export mit Bildgröße, Transparenz und monochromer Ausgabe" width="267">
+<img src="images/readme/04-export.png" alt="PNG-Export mit Bildgröße, Transparenz und monochromer Ausgabe" width="267">
 
-- `Objekte ausprobieren` – Erzeuge Objekte aus deinen UML-Klassen. Schau dir ihre Werte an, rufe Methoden auf und klappe Listen und Unterobjekte auf.
+<br>
 
-  <img src="images/readme/05-objects.png" alt="UML-Modell neben der Objektbank mit aufgeklappten Räumen und Katzenobjekten" width="1000">
 
-- `Angenehm lernen und präsentieren` – Vertraute Steuerung, eine übersichtliche Oberfläche und eine klare Darstellung helfen dir, dich auf deine Inhalte zu konzentrieren. Auch auf mehreren Displays mit unterschiedlichen Skalierungen soll alles scharf und gut bedienbar bleiben – beim Lernen, Erklären und Präsentieren.
+`Objekte ausprobieren` – Erzeuge Objekte aus deinen UML-Klassen. Schau dir ihre Werte an, rufe Methoden auf und klappe Listen und Unterobjekte auf.
 
-  <img src="images/readme/06-thonny.png" alt="Methodenbearbeitung mit drei Parametern, Typen und Standardwerten" width="1000">
+| Hell | Dunkel |
+| --- | --- |
+| <a href="images/readme/05-objects.png?raw=true"><img src="images/readme/05-objects.png" alt="UML-Diagramm und Objektbank mit aufgeklapptem Raum in heller Darstellung" width="500"></a> | <a href="images/readme/05-objects-dark.png?raw=true"><img src="images/readme/05-objects-dark.png" alt="UML-Diagramm und Objektbank mit aufgeklapptem Raum in dunkler Darstellung" width="500"></a> |
 
-- `Katzen`
+`Angenehm lernen und präsentieren` – Vertraute Steuerung, eine übersichtliche Oberfläche und eine klare Darstellung helfen dir, dich auf deine Inhalte zu konzentrieren. Auch auf mehreren Displays mit unterschiedlichen Skalierungen soll alles scharf und gut bedienbar bleiben – beim Lernen, Erklären und Präsentieren. Für Thonny SE kannst du eine helle oder dunkle Darstellung wählen, auch für Diagramme, Bearbeitungsbereiche und die Objektbank.
 
-  <img src="images/readme/07-cat.png" alt="Winkender Katzenkopf" width="250">
+| Hell | Dunkel |
+| --- | --- |
+| <a href="images/readme/06-thonny.png?raw=true"><img src="images/readme/06-thonny.png" alt="UML-Methodeneditor in heller Darstellung" width="500"></a> | <a href="images/readme/06-thonny-dark.png?raw=true"><img src="images/readme/06-thonny-dark.png" alt="UML-Methodeneditor in dunkler Darstellung" width="500"></a> |
+
+`Katzen` sind auch da.
+
+<img src="images/readme/07-cat.png" alt="Winkender Katzenkopf" width="250">
 
 
 ## Das brauchst du
@@ -44,8 +57,6 @@ Plane deine Software direkt in Thonny. Mit Struktogrammen, UML und einer interak
 Thonny 5.0.x und Python ab 3.10.
 
 Getestet auf macOS und Windows. Auch unter Linux lauffähig. Rückmeldungen zur Nutzung unter Linux sind willkommen.
-
-Thonny SE wird aktiv entwickelt.
 
 ## So legst du los
 
@@ -91,13 +102,6 @@ Installiere das Plugin danach über den Pluginmanager oder die Wheel-Datei.
 ## Erwecke deine Klassen zum Leben
 
 Führe deinen UML-Entwurf aus und probiere seine Objekte aus. Eine eigene Python-Datei brauchst du dafür noch nicht. Das [Manual](MANUAL.de.md) zeigt dir den Einstieg und erklärt das Zusammenspiel von Diagramm, Code und Objektbank.
-
-## Geplante Funktionen
-
-Diese Funktionen sollen in weiteren Versionen ergänzt werden:
-
-- **Weitere Sprachen:** Die Benutzeroberfläche über Deutsch und Englisch hinaus übersetzen.
-- **Dark Mode:** Dunkle Thonny-Themes durchgängig unterstützen, einschließlich Diagrammen, Bearbeitungsbereichen und Objektbank.
 
 ## Deine Rückmeldung hilft
 

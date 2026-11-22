@@ -6,37 +6,50 @@ Design your software right in Thonny. With structured flowcharts, UML and an int
 
 ## Contents
 
-[Features](#what-you-can-do) · [Requirements](#what-you-need) · [Getting started](#get-started) · [Manual](https://github.com/mydump/Thonny-SE/blob/v1.0.1/MANUAL.md) · [Planned features](#planned-features) · [Educational references](#educational-references) · [Technical feature list](#technical-features)
+[Features](#what-you-can-do) · [Requirements](#what-you-need) · [Getting started](#get-started) · [Manual](https://github.com/mydump/Thonny-SE/blob/v1.0.1/MANUAL.md) · [Educational references](#educational-references) · [Technical feature list](#technical-features)
 
 ## What you can do
 
-- `Plan algorithms with structograms` – Model algorithms as Nassi–Shneiderman diagrams with statements, branches and loops. Move and edit the blocks to suit your plan.
+`Plan algorithms with structograms` – Model algorithms as Nassi–Shneiderman diagrams with statements, branches and loops. Move and edit the blocks to suit your plan.
 
-  <img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.0.1/images/readme/01-structogram.png" alt="Nested loops and a branch with the expanded block palette" width="1000">
+| Light | Dark |
+| --- | --- |
+| <a href="images/readme/01-structogram.png?raw=true"><img src="images/readme/01-structogram.png" alt="Nested loops and a branch with the expanded block palette (light mode)" width="500"></a> | <a href="images/readme/01-structogram-dark.png?raw=true"><img src="images/readme/01-structogram-dark.png" alt="Nested loops and a branch with the expanded block palette (dark mode)" width="500"></a> |
 
-- `Design your classes` – Design UML class diagrams with attributes, methods and visibility. Model relationships such as inheritance or composition, and add roles and multiplicities.
+`Design your classes` – Design UML class diagrams with attributes, methods and visibility. Model relationships such as inheritance or composition, and add roles and multiplicities.
 
-  <img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.0.1/images/readme/02-uml.png" alt="Six-class cat shelter with inheritance, composition and multiplicities" width="1000">
+| Light | Dark |
+| --- | --- |
+| <a href="images/readme/02-uml.png?raw=true"><img src="images/readme/02-uml.png" alt="Six-class cat shelter with inheritance, composition and multiplicities (light mode)" width="500"></a> | <a href="images/readme/02-uml-dark.png?raw=true"><img src="images/readme/02-uml-dark.png" alt="Six-class cat shelter with inheritance, composition and multiplicities (dark mode)" width="500"></a> |
 
-- `Move between models and code` – Turn your diagrams into Python code or your code into diagrams. For linked classes, you choose which changes to apply.
+`Move between models and code` – Turn your diagrams into Python code or your code into diagrams. For linked classes, you choose which changes to apply.
 
-  <img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.0.1/images/readme/03-code-model.png" alt="Change preview with file name, transfer direction and selectable updates" width="759">
+| Light | Dark |
+| --- | --- |
+| <a href="images/readme/03-code-model.png?raw=true"><img src="images/readme/03-code-model.png" alt="Change preview with file name, transfer direction and selectable updates (light mode)" width="500"></a> | <a href="images/readme/03-code-model-dark.png?raw=true"><img src="images/readme/03-code-model-dark.png" alt="Change preview with file name, transfer direction and selectable updates (dark mode)" width="500"></a> |
 
-- `Take your diagrams with you` – Save your designs as PNG, SVG or WebP. Ready for a worksheet, a presentation or your documentation.
+`Take your diagrams with you` – Save your designs as PNG, SVG or WebP. Ready for a worksheet, a presentation or your documentation.
 
-  <img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.0.1/images/readme/04-export.png" alt="PNG export with image size, transparency and monochrome options" width="267">
+<img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.0.1/images/readme/04-export.png" alt="PNG export with image size, transparency and monochrome options" width="267">
 
-- `Try your objects` – Create objects from your UML classes. Explore their values, call methods and expand lists and nested objects.
+<br>
 
-  <img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.0.1/images/readme/05-objects.png" alt="UML model beside the object bench with expanded rooms and cat objects" width="1000">
 
-- `Learn and present comfortably` – Familiar controls, an uncluttered interface and clear visuals help you focus on your content. The aim is to keep everything sharp and easy to use across multiple displays with different scaling settings – while learning, explaining and presenting.
+`Try your objects` – Create objects from your UML classes. Explore their values, call methods and expand lists and nested objects.
 
-  <img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.0.1/images/readme/06-thonny.png" alt="Method editing with three parameters, types and default values" width="1000">
+| Light | Dark |
+| --- | --- |
+| <a href="images/readme/05-objects.png?raw=true"><img src="images/readme/05-objects.png" alt="UML diagram and object bench with an expanded room in light mode" width="500"></a> | <a href="images/readme/05-objects-dark.png?raw=true"><img src="images/readme/05-objects-dark.png" alt="UML diagram and object bench with an expanded room in dark mode" width="500"></a> |
 
-- `Cats`
+`Learn and present comfortably` – Familiar controls, an uncluttered interface and clear visuals help you focus on your content. The aim is to keep everything sharp and easy to use across multiple displays with different scaling settings – while learning, explaining and presenting. Choose a light or dark appearance for Thonny SE, including its diagrams, editing controls and object bench.
 
-  <img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.0.1/images/readme/07-cat.png" alt="Waving cat head" width="250">
+| Light | Dark |
+| --- | --- |
+| <a href="images/readme/06-thonny.png?raw=true"><img src="images/readme/06-thonny.png" alt="UML method editor in light mode" width="500"></a> | <a href="images/readme/06-thonny-dark.png?raw=true"><img src="images/readme/06-thonny-dark.png" alt="UML method editor in dark mode" width="500"></a> |
+
+`Cats` are around too.
+
+<img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.0.1/images/readme/07-cat.png" alt="Waving cat head" width="250">
 
 
 ## What you need
@@ -44,8 +57,6 @@ Design your software right in Thonny. With structured flowcharts, UML and an int
 Thonny 5.0.x and Python 3.10 or later.
 
 Tested on macOS and Windows. Also runs on Linux. Feedback on using it on Linux is welcome.
-
-Thonny SE is under active development.
 
 ## Get started
 
@@ -91,13 +102,6 @@ Then install the plug-in through the plug-in manager or the wheel file.
 ## Bring your classes to life
 
 Run your UML design and try its objects. You do not need your own Python file yet. The [manual](https://github.com/mydump/Thonny-SE/blob/v1.0.1/MANUAL.md) walks you through getting started and explains how diagrams, code and the object bench work together.
-
-## Planned features
-
-The following features are planned for future versions:
-
-- **More languages:** Translate the interface into languages beyond German and English.
-- **Dark mode:** Consistently support dark Thonny themes across diagrams, editing controls and the object bench.
 
 ## Your feedback helps
 
