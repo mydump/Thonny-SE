@@ -505,5 +505,6 @@
   "The Python file could not be opened. Check that its folder or network drive is available and try again.": "Die Python-Datei konnte nicht geöffnet werden. Prüfe, ob ihr Ordner oder das Netzlaufwerk erreichbar ist, und versuche es erneut.",
   "Source file unavailable": "Quelldatei nicht verfügbar",
   "Affected classes: {names}": "Betroffene Klassen: {names}",
-  "The linked Python file was not found. The file or its folder may have been moved or renamed. Relink the Python file to compare code and diagram again.": "Die zugeordnete Python-Datei wurde nicht gefunden. Möglicherweise wurde die Datei oder ihr Ordner verschoben oder umbenannt. Ordne die Python-Datei erneut zu, um Code und Diagramm wieder abzugleichen."
+  "The linked Python file was not found. The file or its folder may have been moved or renamed. Relink the Python file to compare code and diagram again.": "Die zugeordnete Python-Datei wurde nicht gefunden. Möglicherweise wurde die Datei oder ihr Ordner verschoben oder umbenannt. Ordne die Python-Datei erneut zu, um Code und Diagramm wieder abzugleichen.",
+  "Extras": "Extras"
 }

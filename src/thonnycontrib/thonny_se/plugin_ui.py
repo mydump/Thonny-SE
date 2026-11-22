@@ -112,38 +112,42 @@ class ThonnySEOptionsPage(ConfigurationPage):
         self.columnconfigure(0, weight=1)
         workbench = get_workbench()
         self._add_appearance_options(workbench)
-        for title, options in (
-            (tr('Structogram editor'), (
-                (STRUCTOGRAM_HINTS, tr('Hide introductory hints in this editor')),
-                (STRUCTOGRAM_CAT_BLOCKS, tr('Cats')),
-            )),
-            (tr('UML editor'), (
-                (UML_HINTS, tr('Hide introductory hints in this editor')),
-                (UML_CONSTRUCTOR_NAME, tr('Display __init__ as the class name in diagrams')),
-                (UML_CHECK_TYPES, tr('Reject unknown type names in attributes, parameters and return values')),
-                (UML_CHECK_VALUES, tr('Check that initial values match their declared types')),
-                (UML_AUTO_DEFAULTS, tr('Fill in initial values automatically when selecting an attribute type')),
-                (UML_USE_MULTIPLICITY, tr('Call relationship counts multiplicity instead of cardinality')),
-                (UML_METHOD_STYLE, tr('Names of automatically generated methods')),
-                (UML_EARS, tr('Cats')),
-            )),
-            (tr('Object inspector SE'), ((OBJECT_METHODS, tr('Show all object methods instead of the Methods dropdown')),)),
-        ):
-            group = ttk.LabelFrame(self, text=title, padding=8)
-            group.grid(sticky="ew", pady=(0, 8))
-            for key, label in options:
-                if key == UML_METHOD_STYLE:
-                    row = ttk.Frame(group)
-                    row.grid(sticky="w", pady=(5, 5))
-                    ttk.Label(row, text=label).pack(side="left", padx=(0, 8))
-                    variable = StringVar(self, value=workbench.get_option(key))
-                    ttk.Combobox(row, textvariable=variable, state="readonly",
-                                 values=('snake_case', 'camelCase'), width=14).pack(side="left")
-                    self.options[key] = variable
-                    continue
-                variable = BooleanVar(self, value=workbench.get_option(key))
-                self.options[key] = variable
-                ttk.Checkbutton(group, text=label, variable=variable).grid(sticky="w")
+        def group(title):
+            frame = ttk.LabelFrame(self, text=title, padding=(10, 8))
+            frame.grid(sticky="ew", pady=(0, 8))
+            return frame
+
+        def check(parent, key, label):
+            variable = BooleanVar(self, value=workbench.get_option(key))
+            self.options[key] = variable
+            ttk.Checkbutton(parent, text=tr(label), variable=variable).pack(anchor="w", pady=1)
+
+        uml = group(tr('UML editor'))
+        check(uml, UML_HINTS, 'Hide introductory hints in this editor')
+        check(uml, UML_CONSTRUCTOR_NAME, 'Display __init__ as the class name in diagrams')
+        check(uml, UML_USE_MULTIPLICITY, 'Call relationship counts multiplicity instead of cardinality')
+        row = ttk.Frame(uml)
+        row.pack(fill="x", pady=(6, 5))
+        ttk.Label(row, text=tr('Names of automatically generated methods')).pack(side="left", padx=(0, 12))
+        variable = StringVar(self, value=workbench.get_option(UML_METHOD_STYLE))
+        self.options[UML_METHOD_STYLE] = variable
+        ttk.Combobox(row, textvariable=variable, state="readonly",
+                     values=('snake_case', 'camelCase'), width=14).pack(side="left")
+        ttk.Separator(uml).pack(fill="x", pady=(4, 6))
+        check(uml, UML_AUTO_DEFAULTS, 'Fill in initial values automatically when selecting an attribute type')
+        check(uml, UML_CHECK_TYPES, 'Reject unknown type names in attributes, parameters and return values')
+        check(uml, UML_CHECK_VALUES, 'Check that initial values match their declared types')
+
+        structogram = group(tr('Structogram editor'))
+        check(structogram, STRUCTOGRAM_HINTS, 'Hide introductory hints in this editor')
+        objects = group(tr('Object inspector SE'))
+        check(objects, OBJECT_METHODS, 'Show all object methods instead of the Methods dropdown')
+
+        extras = group(tr('Extras'))
+        cats = BooleanVar(self, value=any(workbench.get_option(key)
+                                       for key in (STRUCTOGRAM_CAT_BLOCKS, UML_EARS)))
+        self.options[STRUCTOGRAM_CAT_BLOCKS] = self.options[UML_EARS] = cats
+        ttk.Checkbutton(extras, text=tr('Cats'), variable=cats).pack(anchor="w", pady=1)
 
     def _add_appearance_options(self, workbench):
         group = ttk.LabelFrame(self, text=tr("Appearance"), padding=8)
