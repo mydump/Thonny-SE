@@ -895,15 +895,17 @@ class UmlCanvas(ttk.Frame):
         hidden = UmlCanvas(self, SimpleNamespace(document=self.editor.document, selection=None))
         try:
             hidden.exporting = True
-            hidden._export_widths = {cid: box[2]-box[0] for cid, box in self.cards.items()}
             hidden.row_height = self.row_height
-            # Retain diagram geometry; omit editing controls without relayout.
+            # Export at canonical 100% font metrics; displayed fonts are rounded
+            # by Tk and their measured card widths vary with the current zoom.
             for target, source in ((hidden.normal, self.normal), (hidden.bold, self.bold),
                                    (hidden.abstract, self.abstract), (hidden.method_abstract, self.method_abstract),
                                    (hidden.display_normal, self.normal), (hidden.display_bold, self.bold),
                                    (hidden.display_abstract, self.abstract),
                                    (hidden.display_method_abstract, self.method_abstract)):
                 target.configure(**source.actual())
+            hidden._export_widths = {card['id']: hidden._card_width(card, hidden._methods(card))
+                                     for card in self.editor.document['classes']}
             hidden.draw()
             bounds = hidden.canvas.bbox("drawing")
             if bounds is None:
