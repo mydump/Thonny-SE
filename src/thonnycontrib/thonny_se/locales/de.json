@@ -506,5 +506,19 @@
   "Source file unavailable": "Quelldatei nicht verfügbar",
   "Affected classes: {names}": "Betroffene Klassen: {names}",
   "The linked Python file was not found. The file or its folder may have been moved or renamed. Relink the Python file to compare code and diagram again.": "Die zugeordnete Python-Datei wurde nicht gefunden. Möglicherweise wurde die Datei oder ihr Ordner verschoben oder umbenannt. Ordne die Python-Datei erneut zu, um Code und Diagramm wieder abzugleichen.",
-  "Extras": "Extras"
+  "Extras": "Extras",
+  "Run diagram": "Diagramm ausführen",
+  "Python source files are unavailable": "Python-Quelldateien nicht erreichbar",
+  "Use the model for these classes for this run? Their Python method implementations will not be available. Saved file links remain unchanged.": "Für diesen Lauf mit dem Modell dieser Klassen arbeiten? Die Methodenimplementierungen aus den Python-Dateien stehen dann nicht zur Verfügung. Die gespeicherten Dateizuordnungen bleiben erhalten.",
+  "Diagram and Python code differ": "Diagramm und Python-Code unterscheiden sich",
+  "Run using the diagram structure and existing Python method implementations, or review the differences first? Python files are not changed by running.": "Mit der Struktur des Diagramms und den vorhandenen Python-Methodenimplementierungen ausführen oder zuerst einen Abgleich durchführen? Beim Ausführen werden die Python-Dateien nicht verändert.",
+  "Use model": "Mit Modell arbeiten",
+  "Review differences …": "Abgleich durchführen …",
+  "Run anyway": "Dennoch ausführen",
+  "Python files cannot be opened": "Python-Dateien sind nicht erreichbar",
+  "The following classes are linked to files that are no longer accessible:": "Die Dateien dieser Klassen können nicht geöffnet werden:",
+  "You can run these classes from the diagram for now. The code inside their Python methods will be missing. Their file links will stay unchanged.": "Du kannst vorläufig mit den Klassen aus dem Diagramm arbeiten. Der Code in den Methoden der fehlenden Dateien steht dann nicht zur Verfügung. Die Dateizuordnungen bleiben erhalten.",
+  "Classes differ from the Python code": "Klassen und Python-Code unterscheiden sich",
+  "The following classes do not match their Python files:": "Bei diesen Klassen stimmen Diagramm und Python-Datei nicht überein:",
+  "Run anyway: use the classes as shown in the diagram, keeping the method code from the Python files. Or review and transfer the changes first. Running does not save changes to Python files.": "„Dennoch ausführen“ verwendet die Klassen wie im Diagramm und den Methodencode aus den Python-Dateien. Alternativ kannst du die Änderungen zuerst prüfen und übertragen. Beim Ausführen werden die Python-Dateien nicht verändert."
 }

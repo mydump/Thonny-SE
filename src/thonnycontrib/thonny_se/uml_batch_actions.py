@@ -140,6 +140,7 @@ def update(editor, direction, *, cids=None):
             apply_python_tabs(editor,batch,texts)
         editor.document = candidate
         editor._record(before)
+        return True
     except (OSError,ValueError,RecursionError,tk.TclError) as exc:
         messagebox.showerror(title(direction),str(exc),parent=editor)
 

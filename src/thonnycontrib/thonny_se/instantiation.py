@@ -160,16 +160,21 @@ class ObjectSession:
     def run_diagram(self, editor):
         if not editor.diagram.finish_edit():
             return
-        import copy
         from .integration import read_python_source
-        from .uml_runtime import prepare_execution, diagram_fingerprint
+        from .uml_runtime import diagram_fingerprint
+        from .uml_run_review import reviewed_execution
         request = dict(id=uuid4().hex, editor=editor,
                        fingerprint=diagram_fingerprint(editor.document), payload=None, error=None, restarting=True)
         try:
-            request['payload'] = prepare_execution(copy.deepcopy(editor.document), None, read_python_source,
+            request['payload'] = reviewed_execution(editor, read_python_source,
                 token=str(editor.winfo_id()), label=editor.get_filename() or tr('New UML diagram'))
+            if request['payload'] is None:
+                return
+            request['fingerprint'] = diagram_fingerprint(editor.document)
         except (OSError, ValueError, SyntaxError, RecursionError) as error:
-            request['error'] = error
+            from .execution_errors import report_python_error
+            report_python_error(error)
+            return
         # Re-execution is the only operation which discards old objects/definitions.
         self.run_request = request
         self.controller.restart(None)
