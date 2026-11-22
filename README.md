@@ -47,12 +47,6 @@ Tested on macOS and Windows. Also runs on Linux. Feedback on using it on Linux i
 
 Thonny SE is under active development.
 
-## File format baseline
-
-Version 1.0.1 establishes format version 1 for UML diagrams. Structograms already use format version 1. Internal pre-release UML formats and the old `.tse.json` extension are no longer supported.
-
-UML files saved with 1.0.0 contain `"version": 13`. Before opening them in 1.0.1, **manually change this entry to `"version": 1`** in the JSON file. No other changes are needed for files with the current structured schema. Only format version 1 is accepted; the complete file structure is still validated. Older development schemas and free-text UML members are not supported. No converter is provided.
-
 ## Get started
 
 Install through PyPI or download a wheel from GitHub.
