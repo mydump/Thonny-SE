@@ -8,7 +8,7 @@ Was möchtest du machen? Springe zur passenden Aufgabe. Die Bilder zeigen die en
 
 | Bereich | Ich möchte … |
 | --- | --- |
-| Einstieg | [ein Diagramm öffnen](#ein-diagramm-anlegen) · [etwas bearbeiten](#etwas-bearbeiten) · [speichern oder zoomen](#speichern-und-den-überblick-behalten) · [ein Bild exportieren](#ein-diagramm-als-bild-exportieren) |
+| Einstieg | [ein Diagramm öffnen](#ein-diagramm-anlegen) · [etwas bearbeiten](#etwas-bearbeiten) · [speichern oder zoomen](#speichern-und-den-überblick-behalten) · [die Darstellung wechseln](#helle-oder-dunkle-darstellung-wählen) · [ein Bild exportieren](#ein-diagramm-als-bild-exportieren) |
 | Struktogramme | [einen Ablauf aufbauen](#einen-ablauf-aufbauen) · [mehr Bausteine anzeigen](#zwischen-einfacher-und-erweiterter-palette-wechseln) · [Python übertragen](#struktogramm-und-python-ineinander-übertragen) |
 | UML | [Klassen anlegen](#klassen-und-beziehungen-anlegen) · [Attribute und Methoden bearbeiten](#attribute-methoden-und-parameter-bearbeiten) · [das Raster nutzen](#klassen-am-raster-ausrichten) |
 | Objektbank | [ein Objekt erzeugen](#ein-objekt-erzeugen) · [Werte und Methoden ausprobieren](#werte-ansehen-und-methoden-aufrufen) · [nach Änderungen neu starten](#nach-einer-änderung-neu-starten) |
@@ -32,17 +32,27 @@ Speichere dein Diagramm wie andere Dokumente in Thonny. Mit Rückgängig nimmst 
 
 Nutze den Zoomregler oder <kbd>Strg</kbd> + Mausrad, auf dem Mac <kbd>Command</kbd> + Mausrad. So zoomst du an der Stelle unter dem Mauszeiger. Große Diagramme kannst du horizontal und vertikal scrollen.
 
+### Helle oder dunkle Darstellung wählen
+
+Öffne `Werkzeuge → Optionen → Thonny SE` und wähle unter `Darstellung` zwischen `Hell` und `Dunkel`. Beiden Einstellungen kannst du ein Thonny-Oberflächen- und ein Syntax-Theme zuordnen. Beim Bestätigen wechseln Thonny und die Diagrammansichten. `Monochrom` ist in beiden Darstellungen direkt im Diagrammeditor verfügbar.
+
 ### Ein Diagramm als Bild exportieren
 
 Klicke oben auf `PNG`, `SVG` oder `WebP`. Alternativ findest du unter `Datei → Grafik exportieren als …` dieselbe Auswahl. Das funktioniert für beide Diagrammarten gleich.
 
-<img src="images/manual/export-buttons.png" alt="Schaltflächen PNG, SVG und WebP" width="370">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="images/manual/export-buttons-dark.png">
+  <img src="images/manual/export-buttons.png" alt="Schaltflächen PNG, SVG und WebP" width="370">
+</picture>
 
 *Hier wählst du das Bildformat.*
 
-Bei PNG und WebP stellst du anschließend die Bildgröße ein. Wähle bei Bedarf Transparenz oder monochrome Ausgabe. Bestätige mit `OK` und wähle den Speicherort.
+Bei PNG und WebP stellst du die Bildgröße ein. Einen transparenten Hintergrund kannst du in allen drei Formaten wählen. Mit `Monochrom` kannst du auch die Flächen von Bausteinen und Klassenkarten transparent machen. Bei ausgeschaltetem `Monochrom` wählst du für die Ausgabedatei `Hell` oder `Dunkel`. Diese Einstellungen sind unabhängig von der Diagrammansicht. Bestätige mit `OK` und wähle den Speicherort.
 
-<img src="images/manual/export.png" alt="Grafikexport mit Größe, Transparenz und monochromer Ausgabe" width="300">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="images/manual/export-dark.png">
+  <img src="images/manual/export.png" alt="PNG-Export mit Bildgröße, Transparenz, Monochrom und Darstellung" width="300">
+</picture>
 
 *Die Größe wird in Pixeln angegeben. Die Optionen gelten für den Export.*
 
@@ -54,7 +64,10 @@ Wähle einen Baustein aus der Palette links. Füge ihn an der gewünschten Stell
 
 Text ändern? Doppelklick auf den Baustein. Verschieben oder weitere Aktionen? Ziehen beziehungsweise Rechtsklick auf den Baustein.
 
-<img src="images/manual/structogram.png" alt="Bausteinpalette neben einer Schleife mit Verzweigung" width="900">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="images/manual/structogram-dark.png">
+  <img src="images/manual/structogram.png" alt="Bausteinpalette neben einer Schleife mit Verzweigung" width="900">
+</picture>
 
 *Links findest du die Bausteine. Die Einfügeflächen im Diagramm zeigen dir, wo weitere Bausteine Platz haben.*
 
@@ -62,7 +75,10 @@ Text ändern? Doppelklick auf den Baustein. Verschieben oder weitere Aktionen? Z
 
 Nutze den Pfeil am unteren Rand der Palette. Die einfache Palette bietet eine reduzierte Auswahl. Aufgeklappt stehen dir weitere Bausteine zur Verfügung. Dein Entwurf bleibt beim Wechsel erhalten.
 
-<img src="images/manual/palette-switch.png" alt="Pfeil unter der erweiterten Bausteinpalette" width="250">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="images/manual/palette-switch-dark.png">
+  <img src="images/manual/palette-switch.png" alt="Pfeil unter der erweiterten Bausteinpalette" width="250">
+</picture>
 
 *Der Pfeil klappt die zusätzlichen Bausteine auf oder zu.*
 
@@ -82,7 +98,10 @@ Klicke auf die freie Fläche mit rechts und lege eine `Neue Klasse` an. Attribut
 
 Über das Kontextmenü einer Klasse ergänzt du Beziehungen. Wähle die passende Beziehungsart und die beteiligte Klasse. Rollen und Kardinalitäten/Multiplizitäten beschreiben die Verbindung genauer. Kommentare kannst du über das Kontextmenü ergänzen.
 
-<img src="images/manual/classes.png" alt="Klassen Cat und CatShelter mit Attributen, Methoden und Beziehung" width="800">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="images/manual/classes-dark.png">
+  <img src="images/manual/classes.png" alt="Klassen Cat und CatShelter mit Attributen, Methoden und Beziehung" width="800">
+</picture>
 
 *`CatShelter` hält eine Sammlung von `Cat`-Objekten. Die Beziehung trägt den Rollennamen `cats` und die Kardinalität/Multiplizität `0..*`.*
 
@@ -92,7 +111,12 @@ Klicke auf die freie Fläche mit rechts und lege eine `Neue Klasse` an. Attribut
 
 Bei einer Methode hat jeder Parameter eine eigene Zeile. Bestätige deine Bearbeitung mit dem Häkchen. Mit <kbd>Esc</kbd> brichst du sie ab.
 
-<img src="images/manual/edit-method.png" alt="Geöffnete Methodenbearbeitung mit drei Parameterzeilen" width="900">
+Thonny SE kann beim Auswählen eines Attributtyps einen passenden Startwert vorschlagen. Außerdem kann es prüfen, ob Startwerte und Parameter-Standardwerte zu den angegebenen Typen passen. Ungültige Werte werden rot markiert und blockieren die Übernahme. Beide Einstellungen findest du in den Optionen von Thonny SE im Bereich für den UML-Editor.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="images/manual/edit-method-dark.png">
+  <img src="images/manual/edit-method.png" alt="Geöffnete Methodenbearbeitung mit drei Parameterzeilen" width="900">
+</picture>
 
 *Hier wird `feed` mit `portions`, `food` und `fresh_water` bearbeitet. Typen und Standardwerte stehen direkt neben den Parametern.*
 
@@ -100,7 +124,10 @@ Bei einer Methode hat jeder Parameter eine eigene Zeile. Bestätige deine Bearbe
 
 Wähle unten im UML-Editor den gewünschten Rastermodus. Ein sichtbares Raster hilft beim Ausrichten. Das magnetische Raster lässt Klassen beim Verschieben einrasten. Ohne Raster kannst du sie frei platzieren.
 
-<img src="images/manual/grid-zoom.png" alt="Rasterauswahl, monochrome Ansicht und Zoom unten im UML-Editor" width="760">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="images/manual/grid-zoom-dark.png">
+  <img src="images/manual/grid-zoom.png" alt="Rasterauswahl, monochrome Ansicht und Zoom unten im UML-Editor" width="760">
+</picture>
 
 *Unten im UML-Editor wählst du das Raster. Rechts daneben findest du den Zoom.*
 
@@ -123,7 +150,10 @@ Die Objektkarte zeigt dir Namen, Klasse und Attributwerte. Wähle eine Methode, 
 
 Klappe den Pfeil vor einer Sammlung oder einem Unterobjekt auf, um weiter hineinzuschauen. Je nach Einstellung erscheinen Methoden als Auswahlliste oder einzelne Schaltflächen.
 
-<img src="images/manual/objects.png" alt="Objektkarten von Luna, Milo und einem Katzenheim" width="340">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="images/manual/objects-dark.png">
+  <img src="images/manual/objects.png" alt="Objektkarten von Luna, Milo und einem Katzenheim" width="340">
+</picture>
 
 *Luna und Milo sind zwei `Cat`-Objekte mit unterschiedlichen Energiewerten. In `shelter` kannst du die Sammlung `cats` aufklappen.*
 
@@ -145,21 +175,27 @@ Vom Code zum Modell: Übernimm Klassen aus dem aktuellen Python-Editor oder übe
 
 Ein Diagramm muss nicht genau einer Python-Datei entsprechen. Mehrere Klassen können gemeinsam in einer Datei stehen. Sie können auch auf mehrere Dateien verteilt sein und trotzdem im selben Diagramm erscheinen.
 
-<img src="images/manual/one-file.png" alt="Python-Datei cat_shelter.py mit den Klassen Cat und CatShelter" width="800">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="images/manual/one-file-dark.png">
+  <img src="images/manual/one-file.png" alt="Python-Datei cat_shelter.py mit den Klassen Cat und CatShelter" width="800">
+</picture>
 
 *Hier stehen beide Klassen in `cat_shelter.py`. Du kannst sie gemeinsam im Diagramm zeigen.*
 
 Die Quellenzuordnung hält für jede verknüpfte Klasse fest, wo ihr Code liegt. Bei mehreren Dateien behält jede Klasse ihre eigene Zuordnung. Über `Zur Stelle im Code` springst du zur passenden Definition.
 
-Speichere Diagramm und zugehörige Python-Dateien, damit du später mit demselben Stand weiterarbeiten kannst.
+Speichere Diagramm und zugehörige Python-Dateien, damit du später mit demselben Stand weiterarbeiten kannst. Wurde eine verknüpfte Datei verschoben oder umbenannt, erscheint beim Abgleich ein Hinweis. Über `Python-Quelldatei neu zuordnen …` wählst du sie erneut aus.
 
 ### Änderungen abgleichen
 
 Starte im Kontextmenü den Abgleich `aus Code` oder `in den Code` für die gewünschte Klasse oder das Diagramm. Die Vorschau zeigt Quelle und Ziel.
 
-Wähle die Änderungen aus, die du übernehmen möchtest. Kläre angezeigte Konflikte und bestätige mit `OK`. Bei mehreren Dateien sind die Änderungen nach ihren Zieldateien gruppiert. Vorhandene Methodenimplementierungen bleiben beim Aktualisieren der Signaturen erhalten.
+Wähle die Änderungen aus, die du übernehmen möchtest. Kläre angezeigte Konflikte und bestätige mit `OK`. Sind mehrere Dateien beteiligt, gruppiert die Vorschau die Änderungen nach Python-Datei. Vorhandene Methodenimplementierungen bleiben beim Aktualisieren der Signaturen erhalten.
 
-<img src="images/manual/apply-changes.png" alt="Änderungsvorschau von Python-Code zu UML mit auswählbaren Änderungen" width="800">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="images/manual/apply-changes-dark.png">
+  <img src="images/manual/apply-changes.png" alt="Änderungsvorschau von Python-Code zu UML mit auswählbaren Änderungen" width="800">
+</picture>
 
 *Links steht der eingelesene Code, rechts das bisherige Diagramm. Die Häkchen wählen aus, welche Änderungen übernommen werden.*
 

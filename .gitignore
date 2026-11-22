@@ -49,15 +49,25 @@
 !/images/readme/07-cat.png
 !/images/manual/
 !/images/manual/apply-changes.png
+!/images/manual/apply-changes-dark.png
 !/images/manual/classes.png
+!/images/manual/classes-dark.png
 !/images/manual/edit-method.png
+!/images/manual/edit-method-dark.png
 !/images/manual/export-buttons.png
+!/images/manual/export-buttons-dark.png
 !/images/manual/export.png
+!/images/manual/export-dark.png
 !/images/manual/grid-zoom.png
+!/images/manual/grid-zoom-dark.png
 !/images/manual/objects.png
+!/images/manual/objects-dark.png
 !/images/manual/one-file.png
+!/images/manual/one-file-dark.png
 !/images/manual/palette-switch.png
+!/images/manual/palette-switch-dark.png
 !/images/manual/structogram.png
+!/images/manual/structogram-dark.png
 
 # Keine Tests, generierten Python-Reste oder Betriebssystemdateien.
 **/test_*.py

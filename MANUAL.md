@@ -8,7 +8,7 @@ What would you like to do? Jump straight to the task you need. The screenshots s
 
 | Area | I want to … |
 | --- | --- |
-| Getting started | [create a diagram](#create-a-diagram) · [edit something](#edit-something) · [save or zoom](#save-and-keep-your-bearings) · [export an image](#export-a-diagram-as-an-image) |
+| Getting started | [create a diagram](#create-a-diagram) · [edit something](#edit-something) · [save or zoom](#save-and-keep-your-bearings) · [change the appearance](#choose-light-or-dark-appearance) · [export an image](#export-a-diagram-as-an-image) |
 | Structograms | [build an algorithm](#build-an-algorithm) · [show more blocks](#switch-between-basic-and-expanded-palettes) · [transfer Python](#transfer-between-structograms-and-python) |
 | UML | [create classes](#create-classes-and-relationships) · [edit attributes and methods](#edit-attributes-methods-and-parameters) · [use the grid](#align-classes-with-the-grid) |
 | Object bench | [create an object](#create-an-object) · [inspect values and call methods](#inspect-values-and-call-methods) · [restart after changes](#restart-after-a-change) |
@@ -32,17 +32,27 @@ Save your diagram like other documents in Thonny. Use undo to take back edits.
 
 Use the zoom slider or <kbd>Ctrl</kbd> + mouse wheel, or <kbd>Command</kbd> + mouse wheel on a Mac. This zooms at the point under your pointer. Scroll large diagrams horizontally and vertically.
 
+### Choose light or dark appearance
+
+Open `Tools → Options → Thonny SE` and choose `Light` or `Dark` under `Appearance`. You can assign a Thonny UI theme and a syntax theme to each setting. Thonny and the diagram views update when you confirm. The `Monochrome` option in each diagram editor is available in both appearances.
+
 ### Export a diagram as an image
 
 Click `PNG`, `SVG` or `WebP` in the toolbar. You can also find these options under `File → Export image as …`. This works the same way for both diagram types.
 
-<img src="images/manual/export-buttons.png" alt="PNG, SVG and WebP toolbar buttons" width="370">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="images/manual/export-buttons-dark.png">
+  <img src="images/manual/export-buttons.png" alt="PNG, SVG and WebP toolbar buttons" width="370">
+</picture>
 
 *Choose your image format here.*
 
-For PNG and WebP, set the image size next. Choose transparency or monochrome output if needed. Click `OK`, then choose where to save the image.
+Set the image size for PNG and WebP. All three formats offer a transparent background. With `Monochrome` on, you can also make the blocks and class cards transparent. With `Monochrome` off, choose `Light` or `Dark` for the exported image. These settings are independent of the diagram view. Click `OK`, then choose where to save the image.
 
-<img src="images/manual/export.png" alt="Image export with size, transparency and monochrome options" width="300">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="images/manual/export-dark.png">
+  <img src="images/manual/export.png" alt="PNG export with image size, transparency, monochrome and appearance options" width="300">
+</picture>
 
 *Size is given in pixels. These options affect the exported image.*
 
@@ -54,7 +64,10 @@ Choose a block from the palette on the left. Insert it where you need it. Nest b
 
 Change the text? Double-click the block. Move it or find more actions? Drag it or right-click it.
 
-<img src="images/manual/structogram.png" alt="Block palette beside a loop containing a branch" width="900">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="images/manual/structogram-dark.png">
+  <img src="images/manual/structogram.png" alt="Block palette beside a loop containing a branch" width="900">
+</picture>
 
 *Find blocks on the left. Insertion areas in the diagram show where more blocks can go.*
 
@@ -62,7 +75,10 @@ Change the text? Double-click the block. Move it or find more actions? Drag it o
 
 Use the arrow at the bottom of the palette. The basic palette offers a reduced selection. Expand it for more block types. Switching keeps your existing design in place.
 
-<img src="images/manual/palette-switch.png" alt="Arrow below the expanded block palette" width="250">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="images/manual/palette-switch-dark.png">
+  <img src="images/manual/palette-switch.png" alt="Arrow below the expanded block palette" width="250">
+</picture>
 
 *The arrow expands or collapses the additional blocks.*
 
@@ -82,7 +98,10 @@ Right-click an empty area and add a `New class`. Attributes describe an object�
 
 Add relationships through a class’s context menu. Choose the relationship type and the other class. Roles and multiplicities describe the connection more precisely. Add comments through the context menu.
 
-<img src="images/manual/classes.png" alt="Cat and CatShelter classes with attributes, methods and a relationship" width="800">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="images/manual/classes-dark.png">
+  <img src="images/manual/classes.png" alt="Cat and CatShelter classes with attributes, methods and a relationship" width="800">
+</picture>
 
 *`CatShelter` holds a collection of `Cat` objects. The relationship has the role `cats` and multiplicity `0..*`.*
 
@@ -92,7 +111,12 @@ Double-click the entry you want to edit. Add names, types and initial or default
 
 Each method parameter has its own row. Confirm your edit with the check mark. Press <kbd>Esc</kbd> to cancel.
 
-<img src="images/manual/edit-method.png" alt="Open method editor with three parameter rows" width="900">
+Thonny SE can suggest an initial value when you choose an attribute type. It can also check whether initial values and parameter defaults match the declared types. An invalid value is marked in red and blocks confirmation. Both settings are available in the UML editor section of the Thonny SE options.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="images/manual/edit-method-dark.png">
+  <img src="images/manual/edit-method.png" alt="Open method editor with three parameter rows" width="900">
+</picture>
 
 *Editing `feed` with `portions`, `food` and `fresh_water`. Types and default values sit beside each parameter.*
 
@@ -100,7 +124,10 @@ Each method parameter has its own row. Confirm your edit with the check mark. Pr
 
 Choose a grid mode at the bottom of the UML editor. A visual grid helps with alignment. The magnetic grid snaps classes into place as you move them. Choose no grid to position them freely.
 
-<img src="images/manual/grid-zoom.png" alt="Grid selector, monochrome option and zoom at the bottom of the UML editor" width="760">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="images/manual/grid-zoom-dark.png">
+  <img src="images/manual/grid-zoom.png" alt="Grid selector, monochrome option and zoom at the bottom of the UML editor" width="760">
+</picture>
 
 *Choose the grid at the bottom of the UML editor. The zoom controls sit to its right.*
 
@@ -123,7 +150,10 @@ An object card shows its name, class and attribute values. Choose a method, ente
 
 Expand the arrow beside a collection or nested object to look inside. Depending on your settings, methods appear as a drop-down list or individual buttons.
 
-<img src="images/manual/objects.png" alt="Object cards for Luna, Milo and a cat shelter" width="340">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="images/manual/objects-dark.png">
+  <img src="images/manual/objects.png" alt="Object cards for Luna, Milo and a cat shelter" width="340">
+</picture>
 
 *Luna and Milo are two `Cat` objects with different energy values. Expand `cats` inside `shelter` to inspect the collection.*
 
@@ -145,21 +175,27 @@ Code to model: Import classes from the current Python editor or use `Classes fro
 
 A diagram does not have to match exactly one Python file. Several classes can share a file. They can also live in separate files and still appear in the same diagram.
 
-<img src="images/manual/one-file.png" alt="Python file cat_shelter.py containing Cat and CatShelter" width="800">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="images/manual/one-file-dark.png">
+  <img src="images/manual/one-file.png" alt="Python file cat_shelter.py containing Cat and CatShelter" width="800">
+</picture>
 
 *Both classes live in `cat_shelter.py` here. You can show them together in a diagram.*
 
 A source link records where each linked class’s code lives. With several files, each class keeps its own link. Use `Go to code` to jump to its definition.
 
-Save the diagram and its related Python files so you can return to the same state later.
+Save the diagram and its related Python files so you can return to the same state later. If a linked file was moved or renamed, the update preview shows a warning. Use `Relink Python source file …` to select it again.
 
 ### Apply changes
 
 Use the context menu to update `from code` or `to code` for a class or the diagram. The preview shows source and target.
 
-Select the changes you want to apply. Resolve any reported conflicts and click `OK`. With several files, changes are grouped by their target files. Existing method implementations are preserved when signatures are updated.
+Select the changes you want to apply. Resolve any reported conflicts and click `OK`. When several files are involved, the preview groups changes by Python file. Existing method implementations are preserved when signatures are updated.
 
-<img src="images/manual/apply-changes.png" alt="Preview of selectable changes from Python code to UML" width="800">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="images/manual/apply-changes-dark.png">
+  <img src="images/manual/apply-changes.png" alt="Preview of selectable changes from Python code to UML" width="800">
+</picture>
 
 *The imported code is on the left, the existing diagram on the right. Check boxes select which changes to apply.*
 
