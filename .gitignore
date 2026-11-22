@@ -36,11 +36,16 @@
 /images/**
 !/images/readme/
 !/images/readme/01-structogram.png
+!/images/readme/01-structogram-dark.png
 !/images/readme/02-uml.png
+!/images/readme/02-uml-dark.png
 !/images/readme/03-code-model.png
+!/images/readme/03-code-model-dark.png
 !/images/readme/04-export.png
 !/images/readme/05-objects.png
+!/images/readme/05-objects-dark.png
 !/images/readme/06-thonny.png
+!/images/readme/06-thonny-dark.png
 !/images/readme/07-cat.png
 !/images/manual/
 !/images/manual/apply-changes.png
