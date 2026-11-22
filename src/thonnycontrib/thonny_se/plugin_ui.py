@@ -7,7 +7,7 @@ from .scrolling import ScrollArea
 from .i18n import tr
 import json
 from importlib.resources import as_file, files
-from tkinter import BooleanVar, StringVar, PhotoImage, messagebox, ttk
+from tkinter import BooleanVar, StringVar, PhotoImage, ttk
 
 from thonny import get_workbench
 from thonny.config_ui import ConfigurationPage
@@ -222,24 +222,17 @@ class ThonnySEOptionsPage(ConfigurationPage):
         if not changed.intersection((APPEARANCE, ui_key, syntax_key)):
             return
 
-        updated = []
-        for key, label, theme in (
-            ("view.ui_theme", tr("UI theme"),
-             workbench.get_option(ui_key) or workbench.get_default_ui_theme()),
-            ("view.syntax_theme", tr("Syntax theme"), workbench.get_option(syntax_key)),
+        updated = False
+        for key, theme in (
+            ("view.ui_theme", workbench.get_option(ui_key) or workbench.get_default_ui_theme()),
+            ("view.syntax_theme", workbench.get_option(syntax_key)),
         ):
             if theme != workbench.get_option(key):
                 workbench.set_option(key, theme)
-                updated.append(f"{label}: {theme}")
+                updated = True
 
         if updated:
             workbench.reload_themes()
-            messagebox.showinfo(
-                tr("Appearance"),
-                "\n".join(updated) + "\n\n"
-                + tr("You can change the themes later under Theme & Font."),
-                parent=self,
-            )
 
 
 def install():
