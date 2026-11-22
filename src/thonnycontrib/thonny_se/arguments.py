@@ -14,6 +14,9 @@ class ArgumentFields:
     def __init__(self, master, parameters, objects=(), *, start=0):
         self.parameters = parameters
         self.values, self.entries = {}, {}
+        if not parameters:
+            self.next_row = start
+            return
         # Every alias is a valid expression; show the class alongside selection
         # separately in the help below so the field always contains valid Python.
         names = [name for obj in objects for name in obj['names']]
