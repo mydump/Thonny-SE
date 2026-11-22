@@ -122,7 +122,9 @@ def install_theme_updates(workbench, graphics):
                     break
             button = workbench._toolbar_buttons.get(command["command_id"])
             if button is not None:
-                if retina_icons.toolbar(button,role,command['caption'] if command['command_id'].startswith('thonny_se_export_') else None):
+                caption_below = workbench.in_simple_mode() and command['command_id'] in ('thonny_se_new', 'thonny_se_new_uml')
+                caption = command['caption'] if caption_below or command['command_id'].startswith('thonny_se_export_') else None
+                if retina_icons.toolbar(button,role,caption,caption_below=caption_below):
                     continue
                 path = icon_path(role, dark=dark, size=16)
                 normal, disabled = workbench.get_image(path), workbench.get_image(path, disabled=True)

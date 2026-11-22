@@ -518,6 +518,9 @@ def install():
         @wraps(original_add_toolbar_button)
         def add_toolbar_button(command_id, image, disabled_image, command_label, caption,
                                alternative_caption, accelerator, handler, tester, toolbar_group):
+            # Simple mode measures both captions when sizing native toolbar buttons.
+            if command_id.startswith("thonny_se_") or command_id in ("undo", "redo"):
+                alternative_caption = alternative_caption or caption
             args = (command_id, image, disabled_image, command_label, caption,
                     alternative_caption, accelerator, handler, tester, toolbar_group)
             if command_id in ("undo", "redo"):
