@@ -47,12 +47,6 @@ Getestet auf macOS und Windows. Auch unter Linux lauffähig. Rückmeldungen zur 
 
 Thonny SE wird aktiv entwickelt.
 
-## Ausgangsbasis der Dateiformate
-
-Version 1.0.1 legt für UML-Diagramme die Formatversion 1 fest. Struktogramme verwenden bereits Formatversion 1. Interne UML-Vorversionsformate und die alte Endung `.tse.json` werden nicht mehr unterstützt.
-
-Mit 1.0.0 gespeicherte UML-Dateien enthalten `"version": 13`. Vor dem Öffnen mit 1.0.1 muss dieser Eintrag in der JSON-Datei **manuell auf `"version": 1` geändert werden**. Bei Dateien mit der aktuellen strukturierten Datenform sind keine weiteren Änderungen nötig. Es wird ausschließlich Formatversion 1 akzeptiert; die vollständige Dateistruktur wird weiterhin geprüft. Ältere Entwicklungsstrukturen und UML-Freitextzeilen werden nicht unterstützt. Es wird kein Konverter bereitgestellt.
-
 ## So legst du los
 
 Die Installation über PyPI und der Wheel-Download auf GitHub stehen mit der Veröffentlichung bereit.
