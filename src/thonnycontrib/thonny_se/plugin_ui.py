@@ -7,7 +7,7 @@ from .scrolling import ScrollArea
 from .i18n import tr
 import json
 from importlib.resources import as_file, files
-from tkinter import BooleanVar, StringVar, PhotoImage, ttk
+from tkinter import BooleanVar, StringVar, PhotoImage, messagebox, ttk
 
 from thonny import get_workbench
 from thonny.config_ui import ConfigurationPage
@@ -20,10 +20,22 @@ from thonny.ui_utils import (
 )
 
 from ._version import __version__
-from .diagram_preferences import STRUCTOGRAM_CAT_BLOCKS, STRUCTOGRAM_HINTS, UML_EARS, UML_HINTS, OBJECT_METHODS, UML_CONSTRUCTOR_NAME, UML_CHECK_TYPES, UML_METHOD_STYLE, UML_AUTO_DEFAULTS, UML_USE_MULTIPLICITY, UML_CHECK_VALUES
+from .diagram_preferences import APPEARANCE, STRUCTOGRAM_CAT_BLOCKS, STRUCTOGRAM_HINTS, UML_EARS, UML_HINTS, OBJECT_METHODS, UML_CONSTRUCTOR_NAME, UML_CHECK_TYPES, UML_METHOD_STYLE, UML_AUTO_DEFAULTS, UML_USE_MULTIPLICITY, UML_CHECK_VALUES
 
 
 PROJECT_URL = "https://github.com/mydump/Thonny-SE"
+
+LIGHT_UI_THEME = "thonny_se.light_ui_theme"
+LIGHT_SYNTAX_THEME = "thonny_se.light_syntax_theme"
+DARK_UI_THEME = "thonny_se.dark_ui_theme"
+DARK_SYNTAX_THEME = "thonny_se.dark_syntax_theme"
+APPEARANCE_DEFAULTS = {
+    APPEARANCE: "light",
+    LIGHT_UI_THEME: "",
+    LIGHT_SYNTAX_THEME: "Default Light",
+    DARK_UI_THEME: "Clean Dark",
+    DARK_SYNTAX_THEME: "Default Dark",
+}
 
 
 class AboutDialog(CommonDialog):
@@ -99,6 +111,7 @@ class ThonnySEOptionsPage(ConfigurationPage):
         self.options = {}
         self.columnconfigure(0, weight=1)
         workbench = get_workbench()
+        self._add_appearance_options(workbench)
         for title, options in (
             (tr('Structogram editor'), (
                 (STRUCTOGRAM_HINTS, tr('Hide introductory hints in this editor')),
@@ -132,6 +145,45 @@ class ThonnySEOptionsPage(ConfigurationPage):
                 self.options[key] = variable
                 ttk.Checkbutton(group, text=label, variable=variable).grid(sticky="w")
 
+    def _add_appearance_options(self, workbench):
+        group = ttk.LabelFrame(self, text=tr("Appearance"), padding=8)
+        group.grid(sticky="ew", pady=(0, 8))
+        group.columnconfigure((1, 2), weight=1)
+
+        mode = StringVar(self, value=workbench.get_option(APPEARANCE))
+        self.options[APPEARANCE] = mode
+        ttk.Label(group, text=tr("UI theme")).grid(row=1, column=0, sticky="w", padx=(0, 8))
+        ttk.Label(group, text=tr("Syntax theme")).grid(row=2, column=0, sticky="w", padx=(0, 8))
+
+        ui_themes = tuple(workbench.get_usable_ui_theme_names())
+        syntax_themes = tuple(workbench.get_syntax_theme_names())
+        self._default_ui_label = tr("Thonny default ({theme})").format(
+            theme=workbench.get_default_ui_theme()
+        )
+        for column, (value, label, ui_key, syntax_key) in enumerate(
+            (
+                ("light", tr("Light"), LIGHT_UI_THEME, LIGHT_SYNTAX_THEME),
+                ("dark", tr("Dark"), DARK_UI_THEME, DARK_SYNTAX_THEME),
+            ),
+            start=1,
+        ):
+            ttk.Radiobutton(group, text=label, variable=mode, value=value).grid(
+                row=0, column=column, sticky="w", pady=(0, 4)
+            )
+            for row, key, themes in ((1, ui_key, ui_themes), (2, syntax_key, syntax_themes)):
+                default = APPEARANCE_DEFAULTS[key]
+                selected = workbench.get_option(key)
+                if selected not in themes:
+                    selected = default
+                if key == LIGHT_UI_THEME:
+                    themes = (self._default_ui_label, *themes)
+                    selected = selected or self._default_ui_label
+                variable = StringVar(self, value=selected)
+                self.options[key] = variable
+                ttk.Combobox(group, textvariable=variable, values=themes, state="readonly", width=20).grid(
+                    row=row, column=column, sticky="ew", padx=(0, 6), pady=2
+                )
+
     def apply(self):
         from .editor import StructogramEditor
         from .uml_editor import UmlEditor
@@ -140,13 +192,17 @@ class ThonnySEOptionsPage(ConfigurationPage):
         changed = set()
         for key, variable in self.options.items():
             value = variable.get()
+            if key == LIGHT_UI_THEME and value == self._default_ui_label:
+                value = ""
             if value != workbench.get_option(key):
                 workbench.set_option(key, value)
                 changed.add(key)
         for editor in workbench.get_editor_notebook().get_all_editors():
-            if isinstance(editor, StructogramEditor) and changed & {STRUCTOGRAM_CAT_BLOCKS, STRUCTOGRAM_HINTS}:
+            if isinstance(editor, StructogramEditor) and changed & {APPEARANCE, STRUCTOGRAM_CAT_BLOCKS, STRUCTOGRAM_HINTS}:
                 editor.diagram.draw()
-            elif isinstance(editor, UmlEditor) and changed & {UML_HINTS, UML_EARS, UML_CONSTRUCTOR_NAME, UML_CHECK_TYPES, UML_METHOD_STYLE, UML_AUTO_DEFAULTS, UML_USE_MULTIPLICITY, UML_CHECK_VALUES}:
+                if APPEARANCE in changed:
+                    editor.palette.refresh_appearance()
+            elif isinstance(editor, UmlEditor) and changed & {APPEARANCE, UML_HINTS, UML_EARS, UML_CONSTRUCTOR_NAME, UML_CHECK_TYPES, UML_METHOD_STYLE, UML_AUTO_DEFAULTS, UML_USE_MULTIPLICITY, UML_CHECK_VALUES}:
                 editor.diagram.draw()
                 member = editor.diagram.member_editor
                 if member is not None and hasattr(member, "_refresh_type_feedback"):
@@ -155,10 +211,41 @@ class ThonnySEOptionsPage(ConfigurationPage):
             view = workbench._thonny_se_objects.existing_view()
             if view is not None:
                 view.draw()
+        self._apply_appearance(workbench, changed)
+
+    def _apply_appearance(self, workbench, changed):
+        if workbench.get_option(APPEARANCE) == "dark":
+            ui_key, syntax_key = DARK_UI_THEME, DARK_SYNTAX_THEME
+        else:
+            ui_key, syntax_key = LIGHT_UI_THEME, LIGHT_SYNTAX_THEME
+
+        if not changed.intersection((APPEARANCE, ui_key, syntax_key)):
+            return
+
+        updated = []
+        for key, label, theme in (
+            ("view.ui_theme", tr("UI theme"),
+             workbench.get_option(ui_key) or workbench.get_default_ui_theme()),
+            ("view.syntax_theme", tr("Syntax theme"), workbench.get_option(syntax_key)),
+        ):
+            if theme != workbench.get_option(key):
+                workbench.set_option(key, theme)
+                updated.append(f"{label}: {theme}")
+
+        if updated:
+            workbench.reload_themes()
+            messagebox.showinfo(
+                tr("Appearance"),
+                "\n".join(updated) + "\n\n"
+                + tr("You can change the themes later under Theme & Font."),
+                parent=self,
+            )
 
 
 def install():
     workbench = get_workbench()
+    for key, value in APPEARANCE_DEFAULTS.items():
+        workbench.set_default(key, value)
     for option in (STRUCTOGRAM_CAT_BLOCKS, STRUCTOGRAM_HINTS, UML_HINTS, UML_EARS, OBJECT_METHODS, UML_USE_MULTIPLICITY):
         workbench.set_default(option, False)
     for option in (UML_CONSTRUCTOR_NAME, UML_CHECK_TYPES, UML_AUTO_DEFAULTS, UML_CHECK_VALUES):
@@ -166,9 +253,9 @@ def install():
     workbench.set_default(UML_METHOD_STYLE, "snake_case")
     from .diagram_preferences import UML_GRID
     workbench.set_default(UML_GRID, "none")
-    from .export_preferences import EXPORT_KEYS
-    for key in EXPORT_KEYS.values():
-        workbench.set_default(key, True)
+    from .export_preferences import EXPORT_DEFAULTS, EXPORT_KEYS
+    for name, key in EXPORT_KEYS.items():
+        workbench.set_default(key, EXPORT_DEFAULTS[name])
     # Thonny lädt seinen eigenen Info-Eintrag zuerst in derselben Menügruppe.
     workbench.add_command(
         "thonny_se_about", "help", tr('About Thonny SE'),

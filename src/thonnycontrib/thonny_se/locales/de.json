@@ -1,4 +1,11 @@
 {
+  "Appearance": "Darstellung",
+  "Light": "Hell",
+  "Dark": "Dunkel",
+  "UI theme": "Oberflächen-Theme",
+  "Syntax theme": "Syntax-Theme",
+  "Thonny default ({theme})": "Thonny-Standard ({theme})",
+  "You can change the themes later under Theme & Font.": "Du kannst die Themes später unter „Theme & Schriftart“ ändern.",
   "# Generated from a structogram with Thonny SE.\n": "# Mit Thonny SE aus einem Struktogramm erzeugt.\n",
   "+ Add attribute": "+ Attribut hinzufügen",
   "+ Add method": "+ Methode hinzufügen",

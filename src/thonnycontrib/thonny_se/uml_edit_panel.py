@@ -8,18 +8,21 @@ from .display_context import context_for
 import tkinter as tk
 from tkinter import font as tkfont
 
-from .ui_style import UML_SECTION_FILLS, UML_SECTION_INKS, UML_SECTION_BADGES, ERROR, FIELD_BORDER, INK, SELECT, SELECTION_FILL
+from .ui_style import ui_color, UML_SECTION_FILLS, UML_SECTION_INKS, UML_SECTION_BADGES, ERROR, FIELD_BORDER, INK, SELECT, SELECTION_FILL
 from thonny.ui_utils import create_tooltip
 
 from .uml_gesture_icons import letter_badge
+from .graphics import clear_icon_images, clear_shapes, icon, rounded
+from .tooltips import attach_tip
 
 DELETE_FILL = "#fff0ee"
 PANEL_INSET = 8
 PANEL_SURROUND = "#d6d6d6"
 
 
-def edit_panel(outer, *, deleting=False, section="methods"):
+def edit_panel(outer, *, deleting=False, section="methods", color=lambda value: value):
     fill, accent = (DELETE_FILL, ERROR) if deleting else (UML_SECTION_FILLS[section], UML_SECTION_INKS[section])
+    fill, accent = color(fill), color(accent)
     # Native Tk widgets are rectangular. Keep the native rectangle entirely
     # inside the rounded canvas surface drawn by UmlCanvas._place_editor.
     outer.configure(background=fill, highlightthickness=0, borderwidth=0)
@@ -28,21 +31,22 @@ def edit_panel(outer, *, deleting=False, section="methods"):
     content.pack(fill="both", expand=True, padx=PANEL_INSET, pady=4)
     return content
 
-def panel_badge(parent, section, font, *, deleting=False):
+def panel_badge(parent, section, font, *, deleting=False, color=lambda value: value):
     fill, accent = (DELETE_FILL, ERROR) if deleting else (UML_SECTION_FILLS[section], UML_SECTION_INKS[section])
-    badge = tk.Canvas(parent, width=35, height=36, background=fill, highlightthickness=0)
+    badge = tk.Canvas(parent, width=35, height=36, background=color(fill), highlightthickness=0)
     def size(state):
         badge.configure(width=round(35*state.ui_scale),height=round(36*state.ui_scale))
-        paint_panel_badge(badge,section,font,accent)
+        paint_panel_badge(badge,section,font,accent,color_map=color)
     context_for(badge).subscribe(badge,size)
     size(context_for(badge).state)
-    badge.bind("<Configure>", lambda event: paint_panel_badge(badge, section, font, accent))
+    badge.bind("<Configure>", lambda event: paint_panel_badge(badge, section, font, accent, color_map=color))
     return badge
 
 
-def paint_panel_badge(canvas, section, font, color):
+def paint_panel_badge(canvas, section, font, color, *, color_map=lambda value: value):
     fill = "#faddd9" if color == ERROR else UML_SECTION_BADGES[section]
     color = ERROR if color == ERROR else UML_SECTION_INKS[section]
+    fill, color = color_map(fill), color_map(color)
     actual = tkfont.nametofont("TkDefaultFont",root=canvas).actual()
     radius = 12*context_for(canvas).state.ui_scale
     key = (canvas.winfo_width(),canvas.winfo_height(),section,color,fill,radius,
@@ -56,45 +60,52 @@ def paint_panel_badge(canvas, section, font, color):
 
 
 def delete_switch(parent, active, command, *, background=None):
-    fill = DELETE_FILL if active else background or SELECTION_FILL
+    fill = ui_color(DELETE_FILL) if active else background or ui_color(SELECTION_FILL)
     switch = tk.Canvas(parent, width=63, height=35, background=fill, takefocus=True,
                        highlightthickness=0)
-    track = ERROR if active else "#a6b4c3"
-    switch.create_rectangle(18, 5, 45, 30, fill=track, outline="", tags="insert")
-    for center in (18, 45):
-        switch.create_oval(center-12, 5, center+12, 30, fill=track, outline="")
-    x = 45 if active else 18
-    knob = switch.create_oval(x-11, 6, x+11, 29, fill="white", outline="")
-    ink = ERROR if active else "#47586b"
-    switch.create_line(x-7, 13, x+7, 13, fill=ink, width=1.5, capstyle="round")
-    switch.create_line(x-5, 13, x-4, 23, x+4, 23, x+5, 13, fill=ink, width=1.5, joinstyle="round")
-    switch.create_line(x-3, 13, x-3, 10, x+3, 10, x+3, 13, fill=ink, width=1.5, joinstyle="round")
-    for offset in (-2, 2):
-        switch.create_line(x+offset, 16, x+offset, 21, fill=ink, capstyle="round")
-    focus_fill = "#faddd9" if active else "#dceaff"
-    switch.bind("<FocusIn>", lambda event: switch.itemconfigure(knob, fill=focus_fill))
-    switch.bind("<FocusOut>", lambda event: switch.itemconfigure(knob, fill="white"))
-    create_tooltip(switch, tr('Disable delete mode (Esc)') if active else tr('Enable delete mode'))
+    track = ui_color(ERROR) if active else ui_color("#a6b4c3")
+    ink = ui_color(ERROR) if active else ui_color("#47586b")
+    focus_fill = ui_color("#faddd9") if active else ui_color("#dceaff")
+    knob_fill = ui_color("white")
+    face = tkfont.nametofont("TkDefaultFont", root=switch).copy()
+    context = context_for(switch)
+    center_x = 45 if active else 18
+
+    def show_focus(focused):
+        switch.itemconfigure("knob-normal", state="hidden" if focused else "normal")
+        switch.itemconfigure("knob-focus", state="normal" if focused else "hidden")
+
+    def resize(state):
+        scale = state.ui_scale
+        switch.configure(width=round(63 * scale), height=round(35 * scale))
+        face.configure(size=-round(14 * scale))
+        for group in ("track", "knob-normal", "knob-focus", "insert"):
+            clear_shapes(switch, group)
+        clear_icon_images(switch)
+        rounded(switch, *(value * scale for value in (6, 5, 57, 30)),
+                radius=12 * scale, fill=track, outline=track, group="track")
+        bounds = tuple(value * scale for value in (center_x - 11, 6, center_x + 11, 29))
+        for group, color in (("knob-normal", knob_fill), ("knob-focus", focus_fill)):
+            rounded(switch, *bounds, radius=11 * scale, fill=color, outline=color, group=group)
+        icon(switch, center_x * scale, 17.5 * scale, "edit.delete", face, ink,
+             pixels=14 * scale, tags=("insert",))
+        show_focus(switch.focus_get() is switch)
+
+    context.subscribe(switch, resize)
+    resize(context.state)
+    switch.bind("<FocusIn>", lambda event: show_focus(True))
+    switch.bind("<FocusOut>", lambda event: show_focus(False))
+    attach_tip(switch, tr("Disable delete mode (Esc)") if active else tr("Enable delete mode"))
     for key in ("<ButtonRelease-1>", "<Return>", "<KP_Enter>", "<space>"):
         switch.bind(key, lambda event: command() or "break")
-    base_widths = {item:float(switch.itemcget(item,'width')) for item in switch.find_all()}
-    switch._se_control_scale = 1.0
-    def size(state):
-        scale=state.ui_scale
-        switch.scale('all',0,0,scale/switch._se_control_scale,scale/switch._se_control_scale)
-        switch._se_control_scale=scale
-        switch.configure(width=round(63*scale),height=round(35*scale))
-        for item,width in base_widths.items():switch.itemconfigure(item,width=width*scale)
-    context_for(switch).subscribe(switch,size)
-    size(context_for(switch).state)
     return switch
 
 
-def picker(parent, build_field, choices, select, *, editable=True):
-    frame = tk.Frame(parent, background="white", highlightthickness=1, highlightbackground=FIELD_BORDER)
+def picker(parent, build_field, choices, select, *, editable=True, color=lambda value: value):
+    frame = tk.Frame(parent, background=color("white"), highlightthickness=1, highlightbackground=color(FIELD_BORDER))
     field = build_field(frame)
     field.pack(side="left", fill="both", expand=True)
-    arrow = tk.Label(frame, text="⌄", foreground=SELECT, background="white", padx=4, pady=0,
+    arrow = tk.Label(frame, text="⌄", foreground=color(SELECT), background=color("white"), padx=4, pady=0,
                      borderwidth=0, font=field.cget("font"))
     arrow.pack(side="right", fill="y")
     menu = tk.Menu(frame, tearoff=False)
@@ -118,25 +129,25 @@ def picker(parent, build_field, choices, select, *, editable=True):
     return frame, field
 
 
-def header_picker(parent, variable, choices, *, width, editable=False):
+def header_picker(parent, variable, choices, *, width, editable=False, color=lambda value: value):
     def build_field(frame):
-        options = dict(textvariable=variable, width=width, background="white", foreground=INK, borderwidth=0,
+        options = dict(textvariable=variable, width=width, background=color("white"), foreground=color(INK), borderwidth=0,
                        highlightthickness=0, takefocus=True)
         if editable:
-            return tk.Entry(frame, insertbackground=INK, relief="flat", **options)
+            return tk.Entry(frame, insertbackground=color(INK), relief="flat", **options)
         return tk.Label(frame, anchor="w", padx=4, pady=1, **options)
 
     frame, field = picker(parent, build_field, ((value, value or tr('No base class')) for value in choices),
-                          variable.set, editable=editable)
-    field.bind("<FocusIn>", lambda event: frame.configure(highlightbackground=SELECT))
-    field.bind("<FocusOut>", lambda event: frame.configure(highlightbackground=FIELD_BORDER))
+                          variable.set, editable=editable, color=color)
+    field.bind("<FocusIn>", lambda event: frame.configure(highlightbackground=color(SELECT)))
+    field.bind("<FocusOut>", lambda event: frame.configure(highlightbackground=color(FIELD_BORDER)))
     return frame, field
 
 
 class DeleteButton(tk.Canvas):
     def __init__(self, parent, font, command):
         super().__init__(parent, width=font.measure(tr('Delete'))+24, height=font.metrics("linespace")+12,
-                         background=DELETE_FILL, highlightthickness=0, takefocus=True)
+                         background=ui_color(DELETE_FILL), highlightthickness=0, takefocus=True)
         self.font = font
         self.command = command
         self.hovered = False
@@ -160,9 +171,9 @@ class DeleteButton(tk.Canvas):
         w, h = self.winfo_width()-1, self.winfo_height()-1
         self.create_polygon(1, 8, 1, 1, 8, 1, w-8, 1, w, 1, w, 8, w, h-8, w, h,
                             w-8, h, 8, h, 1, h, 1, h-8, smooth=True,
-                            fill="#faddd9" if self.hovered else "#fff8f7", outline=ERROR,
+                            fill=ui_color("#faddd9") if self.hovered else ui_color("#fff8f7"), outline=ui_color(ERROR),
                             width=2 if self.focused else 1)
-        self.create_text(w/2, h/2, text=tr('Delete'), font=self.font, fill=ERROR)
+        self.create_text(w/2, h/2, text=tr('Delete'), font=self.font, fill=ui_color(ERROR))
 
     def _click(self, event):
         if 0 <= event.x < self.winfo_width() and 0 <= event.y < self.winfo_height():

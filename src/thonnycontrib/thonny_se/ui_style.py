@@ -43,3 +43,81 @@ NSD_SECTION_FILLS = {"statement":"#ffffff", "call":"#fff4df",
 NSD_DISABLED_FILL = "#f1f2f3"
 NSD_DISABLED_INK = "#858b92"
 NSD_DISABLED_EDGE = "#9ba1a8"
+
+# Light drawing colors remain the defaults for export.
+DARK_CANVAS = "#20242a"
+DARK_MONOCHROME_CANVAS = "#222222"
+DARK_MONOCHROME_SURFACE = "#303030"
+DARK_MONOCHROME_INK = "#eeeeee"
+DARK_DIAGRAM_COLORS = {
+    "white": "#2b3139",
+    "#ffffff": "#2b3139",
+    INK: "#e2e6eb",
+    MUTED: "#b0bac7",
+    EDGE: "#8794a4",
+    SELECT: "#83b8ff",
+    ERROR: "#ffa59e",
+    HINT_FILL: "#403626",
+    HINT_BORDER: "#8b7754",
+    HINT_BADGE: "#51422a",
+    HINT_INK: "#eed195",
+    HINT_TEXT: "#f0ddba",
+    NSD_DISABLED_FILL: "#34383e",
+    NSD_DISABLED_INK: "#a7aeb8",
+    NSD_DISABLED_EDGE: "#717985",
+    NSD_SECTION_FILLS["call"]: "#413629",
+    NSD_SECTION_FILLS["if"]: "#2c3d53",
+    NSD_SECTION_FILLS["while"]: "#2a4038",
+    UML_SECTION_FILLS["name"]: "#40354e",
+    UML_SECTION_FILLS["attributes"]: "#3c303c",
+    UML_SECTION_FILLS["methods"]: "#2b3a4d",
+    UML_SECTION_INKS["name"]: "#c5afe2",
+    UML_SECTION_INKS["attributes"]: "#dab1c8",
+    UML_SECTION_INKS["methods"]: "#a9c6ee",
+    UML_SECTION_BADGES["name"]: "#4b3d5b",
+    UML_SECTION_BADGES["attributes"]: "#503b4c",
+    UML_SECTION_BADGES["methods"]: "#364963",
+    FIELD_BORDER: "#8794a4",
+    DISABLED: "#738090",
+    SELECTION_FILL: "#304358",
+    OBJECT_FILL: "#2b3b36",
+    OBJECT_EDGE: "#759b91",
+    OBJECT_SHADOW: "#1b221f",
+    "#b9cfe8": "#647c99",
+    "#dceaff": "#384d68",
+    "#28794e": "#9bd5b2",
+    "#a6b4c3": "#67798d",
+    "#47586b": "#b9c8d9",
+    "#faddd9": "#633a3e",
+    "#fff8f7": "#543437",
+    "#edf0f3": "#2d343d",  # Grid
+    "#d6d6d6": "#1b1e23",  # UML focus surroundings
+    "#fff0ee": "#4b3033",  # UML deletion surface
+    "#000000": "#c5ced8",  # Cat details
+    "#8f2019": "#ffc0ba",
+    "#124e9e": "#bad7ff",
+}
+
+DARK_MONOCHROME_CONTROLS = {
+    SELECT: DARK_DIAGRAM_COLORS[SELECT],
+    "#edf0f3": "#383838",
+}
+
+
+def uses_dark_ui(workbench=None):
+    from tkinter import TclError
+    from thonny import get_workbench
+
+    if workbench is None:
+        workbench = get_workbench()
+    if workbench is None:
+        return False
+    try:
+        return workbench.uses_dark_ui_theme()
+    except TclError:
+        # Tk can temporarily lack the active theme during native callbacks.
+        return "dark" in str(workbench.get_option("view.ui_theme", "")).lower()
+
+
+def ui_color(light):
+    return DARK_DIAGRAM_COLORS.get(light, light) if uses_dark_ui() else light

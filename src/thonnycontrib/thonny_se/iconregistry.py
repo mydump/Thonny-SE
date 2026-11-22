@@ -49,7 +49,9 @@ def icon_path(role, *, required=True, dark=False, size=24):
 
 def menu_icon(workbench, role, *, dark=None):
     if dark is None:
-        dark = workbench.uses_dark_ui_theme()
+        from .ui_style import uses_dark_ui
+
+        dark = uses_dark_ui(workbench)
     image = workbench.get_image(icon_path(role, dark=dark, size=16))
     retina_icons.remember_image(workbench,image,role)
     return image

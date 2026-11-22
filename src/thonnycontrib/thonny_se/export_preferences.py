@@ -12,15 +12,29 @@ class ExportOptions:
     transparent_background: bool = True
     transparent_models: bool = True
     monochrome: bool = True
+    appearance: str = "light"
+
+    @property
+    def dark(self):
+        return not self.monochrome and self.appearance == "dark"
+
+    @property
+    def models_are_transparent(self):
+        return self.monochrome and self.transparent_models
 
 
 EXPORT_KEYS = {field.name: 'thonny_se.export_'+field.name for field in fields(ExportOptions)}
+EXPORT_DEFAULTS = {field.name: field.default for field in fields(ExportOptions)}
 
 
 def load_options():
     workbench = get_workbench()
-    return ExportOptions(**{name: bool(workbench.get_option(key, True)) if workbench else True
-                            for name, key in EXPORT_KEYS.items()})
+    if workbench is None:
+        return ExportOptions()
+    values = {name: workbench.get_option(key, EXPORT_DEFAULTS[name])
+              for name, key in EXPORT_KEYS.items()}
+    values["appearance"] = "dark" if values["appearance"] == "dark" else "light"
+    return ExportOptions(**values)
 
 
 def save_options(options):
