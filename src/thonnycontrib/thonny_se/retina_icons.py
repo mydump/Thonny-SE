@@ -69,7 +69,7 @@ def plain(text):
     return text
 
 
-def toolbar(button,role,caption=None):
+def toolbar(button,role,caption=None,*,caption_below=False):
     if not enabled(button):
         return False
     style=ttk.Style(button)
@@ -77,7 +77,7 @@ def toolbar(button,role,caption=None):
     target=font_for(button,base_font)
     if str(style.lookup('SE.Vector.Toolbutton','font'))!=str(target):
         style.configure('SE.Vector.Toolbutton',font=target)
-    button.configure(image='',style='SE.Vector.Toolbutton',text=glyph(role)+(' '+caption if caption else ''))
+    button.configure(image='',style='SE.Vector.Toolbutton',text=glyph(role)+(('\n' if caption_below else ' ')+caption if caption else ''))
     return True
 
 
