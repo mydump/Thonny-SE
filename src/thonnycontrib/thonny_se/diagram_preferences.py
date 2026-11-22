@@ -27,7 +27,7 @@ def uses_dark_diagrams():
 
 def enabled(option):
     workbench = get_workbench()
-    default = option in (UML_CONSTRUCTOR_NAME, UML_CHECK_TYPES, UML_AUTO_DEFAULTS, UML_CHECK_VALUES)
+    default = option in (OBJECT_METHODS, UML_CONSTRUCTOR_NAME, UML_CHECK_TYPES, UML_AUTO_DEFAULTS, UML_CHECK_VALUES)
     return workbench.get_option(option, default) if workbench is not None else default
 
 
