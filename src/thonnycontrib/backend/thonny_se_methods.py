@@ -3,16 +3,15 @@
 # See LICENSE in the project root for the full license text.
 
 """Prepare and call real instance methods without evaluating annotations/properties."""
-import ast
 import inspect
 import sys
 import traceback
-import textwrap
 import types
 import uuid
 
 from .thonny_se_instantiation import evaluate_arguments
-from .thonny_se_objects import snapshot, resolve_object
+from .thonny_se_argument_types import argument_context
+from .thonny_se_objects import snapshot, resolve_object, safe_signature
 
 
 def resolve_method(obj, name):
@@ -34,20 +33,7 @@ def resolve_method(obj, name):
 
 
 def describe_method(function, receiver):
-    # Do not invoke lazy Python 3.14 annotations, __signature__ or __wrapped__.
-    clone = types.FunctionType(function.__code__, function.__globals__, function.__name__,
-                               function.__defaults__, function.__closure__)
-    clone.__kwdefaults__ = function.__kwdefaults__
-    signature = inspect.signature(clone, follow_wrapped=False)
-    annotations = {}
-    try:
-        node = ast.parse(textwrap.dedent(inspect.getsource(function))).body[0]
-        args = node.args
-        arguments = args.posonlyargs + args.args + args.kwonlyargs
-        arguments += [arg for arg in (args.vararg, args.kwarg) if arg]
-        annotations = {arg.arg: ast.unparse(arg.annotation) for arg in arguments if arg.annotation}
-    except (OSError, TypeError, SyntaxError, IndexError, AttributeError):
-        pass  # Shell-defined methods may not have retrievable source.
+    signature = safe_signature(function)
     parameters = list(signature.parameters.values())
     if receiver is not None:
         # Bind the implicit receiver even for unusual `def method(*args)` forms.
@@ -60,7 +46,8 @@ def describe_method(function, receiver):
     fields = [dict(name=param.name, kind=param.kind.name,
                    required=param.default is param.empty and param.kind not in (param.VAR_POSITIONAL, param.VAR_KEYWORD),
                    default='' if param.default is param.empty else repr(param.default),
-                   annotation=annotations.get(param.name, '')) for param in parameters]
+                   annotation='' if param.annotation is param.empty else inspect.formatannotation(param.annotation))
+              for param in parameters]
     return signature, fields
 
 
@@ -79,7 +66,17 @@ class MethodSession:
         self.prepared.clear()
         token = uuid.uuid4().hex
         self.prepared[token] = object_name, obj, method, function, receiver, signature
-        return dict(token=token, parameters=parameters, documentation=(inspect.getdoc(function) or '')[:2400],
+        signature_text = str(signature)
+        parameter_spans = {}
+        cursor = 1
+        for parameter in signature.parameters.values():
+            part = str(parameter)
+            start = signature_text.index(part, cursor)
+            parameter_spans[parameter.name] = (start, start+len(part))
+            cursor = start+len(part)
+        doc = inspect.getdoc(function) or ''
+        return dict(token=token, parameters=parameters, argument_context=argument_context(self.namespace), parameter_spans=parameter_spans, documentation=doc[:2400],
+                    documentation_truncated=len(doc)>2400,
                     signature=str(signature))
 
     def call(self, token, values):
@@ -110,6 +107,7 @@ def load_plugin(backend):
         response = dict(request_id=command.request_id)
         try:
             result = session.call(command.token, command.values)
+            response['result_is_none'] = result is None
             try:
                 response['result'] = repr(result)[:2000]
             except Exception:
@@ -121,6 +119,7 @@ def load_plugin(backend):
         response.update(objects=snapshot(session.namespace,
                         representation_error=command.get('representation_error', '<Representation failed>'),
                         expanded=command.get('expanded', ()), item_limits=command.get('item_limits', {})))
+        response['argument_context'] = argument_context(session.namespace)
         return response
 
     backend.add_command('thonny_se_prepare_method', prepare)

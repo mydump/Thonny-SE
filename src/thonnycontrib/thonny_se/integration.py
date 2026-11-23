@@ -238,8 +238,14 @@ def read_python_source(path):
     try:
         with open_python(path) as source:
             return source.read()
-    except (OSError, UnicodeError, SyntaxError) as exc:
-        raise ValueError(tr('{p0}\nCould not read file: {p1}').format(p0=path, p1=exc)) from exc
+    except FileNotFoundError as exc:
+        raise ValueError(tr('The linked Python file was not found. The file or its folder may have been moved or renamed. Relink the Python file to compare code and diagram again.')) from exc
+    except PermissionError as exc:
+        raise ValueError(tr('The Python file cannot be opened because access was denied. Check the file permissions and try again.')) from exc
+    except (UnicodeError, SyntaxError) as exc:
+        raise ValueError(tr('The Python file could not be read as text. Check its encoding in a text editor.')) from exc
+    except OSError as exc:
+        raise ValueError(tr('The Python file could not be opened. Check that its folder or network drive is available and try again.')) from exc
 
 
 def _read_uml_paths(paths, label, parent, *, reserved_names=()):
@@ -512,6 +518,9 @@ def install():
         @wraps(original_add_toolbar_button)
         def add_toolbar_button(command_id, image, disabled_image, command_label, caption,
                                alternative_caption, accelerator, handler, tester, toolbar_group):
+            # Simple mode measures both captions when sizing native toolbar buttons.
+            if command_id.startswith("thonny_se_") or command_id in ("undo", "redo"):
+                alternative_caption = alternative_caption or caption
             args = (command_id, image, disabled_image, command_label, caption,
                     alternative_caption, accelerator, handler, tester, toolbar_group)
             if command_id in ("undo", "redo"):

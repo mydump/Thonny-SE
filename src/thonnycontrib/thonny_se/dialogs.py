@@ -11,6 +11,7 @@ from tkinter import font as tkfont, messagebox, simpledialog, ttk
 from .model import LOOP_FIELDS
 from .export_preferences import ExportOptions, load_options, save_options
 from .ui_style import FIELD_BORDER, SELECT
+from .diagram_preferences import relationship_count_label
 
 
 class EditDialog(simpledialog.Dialog):
@@ -290,14 +291,47 @@ class ImageSizeDialog(EditDialog):
             row += 1
         previous = load_options()
         self.export_choices = {}
+        visible_transparency = tk.BooleanVar(self)
         for key, label in (('transparent_background', tr('Transparent background')),
                            ('transparent_models', tr('Transparent models')), ('monochrome', tr('Monochrome'))):
             variable = tk.BooleanVar(self, value=getattr(previous, key))
             self.export_choices[key] = variable
-            checkbox = ttk.Checkbutton(master, text=label, variable=variable)
+            if key == "transparent_models":
+                model_transparency = ttk.Checkbutton(
+                    master, text=label, variable=visible_transparency,
+                    command=lambda: self.export_choices["transparent_models"].set(visible_transparency.get()),
+                )
+                checkbox = model_transparency
+            else:
+                checkbox = ttk.Checkbutton(master, text=label, variable=variable)
             checkbox.grid(row=row, column=0, columnspan=2, sticky='w', pady=4)
             first = first or checkbox
             row += 1
+        appearance = tk.StringVar(self, value=previous.appearance)
+        self.export_choices["appearance"] = appearance
+        appearance_row = ttk.Frame(master)
+        appearance_row.grid(row=row, column=0, columnspan=2, sticky="w", pady=4)
+        label = ttk.Label(appearance_row, text=tr("Appearance"))
+        label.pack(side="left", padx=(0, 10))
+        appearance_controls = [label]
+        for value, text in (("light", tr("Light")), ("dark", tr("Dark"))):
+            button = ttk.Radiobutton(appearance_row, text=text, variable=appearance, value=value)
+            button.pack(side="left", padx=(0, 8))
+            appearance_controls.append(button)
+
+        monochrome = self.export_choices["monochrome"]
+        transparent_models = self.export_choices["transparent_models"]
+
+        def update_states(*_):
+            mono = monochrome.get()
+            visible_transparency.set(mono and transparent_models.get())
+            model_transparency.state(("!disabled",) if mono else ("disabled",))
+            for control in appearance_controls:
+                control.state(("disabled",) if mono else ("!disabled",))
+
+        monochrome.trace_add("write", update_states)
+        transparent_models.trace_add("write", update_states)
+        update_states()
         return first
 
     def _sync_size(self, changed):
@@ -401,7 +435,7 @@ class RelationshipDialog(EditDialog):
                                       state="readonly", width=26, style="SE.TCombobox")
         self.direction.set(self.directions[self.relation["direction"]])
         self.direction.grid(row=3, column=1, columnspan=2, sticky="ew", pady=(0, 8))
-        for column, label in ((1, tr('Role')), (2, tr('Multiplicity'))):
+        for column, label in ((1, tr('Role')), (2, relationship_count_label())):
             ttk.Label(master, text=label).grid(row=4, column=column, sticky="w", padx=(0, 7))
         self.entries = {}
         for row, (end, name) in enumerate(zip(("start", "end"), self.names), start=5):

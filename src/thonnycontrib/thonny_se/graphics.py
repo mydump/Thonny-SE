@@ -7,7 +7,7 @@ from itertools import count
 from math import ceil
 from PIL import Image, ImageDraw, ImageTk
 from functools import lru_cache
-from .display_context import context_for, valid_scale
+from .display_context import context_for
 
 
 def clear_shapes(canvas, group):
@@ -49,12 +49,11 @@ _shape_ids = count()
 def _rounded_vector(canvas, x0, y0, x1, y1, radius, fill, outline, group):
     state = context_for(canvas).state
     stroke = state.ui_scale
-    # Align the contour edge to backing pixels, keeping the logical UI width.
-    scale = valid_scale(state.backing_scale)
-    half_stroke = stroke*scale/2
-    snap = lambda value: (round(value*scale-half_stroke)+half_stroke)/scale
-    x0,y0,x1,y1 = (snap(value) for value in (x0,y0,x1,y1))
-    radius = round(radius*scale)/scale
+    # Tk's native arc bounds are quantized to logical integer coordinates.
+    # Keep their straight tangents on that same grid: half-pixel snapping
+    # otherwise leaves arc/line joins dependent on the panel's position.
+    x0,y0,x1,y1 = (round(value) for value in (x0,y0,x1,y1))
+    radius = round(radius)
     radius = max(0, min(radius, (x1-x0)/2, (y1-y0)/2))
     # Tk tessellates smooth polygons through integer XPoints. Native arcs
     # retain their curves instead of rounding every intermediate vertex.

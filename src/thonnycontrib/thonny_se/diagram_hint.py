@@ -14,9 +14,10 @@ from .ui_style import HINT_BADGE, HINT_BORDER, HINT_FILL, HINT_INK, HINT_TEXT
 class DiagramHint:
     TAG = "diagram-info"
 
-    def __init__(self, canvas, hide_option=None):
+    def __init__(self, canvas, hide_option=None, *, color=lambda value: value):
         self.canvas = canvas
         self.hide_option = hide_option
+        self.color = color
         self.text = ""
         self.image = None
         self.typography = Typography(canvas)
@@ -43,7 +44,7 @@ class DiagramHint:
             return
         center_x = canvas.canvasx(width / 2)
         y = canvas.canvasy(height / 2)
-        text = canvas.create_text(center_x+(0 if self.image else u(14)), y, text=self.text, font=self.font, fill=HINT_TEXT,
+        text = canvas.create_text(center_x+(0 if self.image else u(14)), y, text=self.text, font=self.font, fill=self.color(HINT_TEXT),
                                   width=width-u(110 if self.image else 82), justify="center",
                                   anchor="center", tags=self.TAG)
         left, top, right, bottom = canvas.bbox(text)
@@ -52,8 +53,8 @@ class DiagramHint:
             canvas.create_image(right+u(22),y,image=self.image,tags=(self.TAG,"diagram-info-run-icon"))
         radius = u(11)
         background = rounded(canvas,x0,y0,x1,y1,radius=radius,
-                             fill=HINT_FILL,outline=HINT_BORDER,group=self.TAG)
+                             fill=self.color(HINT_FILL),outline=self.color(HINT_BORDER),group=self.TAG)
         canvas.tag_lower(background, text)
         icon_x, icon_y = left-u(23), (top+bottom)/2
-        badge(canvas,icon_x,icon_y,radius=u(11),fill=HINT_BADGE,
-              outline=HINT_INK,group=self.TAG,exclamation=True)
+        badge(canvas,icon_x,icon_y,radius=u(11),fill=self.color(HINT_BADGE),
+              outline=self.color(HINT_INK),group=self.TAG,exclamation=True)

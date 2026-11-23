@@ -13,10 +13,11 @@ from tkinter import ttk, font
 from thonny import get_runner, get_workbench
 from thonny.common import InlineCommand
 
-from .ui_style import EDGE, INK, SELECT, SELECTION_FILL, OBJECT_FILL, OBJECT_EDGE, OBJECT_SHADOW
+from .ui_style import DARK_CANVAS, ui_color, uses_dark_ui, EDGE, INK, SELECT, SELECTION_FILL, OBJECT_FILL, OBJECT_EDGE, OBJECT_SHADOW
 from . import retina_icons
 from .iconregistry import icon_path, menu_icon
 from .diagram_preferences import OBJECT_METHODS, enabled
+from .method_layout import minimum_method_width, wrap_method
 
 
 def member_label(name, class_names=()):
@@ -56,6 +57,7 @@ class ObjectInspectorSE(ttk.Frame):
         self.expanded = set()
         self.item_limits = {}
         self.canvas.bind('<Configure>', lambda e: self.draw())
+        self.bind('<<ThemeChanged>>', lambda event: self.after_idle(self._redraw_mapped))
         self.canvas.bind('<Map>', lambda e: self.canvas.after_idle(self._redraw_mapped))
         self.scrolling = ScrollArea(self.canvas, self)
         self.render(get_workbench()._thonny_se_objects.objects)
@@ -97,7 +99,7 @@ class ObjectInspectorSE(ttk.Frame):
             text = tr('Python and the diagram contain different program versions.')
         narrow = width < 230
         inset = 12 if narrow else 35 if compact else 45
-        label = canvas.create_text(left+inset,top+(42 if narrow else 11),text=text,font=self.normal,fill=HINT_TEXT,
+        label = canvas.create_text(left+inset,top+(42 if narrow else 11),text=text,font=self.normal,fill=ui_color(HINT_TEXT),
             width=max(40,width-inset-28),anchor='nw',tags='stale-warning')
         bounds = canvas.bbox(label)
         self.warning_run_image = get_workbench().get_image('run-current-script')
@@ -105,19 +107,19 @@ class ObjectInspectorSE(ttk.Frame):
         canvas.create_image(left+inset, action_y+2, image=self.warning_run_image,
                             anchor='nw', tags='stale-warning')
         action_label = canvas.create_text(left+inset+24, action_y, text=action,
-            font=self.normal,fill=HINT_TEXT,width=max(40,width-inset-52),
+            font=self.normal,fill=ui_color(HINT_TEXT),width=max(40,width-inset-52),
             anchor='nw',tags='stale-warning')
         bottom = max(top+45,canvas.bbox(action_label)[3]+12,
                      action_y+self.warning_run_image.height()+12)
         shape = canvas.create_polygon(left,top+10,left,top,left+10,top,left+width-26,top,
             left+width-16,top,left+width-16,top+10,left+width-16,bottom-10,left+width-16,bottom,
             left+width-26,bottom,left+10,bottom,left,bottom,left,bottom-10,
-            smooth=True,fill=HINT_FILL,stipple='gray75',outline=HINT_BORDER,tags='stale-warning')
+            smooth=True,fill=ui_color(HINT_FILL),stipple='' if uses_dark_ui() else 'gray75',outline=ui_color(HINT_BORDER),tags='stale-warning')
         canvas.tag_lower(shape,label)
         x,y=left+(17 if compact else 23),top+22 if compact else (top+bottom)/2
-        canvas.create_oval(x-10,y-10,x+10,y+10,fill=HINT_BADGE,outline=HINT_INK,tags='stale-warning')
-        canvas.create_line(x+2,y-6,x,y+1,fill=HINT_INK,width=3,capstyle='round',tags='stale-warning')
-        canvas.create_oval(x-2,y+4,x+1,y+7,fill=HINT_INK,outline='',tags='stale-warning')
+        canvas.create_oval(x-10,y-10,x+10,y+10,fill=ui_color(HINT_BADGE),outline=ui_color(HINT_INK),tags='stale-warning')
+        canvas.create_line(x+2,y-6,x,y+1,fill=ui_color(HINT_INK),width=3,capstyle='round',tags='stale-warning')
+        canvas.create_oval(x-2,y+4,x+1,y+7,fill=ui_color(HINT_INK),outline='',tags='stale-warning')
         canvas.tag_raise('stale-warning')
         return bottom-top+10
 
@@ -136,24 +138,20 @@ class ObjectInspectorSE(ttk.Frame):
 
     def draw(self):
         canvas = self.canvas
+        canvas.configure(background=DARK_CANVAS if uses_dark_ui() else "white")
         # Deleting items does not delete Tkinter's registered Tcl callbacks.
         for tag, sequence, funcid in self._action_bindings:
             canvas.tag_unbind(tag, sequence, funcid)
         self._action_bindings.clear()
         canvas.delete('all')
-        # A narrow inspector must not split short method names into fragments.
         show_all = enabled(OBJECT_METHODS)
-        method_width = max((self.normal.measure(member_label(name, obj.get('class_names', [obj['class_name']]))+signature)
-                            for obj in self.objects for name, signature in obj['methods'].items()), default=0) if show_all else 0
-        def nesting(nodes, level=0):
-            deepest=level
-            for node in nodes:
-                if node.get('expanded'):
-                    children=[*node.get('references',{}).values(),
-                              *(entry['node'] for entry in node.get('items',[]))]
-                    deepest=max(deepest,nesting(children,level+1))
-            return deepest
-        width = max(300+44*nesting(self.objects), canvas.winfo_width(), min(560, method_width+85))
+        # Keep names, complete parameters and the return type indivisible.
+        minimum = self.typography.units(300)
+        if show_all:
+            minimum = max(minimum, max((minimum_method_width(
+                member_label(name, obj.get('class_names', [obj['class_name']])), signature, self.normal.measure)+100
+                for obj in self.objects for name, signature in obj.get('methods', {}).items()), default=0))
+        width = max(minimum, canvas.winfo_width())
         left, right, top = 12, width - 15, 12
         if self._warning_text():
             top += self._draw_warning()
@@ -184,14 +182,14 @@ class ObjectInspectorSE(ttk.Frame):
             if aliases and node.get('path', {}).get('steps'):
                 suffix += ' · '+tr('also {names}').format(names=', '.join(aliases))
             item = canvas.create_text(left+22, top+5, text=label+' : '+suffix,
-                anchor='nw', width=max(150,right-left-30), font=self.normal,fill=INK,tags=(tag,))
+                anchor='nw', width=max(20,right-left-30), font=self.normal,fill=ui_color(INK),tags=(tag,))
             bottom = canvas.bbox(item)[3]+8
             if cycle:
-                canvas.create_text(left+9,top+5,text='↩',font=self.normal,fill=SELECT,anchor='n',tags=(tag,))
+                canvas.create_text(left+9,top+5,text='↩',font=self.normal,fill=ui_color(SELECT),anchor='n',tags=(tag,))
                 return bottom
             cy=top+12
             points = (left+5,cy-3,left+12,cy+4,left+19,cy-3) if opened else (left+7,cy-5,left+13,cy,left+7,cy+5)
-            canvas.create_line(*points,fill=SELECT,width=2,tags=(tag,))
+            canvas.create_line(*points,fill=ui_color(SELECT),width=2,tags=(tag,))
             self._bind_action(tag,'<Button-1>',lambda e,n=node:self.toggle_reference(n))
             if not opened:
                 return bottom
@@ -213,30 +211,30 @@ class ObjectInspectorSE(ttk.Frame):
                 more_tag=tag+'_more'
                 item=canvas.create_text(child_left+4,y+4,
                     text=tr('Show {count} more elements').format(count=min(100,node['remaining'])),
-                    anchor='nw',font=self.normal,fill=SELECT,tags=(more_tag,),width=max(150,right-child_left-12))
+                    anchor='nw',font=self.normal,fill=ui_color(SELECT),tags=(more_tag,),width=max(20,right-child_left-12))
                 self._bind_action(more_tag,'<Button-1>',lambda e,n=node:self.show_more(n))
                 y=canvas.bbox(item)[3]+9
-            canvas.create_line(left+12,bottom,left+12,y-3,fill=OBJECT_EDGE)
+            canvas.create_line(left+12,bottom,left+12,y-3,fill=ui_color(OBJECT_EDGE))
             return y+5
 
         def plain(value,left,y,right=width-15):
-            item=canvas.create_text(left+4,y+4,text=value,font=self.normal,fill=INK,
-                                   anchor='nw',width=max(150,right-left-12))
+            item=canvas.create_text(left+4,y+4,text=value,font=self.normal,fill=ui_color(INK),
+                                   anchor='nw',width=max(20,right-left-12))
             return canvas.bbox(item)[3]+9
 
         def object_card(obj,left,top,label=None,right=width-15):
             counter[0] += 1
             index=counter[0]
-            text_width=max(150,right-left-28)
+            text_width=max(20,right-left-28)
             tag = f'object_{index}'
             y = top + 14
             def text(value, *, heading=False):
                 nonlocal y
                 item = canvas.create_text(left + 14, y, anchor='nw', width=text_width,
-                    text=value, font=self.bold if heading else self.normal, fill=INK, tags=(tag,))
+                    text=value, font=self.bold if heading else self.normal, fill=ui_color(INK), tags=(tag,))
                 y = canvas.bbox(item)[3] + 8
             text(f"{label or ', '.join(obj['names'])} : {obj['class_name']}", heading=True)
-            canvas.create_line(left+14, y, right-14, y, fill=OBJECT_EDGE, tags=(tag,))
+            canvas.create_line(left+14, y, right-14, y, fill=ui_color(OBJECT_EDGE), tags=(tag,))
             y += 10
             owners = obj.get('class_names', [obj['class_name']])
             for name, value in obj['attributes'].items():
@@ -247,31 +245,35 @@ class ObjectInspectorSE(ttk.Frame):
                     y=reference(nested,member_label(name,owners),left+10,y,right-10)
             if not obj['attributes']:
                 text(tr('No stored attributes'))
+            if obj['methods']:
+                canvas.create_line(left+14, y, right-14, y, fill=ui_color(OBJECT_EDGE), tags=(tag,))
+                y += 10
             if obj['methods'] and show_all:
                 y += 4
                 for method_index, (name, signature) in enumerate(obj['methods'].items()):
                     action_tag = f'{tag}_method_{method_index}'
                     row_top = y
+                    label = member_label(name, owners)
                     item = canvas.create_text(left+44, y+9, anchor='nw',
-                        width=max(45, text_width-42), text=member_label(name, owners)+signature,
-                        font=self.normal, fill=SELECT, tags=(tag, action_tag, 'object_method'))
+                        text=wrap_method(label, signature, self.normal.measure, max(45, text_width-42)),
+                        font=self.normal, fill=ui_color(SELECT), tags=(tag, action_tag, 'object_method'))
                     row_bottom = canvas.bbox(item)[3]+9
                     button = rounded(left+10, row_top, right-10, row_bottom,
-                        fill='white', outline='#b9cfe8', tags=(tag, action_tag, 'object_method_button'))
+                        fill=ui_color('white'), outline=ui_color('#b9cfe8'), tags=(tag, action_tag, 'object_method_button'))
                     canvas.tag_lower(button, item)
                     if retina_icons.enabled(canvas):
                         canvas.create_text(left+27, (row_top+row_bottom)/2,
                             text=retina_icons.glyph('class.instantiate'),
-                            font=retina_icons.font_for(canvas, self.normal), fill=SELECT,
+                            font=retina_icons.font_for(canvas, self.normal), fill=ui_color(SELECT),
                             tags=(tag, action_tag, 'object_method'))
                     else:
                         canvas.create_image(left+27, (row_top+row_bottom)/2,
                             image=get_workbench().get_image(icon_path('class.instantiate', size=16)),
                             tags=(tag, action_tag, 'object_method'))
                     self._bind_action(action_tag, '<Enter>', lambda e, b=button:
-                        canvas.itemconfigure(b, fill=SELECTION_FILL, outline=SELECT))
+                        canvas.itemconfigure(b, fill=ui_color(SELECTION_FILL), outline=ui_color(SELECT)))
                     self._bind_action(action_tag, '<Leave>', lambda e, b=button:
-                        canvas.itemconfigure(b, fill='white', outline='#b9cfe8'))
+                        canvas.itemconfigure(b, fill=ui_color('white'), outline=ui_color('#b9cfe8')))
                     self._bind_action(action_tag, '<Button-1>', lambda e, o=obj, n=name: self.call_method(o, n))
                     y = row_bottom + 7
             elif obj['methods']:
@@ -279,23 +281,23 @@ class ObjectInspectorSE(ttk.Frame):
                 action_tag = f'{tag}_methods'
                 row_bottom = y + max(34, self.normal.metrics('linespace')+18)
                 button = rounded(left+10, y, right-10, row_bottom,
-                    fill='white', outline='#b9cfe8', tags=(tag, action_tag, 'object_methods_dropdown'))
+                    fill=ui_color('white'), outline=ui_color('#b9cfe8'), tags=(tag, action_tag, 'object_methods_dropdown'))
                 canvas.create_text(left+23, (y+row_bottom)/2, anchor='w', text=tr('Methods …'),
-                    font=self.normal, fill=SELECT, tags=(tag, action_tag))
+                    font=self.normal, fill=ui_color(SELECT), tags=(tag, action_tag))
                 arrow_x, arrow_y = right-27, (y+row_bottom)/2
                 canvas.create_line(arrow_x-4, arrow_y-2, arrow_x, arrow_y+2, arrow_x+4, arrow_y-2,
-                    fill=SELECT, width=2, capstyle='round', joinstyle='round', tags=(tag, action_tag))
+                    fill=ui_color(SELECT), width=2, capstyle='round', joinstyle='round', tags=(tag, action_tag))
                 self._bind_action(action_tag, '<Enter>', lambda e, b=button:
-                    canvas.itemconfigure(b, fill=SELECTION_FILL, outline=SELECT))
+                    canvas.itemconfigure(b, fill=ui_color(SELECTION_FILL), outline=ui_color(SELECT)))
                 self._bind_action(action_tag, '<Leave>', lambda e, b=button:
-                    canvas.itemconfigure(b, fill='white', outline='#b9cfe8'))
+                    canvas.itemconfigure(b, fill=ui_color('white'), outline=ui_color('#b9cfe8')))
                 self._bind_action(action_tag, '<Button-1>', lambda e, o=obj: self.open_methods(o, e))
                 y = row_bottom+7
             bottom = y + 6
             shadow = rounded(left+2, top+3, right+2, bottom+3,
-                fill=OBJECT_SHADOW, tags=(tag, 'object_shadow'))
-            shape = rounded(left, top, right, bottom, fill=OBJECT_FILL,
-                outline=OBJECT_EDGE, tags=(tag, 'object_card'))
+                fill=ui_color(OBJECT_SHADOW), tags=(tag, 'object_shadow'))
+            shape = rounded(left, top, right, bottom, fill=ui_color(OBJECT_FILL),
+                outline=ui_color(OBJECT_EDGE), tags=(tag, 'object_card'))
             canvas.tag_lower(shape)
             canvas.tag_lower(shadow)
             return bottom + 18
@@ -304,12 +306,15 @@ class ObjectInspectorSE(ttk.Frame):
                 top=reference(obj,', '.join(obj['names']),left,top)+12
             else:
                 top=object_card(obj,left,top)
-        canvas.configure(scrollregion=(0, 0, width, max(top, canvas.winfo_height())))
+        bounds = canvas.bbox('all')
+        content_width = max(width, bounds[2]+12 if bounds else width)
+        canvas.configure(scrollregion=(0, 0, content_width, max(top, canvas.winfo_height())))
         self._draw_warning()
-        if width > canvas.winfo_width()+1:
+        if content_width > canvas.winfo_width()+1:
             self.horizontal.grid()
         else:
             self.horizontal.grid_remove()
+            canvas.xview_moveto(0)
 
     def show_more(self, node):
         self.item_limits[node['expansion_key']] = len(node.get('items', []))+100

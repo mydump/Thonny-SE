@@ -11,8 +11,9 @@ import tkinter as tk
 from tkinter import ttk
 
 from .canvas import HEADER
+from .diagram_preferences import uses_dark_diagrams
 from .model import IF_KINDS
-from .ui_style import EDGE, INK, SELECT, draw_chevron
+from .ui_style import DARK_DIAGRAM_COLORS, EDGE, INK, SELECT, draw_chevron
 
 SIMPLE = (("statement", 'Statement'), ("if", 'Selection'), ("while", 'Loop'))
 COMPLETE = (
@@ -77,7 +78,8 @@ class PaletteButton(tk.Canvas):
                          takefocus=True)
         self.command = command
         self.label = label
-        self.create_rectangle(10, 17, 50, 45, fill=HEADER[kind], outline=INK)
+        self.kind = kind
+        self.symbol = self.create_rectangle(10, 17, 50, 45, fill=HEADER[kind], outline=INK)
         if kind == "statement":
             self.create_line(18, 27, 42, 27, fill=INK)
             self.create_line(18, 34, 36, 34, fill=INK)
@@ -105,8 +107,21 @@ class PaletteButton(tk.Canvas):
         self.bind("<Return>", self.invoke)
         self.bind("<KP_Enter>", self.invoke)
         self.bind("<space>", self.invoke)
-        self.bind("<FocusIn>", lambda event: self.configure(highlightbackground=SELECT, highlightthickness=1))
-        self.bind("<FocusOut>", lambda event: self.configure(highlightbackground=EDGE, highlightthickness=1))
+        self.bind("<FocusIn>", lambda event: self.refresh_appearance(focused=True))
+        self.bind("<FocusOut>", lambda event: self.refresh_appearance(focused=False))
+        self.refresh_appearance()
+
+    def refresh_appearance(self, *, focused=None):
+        colors = DARK_DIAGRAM_COLORS if uses_dark_diagrams() else {}
+        if focused is None:
+            focused = self.focus_get() is self
+        border = SELECT if focused else EDGE
+        self.configure(background=colors.get("#ffffff", "#ffffff"),
+                       highlightbackground=colors.get(border, border))
+        fill = HEADER[self.kind]
+        ink = colors.get(INK, INK)
+        self.itemconfigure("content", fill=ink)
+        self.itemconfigure(self.symbol, fill=colors.get(fill, fill), outline=ink)
 
     def _display_changed(self, state):
         self.typography.refresh()
@@ -185,6 +200,11 @@ class ElementPalette(ttk.Frame):
         self.disclosure.configure(background=background)
         self.disclosure.ink = style.lookup("TLabel", "foreground") or INK
         self.disclosure.draw()
+
+    def refresh_appearance(self):
+        for button in self.buttons.values():
+            button.refresh_appearance()
+        self._update_theme()
 
     def _redraw_mapped(self):
         if not self.winfo_exists() or not self.winfo_ismapped():

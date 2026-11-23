@@ -34,14 +34,25 @@ class TransferIndicator(tk.Canvas):
         self.rainbow_value=0.96 if dark else 0.72
         self.background_rgb=tuple(channel/257 for channel in self.winfo_rgb(background))
         roles=('document.uml','document.python') if to_code else ('document.python','document.uml')
+        icon_items = []
         for x,role in zip((source_x,target_x),roles):
             if retina_icons.enabled(self):
-                self.create_text(x,20,text=retina_icons.glyph(role),font=retina_icons.font_for(self,self.icon_face),fill=ink,tags=role)
+                item = self.create_text(x,0,text=retina_icons.glyph(role),font=retina_icons.font_for(self,self.icon_face),fill=ink,tags=role)
             else:
                 image=get_workbench().get_image(icon_path(role,size=24,dark=dark))
-                self.images.append(image);self.create_image(x,20,image=image,tags=role)
+                self.images.append(image)
+                item = self.create_image(x,0,image=image,tags=role)
+            icon_items.append(item)
         self.bits=[self.create_text(0,0,text=value,font=self.bit_face,fill=ink,tags='transfer-bit')
                    for value in '101001011010100101']
+        # Tk font sizes are in points, but the Canvas height is in pixels.
+        # Reserve the measured extent at the active display scaling.
+        icon_extent = max(abs(edge) for item in icon_items for edge in self.bbox(item)[1::2])
+        bit_extent = max(abs(edge) for edge in self.bbox(self.bits[0])[1::2]) + 4
+        self.center_y = max(20, icon_extent + 3, bit_extent + 3)
+        self.configure(height=2*self.center_y)
+        for item in icon_items:
+            self.move(item, 0, self.center_y)
         self.bind('<Map>',self.start)
         self.bind('<Unmap>',self.stop)
         self.bind('<Destroy>',self.stop)
@@ -58,7 +69,7 @@ class TransferIndicator(tk.Canvas):
         for index,item in enumerate(self.bits):
             progress=(index/len(self.bits)+self.direction*elapsed/5.5)%1
             x=left+span*progress
-            y=20+4*math.sin(progress*math.tau*2-self.direction*elapsed*1.5)
+            y=self.center_y+4*math.sin(progress*math.tau*2-self.direction*elapsed*1.5)
             fade=min(1,progress*8,(1-progress)*8)
             self.coords(item,x,y)
             self.itemconfigure(item,fill=self._blend(colorsys.hsv_to_rgb(progress*5/6,self.rainbow_saturation,self.rainbow_value),max(0,fade)))

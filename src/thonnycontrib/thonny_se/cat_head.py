@@ -6,7 +6,8 @@
 from random import Random
 
 
-def draw_cat_head(canvas, left, top, right, seed, *, scale, fill="#ffffff", bottom=None, tags=()):
+def draw_cat_head(canvas, left, top, right, seed, *, scale, fill="#ffffff", bottom=None, tags=(),
+                  ink="#000000", detail="#ffffff"):
     variant = Random(seed)
     scale *= variant.uniform(0.93, 1.07)
     on_left = variant.choice((True, False))
@@ -16,7 +17,6 @@ def draw_cat_head(canvas, left, top, right, seed, *, scale, fill="#ffffff", bott
     expression = variant.choice(("smile", "wink", "surprised", "sleeping", "annoyed", "waving", "hunting", "flowerpot", "paws", "tail"))
     ear_style = variant.choice(("pointed", "wide", "folded", "tufted"))
     tags = (*tags, "cat-head", "cat-" + expression, "ears-" + ear_style)
-    ink = "#000000"
     height_scale = 0.72 if expression == "hunting" else 1
 
     def points(*offsets):
@@ -71,7 +71,7 @@ def draw_cat_head(canvas, left, top, right, seed, *, scale, fill="#ffffff", bott
         inner = ((14, -15), (16, -24), (20, -28), (25, -23), (29, -20))
         if ear_style == "folded":
             inner = ((15, -16), (16, -23), (23, -23), (26, -20))
-        polygon(tuple((98 - dx if mirrored else dx, dy + shift) for dx, dy in inner), "#ffffff")
+        polygon(tuple((98 - dx if mirrored else dx, dy + shift) for dx, dy in inner), detail)
 
     for eye in (33, 65):
         if expression == "sleeping":
@@ -109,11 +109,11 @@ def draw_cat_head(canvas, left, top, right, seed, *, scale, fill="#ffffff", bott
         # Die ausgestreckte Pfote schiebt den geneigten Topf über die Kante.
         polygon(((87, -5), (91, -11), (112, -11), (116, -8), (114, -4), (94, -3)))
         line(((109, -9), (113, -8)), width=1)
-        polygon(((117, -13), (133, -8), (125, 5), (115, 1)), "#ffffff")
-        polygon(((116, -16), (136, -10), (134, -6), (115, -12)), "#ffffff")
+        polygon(((117, -13), (133, -8), (125, 5), (115, 1)), detail)
+        polygon(((116, -16), (136, -10), (134, -6), (115, -12)), detail)
         line(((125, -13), (129, -24), (126, -30)), width=1)
-        polygon(((128, -21), (120, -24), (121, -28), (129, -25)), "#ffffff")
-        polygon(((129, -24), (136, -28), (138, -24), (130, -20)), "#ffffff")
+        polygon(((128, -21), (120, -24), (121, -28), (129, -25)), detail)
+        polygon(((129, -24), (136, -28), (138, -24), (130, -20)), detail)
         line(((134, -3), (138, 0)), width=1)
         line(((131, 3), (134, 6)), width=1)
     elif expression == "hunting":
@@ -135,6 +135,6 @@ def draw_cat_head(canvas, left, top, right, seed, *, scale, fill="#ffffff", bott
         )
         canvas.create_polygon(
             mouse_points((7, -8), (6, -13), (9, -16), (12, -14), (12, -9)),
-            fill="#ffffff", outline=ink, tags=mouse_tags,
+            fill=detail, outline=ink, tags=mouse_tags,
         )
         canvas.create_line(mouse_points((4, -4), (5, -4)), fill=ink, width=2 * scale, tags=mouse_tags)
