@@ -4,6 +4,7 @@
 
 """Create real objects in Thonny's local CPython and track their source session."""
 import keyword
+import re
 from uuid import uuid4
 import tkinter as tk
 from tkinter import ttk
@@ -14,80 +15,137 @@ from thonny.common import InlineCommand
 from .arguments import ArgumentFields
 from .dialogs import EditDialog
 from .i18n import tr
-from .ui_style import ERROR
+from .runtime_dialog_ui import heading, follow_theme, warning, ResultPanel
+from .method_call import MethodCallDialog
+from .ui_style import ERROR, OBJECT_FOCUS, ARGUMENT_MISSING, ui_color
 
 
-class InstantiationDialog(EditDialog):
+def suggested_object_name(class_name, names):
+    base = class_name.rsplit('.', 1)[-1].lstrip('_')
+    base = re.sub(r'([A-Z]+)([A-Z][a-z])', r'\1_\2', base)
+    base = re.sub(r'([a-z0-9])([A-Z])', r'\1_\2', base).lower()
+    if not base.isidentifier() or keyword.iskeyword(base):
+        base = 'obj'
+    index = 1
+    while base+str(index) in names:
+        index += 1
+    return base+str(index)
+
+
+class InstantiationDialog(MethodCallDialog):
+    """Constructor UI shares parameter, result and interruption behavior with calls."""
     def __init__(self, session, owner, class_name, prepared):
         self.session, self.prepared = session, prepared
-        self.class_name = class_name
-        self.editor = owner
+        self.class_name, self.editor = class_name, owner
         self.values = {}
         self.waiting = False
+        self.interrupt_timer = None
         self.result = None
-        super().__init__(owner, tr('Instantiate object …'))
+        self.name_focused = False
+        EditDialog.__init__(self, owner, tr('Instantiate objects …'))
 
     def build_body(self, master):
         self.session.dialog = self
-        ttk.Label(master, text=self.class_name, font='TkHeadingFont').grid(row=0, column=0, columnspan=2, sticky='w', pady=(0, 8))
+        self.heading = heading(master, self.class_name, 'object', '')
         ttk.Label(master, text=tr('Object name')).grid(row=1, column=0, sticky='w', padx=(0, 12))
-        base = self.class_name.rsplit('.', 1)[-1]
-        base = base[:1].lower() + base[1:]
-        if not base.isidentifier() or keyword.iskeyword(base) or base.startswith('_'):
-            base = 'obj'
-        name = base + '1'
-        index = 1
-        while name in self.prepared['names']:
-            index += 1
-            name = base + str(index)
-        self.object_name = tk.StringVar(self, value=name)
-        first = ttk.Entry(master, textvariable=self.object_name, width=30, style='SE.TEntry')
-        first.grid(row=1, column=1, sticky='ew', pady=4)
-        self.arguments = ArgumentFields(master, self.prepared['parameters'], self.session.controller.objects, start=2)
+        self.object_name = tk.StringVar(self, value=suggested_object_name(self.class_name, self.prepared['names']))
+        self.name_border = tk.Frame(master, borderwidth=0, highlightthickness=2)
+        self.name_border.grid(row=1, column=1, sticky='ew', pady=4)
+        self.name_border.columnconfigure(0, weight=1)
+        self.name_entry = ttk.Entry(self.name_border, textvariable=self.object_name, width=30, style='SE.TEntry')
+        self.name_entry.grid(row=0, column=0, sticky='ew')
+        self.object_name.trace_add('write', lambda *args: self.update_call_enabled())
+        self.name_entry.bind('<FocusIn>', lambda event: self.focus_name(True))
+        self.name_entry.bind('<FocusOut>', lambda event: self.focus_name(False))
+        self.name_border.bind('<<ThemeChanged>>', lambda event: self.refresh_name_border())
+        row = 2
+        on_focus = None
+        if self.prepared['parameters']:
+            prefix = '__init__'
+            spans = {name: (len(prefix)+start, len(prefix)+end)
+                     for name, (start, end) in self.prepared['parameter_spans'].items()}
+            # Keep the class heading separate; show Python's real constructor name.
+            signature_holder = ttk.Frame(master)
+            signature_holder.grid(row=row, column=0, columnspan=3, sticky='ew', pady=(8, 0))
+            signature_holder.columnconfigure(0, weight=1)
+            self.constructor_heading = heading(signature_holder, prefix+self.prepared['signature'], 'object', '', parameter_spans=spans, surface='#ffffff')
+            on_focus = self.constructor_heading.highlight_parameter
+            row += 1
+        self.arguments = ArgumentFields(master, self.prepared['parameters'], self.session.controller.objects,
+            start=row, on_focus=on_focus, context=self.prepared.get('argument_context'))
         self.values = self.arguments.values
         row = self.arguments.next_row
-        self.error = ttk.Label(master, foreground=ERROR, wraplength=450, justify='left')
-        self.error.grid(row=row, column=0, columnspan=3, sticky='w')
+        self.output = ResultPanel(master, row)
+        self.stop_help = warning(master,
+            tr('Object creation is still running. You can end the Python session. This removes all objects.'), row+2)
+        actions = ttk.Frame(self.stop_help)
+        actions.grid(row=1, column=1, sticky='e', pady=(10, 0))
+        self.end_session_button = self._action_button(actions, 0, tr('End Python session'), self.end_session)
+        self.stop_help.grid_remove()
         master.columnconfigure(1, weight=1)
-        return first
+        follow_theme(self, self.output)
+        self.refresh_name_border()
+        return self.name_entry
 
     def buttonbox(self):
         super().buttonbox()
         self.apply_button.configure(text=tr('Instantiate'))
         self.apply_button.master.columnconfigure(1, minsize=150)
 
+    def name_state(self):
+        name = self.object_name.get()
+        if not name:
+            return 'missing'
+        if not name.isidentifier() or keyword.iskeyword(name) or name in self.prepared['names']:
+            return 'invalid'
+        return 'valid'
+
+    def focus_name(self, active):
+        self.name_focused = active
+        self.refresh_name_border()
+        if active and hasattr(self, 'constructor_heading'):
+            self.constructor_heading.highlight_parameter(None)
+
+    def refresh_name_border(self):
+        state = self.name_state()
+        background = ttk.Style(self).lookup('TFrame', 'background')
+        color = ui_color(ERROR) if state == 'invalid' else ui_color(OBJECT_FOCUS) if self.name_focused else ui_color(ARGUMENT_MISSING) if state == 'missing' else background
+        self.name_border.configure(background=background, highlightbackground=color, highlightcolor=color)
+
+    def update_call_enabled(self):
+        self.refresh_name_border()
+        valid = self.name_state() == 'valid' and not self.arguments.invalid and not self.arguments.missing
+        self.apply_button.configure(state='normal' if valid and not self.waiting else 'disabled')
+
     def validate(self):
-        name = self.object_name.get().strip()
-        if not name.isidentifier() or keyword.iskeyword(name) or name.startswith('_'):
-            self.error.configure(text=tr('Use a Python object name that does not start with an underscore.'))
-            return False
-        if name in self.prepared['names']:
-            self.error.configure(text=tr('The name {name!r} is already in use.').format(name=name))
-            return False
-        error = self.arguments.validate()
-        self.error.configure(text=error)
-        return not error
+        return self.arguments.revalidate() and self.name_state() == 'valid'
 
     def ok(self, event=None):
         if self.waiting or not self.validate():
             return
+        self.output.set()
         self.waiting = True
+        self.submitted_name = self.object_name.get()
         self.apply_button.configure(state='disabled')
-        self.session.create(self, self.object_name.get().strip(), {key: value.get() for key, value in self.values.items()})
+        self.close_button.configure(text=tr('Stop'))
+        self.name_entry.configure(state='disabled')
+        self.session.create(self, self.submitted_name, self.arguments.expressions())
 
     def completed(self, response):
+        self.clear_interrupt_help()
         self.waiting = False
-        if 'error' in response:
-            self.error.configure(text=self.session.error_text(response))
-            self.apply_button.configure(state='normal')
-            return
-        self.result = self.object_name.get().strip()
-        self.cancel()
-
-    def cancel(self, event=None):
-        if self.waiting:
-            return
-        super().cancel(event)
+        self.name_entry.configure(state='normal')
+        self.close_button.configure(text=tr('Close'))
+        failed = 'error' in response
+        if failed:
+            self.output.set(tr('Call failed. See the Python shell.'), failed=True)
+        else:
+            self.result = self.submitted_name
+            self.prepared['names'] = response.get('names', self.prepared['names']+[self.result])
+            self.arguments.context = response.get('argument_context', self.arguments.context)
+            self.output.set(f'{self.result}: {self.class_name}')
+            self.object_name.set(suggested_object_name(self.class_name, self.prepared['names']))
+        self.arguments.revalidate()
 
 
 class ObjectSession:
@@ -276,8 +334,10 @@ class ObjectSession:
     def create(self, dialog, name, values):
         if not self.available() or not self.state.ready(dialog.editor):
             dialog.waiting = False
-            dialog.error.configure(text=tr('Run the current diagram before instantiating objects.'))
-            dialog.apply_button.configure(state='normal')
+            dialog.output.set(tr('Run the current diagram before instantiating objects.'), failed=True)
+            dialog.name_entry.configure(state='normal')
+            dialog.close_button.configure(text=tr('Close'))
+            dialog.update_call_enabled()
             return
         self.dialog = dialog
         request = uuid4().hex

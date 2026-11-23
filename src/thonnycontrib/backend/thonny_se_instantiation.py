@@ -17,7 +17,8 @@ import textwrap
 import types
 import uuid
 
-from .thonny_se_objects import snapshot
+from .thonny_se_objects import snapshot, safe_signature
+from .thonny_se_argument_types import argument_context
 
 
 def source_files():
@@ -48,10 +49,7 @@ def constructor_signature(cls):
         return inspect.Signature()
     if not isinstance(target, types.FunctionType):
         raise ValueError('unsupported_constructor')
-    clone = types.FunctionType(target.__code__, target.__globals__, target.__name__,
-                               target.__defaults__, target.__closure__)
-    clone.__kwdefaults__ = target.__kwdefaults__
-    signature = inspect.signature(clone, follow_wrapped=False)
+    signature = safe_signature(target)
     signature = signature.replace(parameters=list(signature.parameters.values())[1:])
     parameters = list(signature.parameters.values())
     if parameters and all(param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD) for param in parameters):
@@ -217,11 +215,20 @@ class InstantiationSession:
             parameters.append(dict(name=param.name, kind=param.kind.name,
                                    required=param.default is inspect.Parameter.empty and
                                    param.kind not in (param.VAR_POSITIONAL, param.VAR_KEYWORD),
-                                   default='' if param.default is inspect.Parameter.empty else repr(param.default)))
-        return dict(token=token, parameters=parameters, files=source_files() if include_files else {}, names=list(self.namespace))
+                                   default='' if param.default is inspect.Parameter.empty else repr(param.default),
+                                   annotation='' if param.annotation is inspect.Parameter.empty else inspect.formatannotation(param.annotation)))
+        signature = signature.replace(return_annotation=inspect.Signature.empty)
+        signature_text = str(signature)
+        spans, cursor = {}, 1
+        for param in signature.parameters.values():
+            part = str(param)
+            start = signature_text.index(part, cursor)
+            spans[param.name] = (start, start+len(part))
+            cursor = start+len(part)
+        return dict(token=token, signature=signature_text, parameter_spans=spans, parameters=parameters, argument_context=argument_context(self.namespace), files=source_files() if include_files else {}, names=list(self.namespace))
 
     def instantiate(self, token, name, values):
-        if not name.isidentifier() or keyword.iskeyword(name) or name.startswith('_'):
+        if not name.isidentifier() or keyword.iskeyword(name):
             raise ValueError('invalid_name')
         if name in self.namespace:
             raise ValueError('name_exists')
@@ -258,7 +265,7 @@ def load_plugin(backend):
     def instantiate(command):
         try:
             session.instantiate(command.token, command.object_name, command.values)
-            return dict(request_id=command.request_id, objects=snapshot(session.namespace,
+            return dict(request_id=command.request_id, names=list(session.namespace), argument_context=argument_context(session.namespace), objects=snapshot(session.namespace,
                         representation_error=command.get('representation_error', '<Representation failed>'),
                         expanded=command.get('expanded', ()), item_limits=command.get('item_limits', {})))
         except BaseException as exc:

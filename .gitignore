@@ -69,6 +69,25 @@
 !/images/manual/structogram.png
 !/images/manual/structogram-dark.png
 
+!/images/readme/08-method-call.png
+!/images/readme/08-method-call-dark.png
+!/images/manual/instantiate.png
+!/images/manual/instantiate-dark.png
+!/images/manual/method-call.png
+!/images/manual/method-call-dark.png
+!/images/manual/method-validation.png
+!/images/manual/method-validation-dark.png
+!/images/manual/method-error.png
+!/images/manual/method-error-dark.png
+!/images/manual/method-stop.png
+!/images/manual/method-stop-dark.png
+!/images/manual/run-different.png
+!/images/manual/run-different-dark.png
+!/images/manual/run-missing.png
+!/images/manual/run-missing-dark.png
+!/images/manual/options.png
+!/images/manual/options-dark.png
+
 # Keine Tests, generierten Python-Reste oder Betriebssystemdateien.
 **/test_*.py
 **/*_test.py

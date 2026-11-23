@@ -20,7 +20,7 @@ from thonny.ui_utils import (
 )
 
 from ._version import __version__
-from .diagram_preferences import APPEARANCE, STRUCTOGRAM_CAT_BLOCKS, STRUCTOGRAM_HINTS, UML_EARS, UML_HINTS, OBJECT_METHODS, UML_CONSTRUCTOR_NAME, UML_CHECK_TYPES, UML_METHOD_STYLE, UML_AUTO_DEFAULTS, UML_USE_MULTIPLICITY, UML_CHECK_VALUES
+from .diagram_preferences import APPEARANCE, STRUCTOGRAM_CAT_BLOCKS, STRUCTOGRAM_HINTS, UML_EARS, UML_HINTS, OBJECT_METHODS, UML_CONSTRUCTOR_NAME, UML_CHECK_TYPES, UML_METHOD_STYLE, UML_AUTO_DEFAULTS, UML_USE_MULTIPLICITY, UML_CHECK_VALUES, OBJECT_CHECK_ARGUMENTS
 
 
 PROJECT_URL = "https://github.com/mydump/Thonny-SE"
@@ -142,6 +142,8 @@ class ThonnySEOptionsPage(ConfigurationPage):
         check(structogram, STRUCTOGRAM_HINTS, 'Hide introductory hints in this editor')
         objects = group(tr('Object inspector SE'))
         check(objects, OBJECT_METHODS, 'Show all object methods instead of the Methods dropdown')
+        check(objects, OBJECT_CHECK_ARGUMENTS, 'Check argument types in the object inspector')
+        ttk.Label(objects, text=tr('Checks literals and known variables against parameter types. Entered function and method calls are not evaluated or checked for their return type.'), wraplength=540, justify='left').pack(anchor='w', padx=(20, 0), pady=(0, 4))
 
         extras = group(tr('Extras'))
         cats = BooleanVar(self, value=any(workbench.get_option(key)
@@ -245,7 +247,7 @@ def install():
         workbench.set_default(key, value)
     for option in (STRUCTOGRAM_CAT_BLOCKS, STRUCTOGRAM_HINTS, UML_HINTS, UML_EARS, UML_USE_MULTIPLICITY):
         workbench.set_default(option, False)
-    for option in (OBJECT_METHODS, UML_CONSTRUCTOR_NAME, UML_CHECK_TYPES, UML_AUTO_DEFAULTS, UML_CHECK_VALUES):
+    for option in (OBJECT_CHECK_ARGUMENTS, OBJECT_METHODS, UML_CONSTRUCTOR_NAME, UML_CHECK_TYPES, UML_AUTO_DEFAULTS, UML_CHECK_VALUES):
         workbench.set_default(option, True)
     workbench.set_default(UML_METHOD_STYLE, "snake_case")
     from .diagram_preferences import UML_GRID

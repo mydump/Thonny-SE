@@ -56,6 +56,41 @@ def load_file(path, namespace):
                       if not key.startswith('_')})
 
 
+class AnnotationText(str):
+    """Display an unevaluated annotation without adding string-value quotes."""
+    def __repr__(self):
+        return str(self)
+
+
+def safe_signature(function):
+    """Read source annotations without invoking Python 3.14 lazy evaluation."""
+    clone = types.FunctionType(function.__code__, function.__globals__,
+        function.__name__, function.__defaults__, function.__closure__)
+    clone.__kwdefaults__ = function.__kwdefaults__
+    annotations = {}
+    try:
+        tree = ast.parse(textwrap.dedent(inspect.getsource(function)))
+        node = next(n for n in tree.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef)))
+        args = node.args
+        arguments = args.posonlyargs + args.args + args.kwonlyargs
+        arguments += [arg for arg in (args.vararg, args.kwarg) if arg is not None]
+        def label(annotation):
+            return AnnotationText(annotation.value if isinstance(annotation, ast.Constant)
+                and isinstance(annotation.value, str) else ast.unparse(annotation))
+        annotations = {arg.arg: label(arg.annotation) for arg in arguments if arg.annotation is not None}
+        if node.returns is not None:
+            annotations['return'] = label(node.returns)
+    except (OSError, TypeError, SyntaxError, StopIteration, AttributeError):
+        if sys.version_info < (3, 14):
+            annotations = inspect.get_annotations(function, eval_str=False)
+            annotations = {key: AnnotationText(value) if isinstance(value, str) else value
+                           for key, value in annotations.items()}
+        # Shell definitions may not have retrievable source. Never evaluate
+        # deferred annotations as a fallback merely to show a signature.
+    clone.__annotations__ = annotations
+    return inspect.signature(clone, follow_wrapped=False, eval_str=False)
+
+
 def class_methods(cls):
     """Inspect class members once; callers copy before hiding instance shadows."""
     methods = {}
@@ -68,27 +103,7 @@ def class_methods(cls):
                 member = member.__func__
             if inspect.isfunction(member):
                 try:
-                    # Inspect a copy without lazy annotations: even STRING format
-                    # can execute annotation calls in Python 3.14.
-                    target = types.FunctionType(member.__code__, member.__globals__,
-                        member.__name__, member.__defaults__, member.__closure__)
-                    target.__kwdefaults__ = member.__kwdefaults__
-                    if sys.version_info >= (3, 14):
-                        try:
-                            tree = ast.parse(textwrap.dedent(inspect.getsource(member)))
-                            node = next(n for n in tree.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef)))
-                            args = node.args
-                            parameters_ast = args.posonlyargs + args.args + args.kwonlyargs
-                            parameters_ast += [a for a in (args.vararg, args.kwarg) if a is not None]
-                            annotations = {a.arg: ast.unparse(a.annotation) for a in parameters_ast if a.annotation is not None}
-                            if node.returns is not None:
-                                annotations['return'] = ast.unparse(node.returns)
-                            target.__annotations__ = annotations
-                        except (OSError, TypeError, SyntaxError, StopIteration):
-                            pass  # Shell definitions may have no retrievable source.
-                    else:
-                        target.__annotations__ = inspect.get_annotations(member, eval_str=False)
-                    signature = inspect.signature(target, eval_str=False)
+                    signature = safe_signature(member)
                     parameters = list(signature.parameters.values())
                     if not is_static and parameters:
                         signature = signature.replace(parameters=parameters[1:])
@@ -170,7 +185,7 @@ def snapshot(namespace, *, representation_error="<Representation failed>", expan
             return representation_error
     roots = []
     for name,value in list(namespace.items()):
-        if name.startswith('_') or not name.isidentifier() or kind(value) == 'scalar':
+        if name in {'__builtins__', '__annotations__', '__warningregistry__'} or not name.isidentifier() or kind(value) == 'scalar':
             continue
         if id(value) not in aliases:
             aliases[id(value)] = []
