@@ -17,6 +17,7 @@ from .ui_style import DARK_CANVAS, ui_color, uses_dark_ui, EDGE, INK, SELECT, SE
 from . import retina_icons
 from .iconregistry import icon_path, menu_icon
 from .diagram_preferences import OBJECT_METHODS, enabled
+from .method_layout import minimum_method_width, wrap_method
 
 
 def member_label(name, class_names=()):
@@ -143,19 +144,14 @@ class ObjectInspectorSE(ttk.Frame):
             canvas.tag_unbind(tag, sequence, funcid)
         self._action_bindings.clear()
         canvas.delete('all')
-        # A narrow inspector must not split short method names into fragments.
         show_all = enabled(OBJECT_METHODS)
-        method_width = max((self.normal.measure(member_label(name, obj.get('class_names', [obj['class_name']]))+signature)
-                            for obj in self.objects for name, signature in obj['methods'].items()), default=0) if show_all else 0
-        def nesting(nodes, level=0):
-            deepest=level
-            for node in nodes:
-                if node.get('expanded'):
-                    children=[*node.get('references',{}).values(),
-                              *(entry['node'] for entry in node.get('items',[]))]
-                    deepest=max(deepest,nesting(children,level+1))
-            return deepest
-        width = max(300+44*nesting(self.objects), canvas.winfo_width(), min(560, method_width+85))
+        # Keep names, complete parameters and the return type indivisible.
+        minimum = self.typography.units(300)
+        if show_all:
+            minimum = max(minimum, max((minimum_method_width(
+                member_label(name, obj.get('class_names', [obj['class_name']])), signature, self.normal.measure)+100
+                for obj in self.objects for name, signature in obj.get('methods', {}).items()), default=0))
+        width = max(minimum, canvas.winfo_width())
         left, right, top = 12, width - 15, 12
         if self._warning_text():
             top += self._draw_warning()
@@ -186,7 +182,7 @@ class ObjectInspectorSE(ttk.Frame):
             if aliases and node.get('path', {}).get('steps'):
                 suffix += ' · '+tr('also {names}').format(names=', '.join(aliases))
             item = canvas.create_text(left+22, top+5, text=label+' : '+suffix,
-                anchor='nw', width=max(150,right-left-30), font=self.normal,fill=ui_color(INK),tags=(tag,))
+                anchor='nw', width=max(20,right-left-30), font=self.normal,fill=ui_color(INK),tags=(tag,))
             bottom = canvas.bbox(item)[3]+8
             if cycle:
                 canvas.create_text(left+9,top+5,text='↩',font=self.normal,fill=ui_color(SELECT),anchor='n',tags=(tag,))
@@ -215,7 +211,7 @@ class ObjectInspectorSE(ttk.Frame):
                 more_tag=tag+'_more'
                 item=canvas.create_text(child_left+4,y+4,
                     text=tr('Show {count} more elements').format(count=min(100,node['remaining'])),
-                    anchor='nw',font=self.normal,fill=ui_color(SELECT),tags=(more_tag,),width=max(150,right-child_left-12))
+                    anchor='nw',font=self.normal,fill=ui_color(SELECT),tags=(more_tag,),width=max(20,right-child_left-12))
                 self._bind_action(more_tag,'<Button-1>',lambda e,n=node:self.show_more(n))
                 y=canvas.bbox(item)[3]+9
             canvas.create_line(left+12,bottom,left+12,y-3,fill=ui_color(OBJECT_EDGE))
@@ -223,13 +219,13 @@ class ObjectInspectorSE(ttk.Frame):
 
         def plain(value,left,y,right=width-15):
             item=canvas.create_text(left+4,y+4,text=value,font=self.normal,fill=ui_color(INK),
-                                   anchor='nw',width=max(150,right-left-12))
+                                   anchor='nw',width=max(20,right-left-12))
             return canvas.bbox(item)[3]+9
 
         def object_card(obj,left,top,label=None,right=width-15):
             counter[0] += 1
             index=counter[0]
-            text_width=max(150,right-left-28)
+            text_width=max(20,right-left-28)
             tag = f'object_{index}'
             y = top + 14
             def text(value, *, heading=False):
@@ -249,13 +245,17 @@ class ObjectInspectorSE(ttk.Frame):
                     y=reference(nested,member_label(name,owners),left+10,y,right-10)
             if not obj['attributes']:
                 text(tr('No stored attributes'))
+            if obj['methods']:
+                canvas.create_line(left+14, y, right-14, y, fill=ui_color(OBJECT_EDGE), tags=(tag,))
+                y += 10
             if obj['methods'] and show_all:
                 y += 4
                 for method_index, (name, signature) in enumerate(obj['methods'].items()):
                     action_tag = f'{tag}_method_{method_index}'
                     row_top = y
+                    label = member_label(name, owners)
                     item = canvas.create_text(left+44, y+9, anchor='nw',
-                        width=max(45, text_width-42), text=member_label(name, owners)+signature,
+                        text=wrap_method(label, signature, self.normal.measure, max(45, text_width-42)),
                         font=self.normal, fill=ui_color(SELECT), tags=(tag, action_tag, 'object_method'))
                     row_bottom = canvas.bbox(item)[3]+9
                     button = rounded(left+10, row_top, right-10, row_bottom,
@@ -306,12 +306,15 @@ class ObjectInspectorSE(ttk.Frame):
                 top=reference(obj,', '.join(obj['names']),left,top)+12
             else:
                 top=object_card(obj,left,top)
-        canvas.configure(scrollregion=(0, 0, width, max(top, canvas.winfo_height())))
+        bounds = canvas.bbox('all')
+        content_width = max(width, bounds[2]+12 if bounds else width)
+        canvas.configure(scrollregion=(0, 0, content_width, max(top, canvas.winfo_height())))
         self._draw_warning()
-        if width > canvas.winfo_width()+1:
+        if content_width > canvas.winfo_width()+1:
             self.horizontal.grid()
         else:
             self.horizontal.grid_remove()
+            canvas.xview_moveto(0)
 
     def show_more(self, node):
         self.item_limits[node['expansion_key']] = len(node.get('items', []))+100

@@ -12,7 +12,7 @@ from thonny.common import InlineCommand
 from .arguments import ArgumentFields
 from .dialogs import EditDialog
 from .i18n import tr
-from .ui_style import ERROR, SELECT
+from .runtime_dialog_ui import heading, documentation, warning, follow_theme, ResultPanel
 
 
 def method_error(response):
@@ -31,47 +31,51 @@ def method_error(response):
 
 
 class MethodCallDialog(EditDialog):
+    INTERRUPT_TIMEOUT_MS = 2000
+
     def __init__(self, controller, owner, name, method, prepared):
         self.controller, self.prepared = controller, prepared
         self.name, self.method = name, method
         self.waiting = False
+        self.interrupt_timer = None
         self.result = None
         super().__init__(owner, tr('Call method'))
 
     def build_body(self, master):
         self.controller.dialog = self
-        ttk.Label(master, text=f'{self.name}.{self.method}{self.prepared["signature"]}',
-                  font='TkHeadingFont', wraplength=600).grid(row=0, column=0, columnspan=3, sticky='w', pady=(0, 8))
+        prefix = f'{self.name}.{self.method}'
+        spans = {name: (len(prefix)+start, len(prefix)+end)
+                 for name, (start, end) in self.prepared.get('parameter_spans', {}).items()}
+        self.heading = heading(master, prefix+self.prepared['signature'], 'object', '', parameter_spans=spans, surface='#ffffff')
         row = 1
-        documentation = self.prepared.get('documentation')
-        if documentation:
-            # A bounded, scrollable read-only area also accommodates longer docstrings.
-            import tkinter as tk
-            help_frame = ttk.Frame(master)
-            help_frame.grid(row=row, column=0, columnspan=3, sticky='ew', pady=(0, 8))
-            text = tk.Text(help_frame, height=min(5, len(documentation.splitlines())+1), width=64,
-                           wrap='word', font='TkDefaultFont', relief='flat', borderwidth=0,
-                           background=ttk.Style(self).lookup('TFrame', 'background') or self.cget('background'),
-                           foreground=ttk.Style(self).lookup('TLabel', 'foreground') or '#202020')
-            text.insert('1.0', documentation)
-            text.configure(state='disabled')
-            text.pack(side='left', fill='both', expand=True)
-            scroll = ttk.Scrollbar(help_frame, orient='vertical', command=text.yview)
-            scroll.pack(side='right', fill='y')
-            text.configure(yscrollcommand=scroll.set)
+        doc = self.prepared.get('documentation')
+        if doc:
+            self.documentation = documentation(master, doc, row, truncated=self.prepared.get('documentation_truncated', False))
             row += 1
-        self.arguments = ArgumentFields(master, self.prepared['parameters'], self.controller.objects.objects, start=row)
+        self.arguments = ArgumentFields(master, self.prepared['parameters'], self.controller.objects.objects, start=row, on_focus=self.heading.highlight_parameter, context=self.prepared.get('argument_context'))
         self.values = self.arguments.values
         row = self.arguments.next_row
-        self.error = ttk.Label(master, foreground=ERROR, wraplength=550, justify='left')
-        self.error.grid(row=row, column=0, columnspan=3, sticky='w')
-        self.output = ttk.Label(master, foreground=SELECT, wraplength=550, justify='left')
-        self.output.grid(row=row+1, column=0, columnspan=3, sticky='w', pady=(4, 0))
+        self.output = ResultPanel(master, row)
+        self.stop_help = warning(master,
+            tr('The method is still running. You can end the Python session. This removes all objects.'), row+2)
+        stop_actions = ttk.Frame(self.stop_help)
+        stop_actions.grid(row=1, column=1, sticky='e', pady=(10, 0))
+        self.end_session_button = self._action_button(stop_actions, 0, tr('End Python session'), self.end_session)
+        self.stop_help.grid_remove()
+        follow_theme(self, self.output)
         return next(iter(self.arguments.entries.values()), None)
 
     def buttonbox(self):
+        # simpledialog packs its body without fill/expand before calling us.
+        # Apply this only to runtime dialogs (also inherited by instantiation).
+        content = self.output.master
+        content.master.pack_configure(fill='both', expand=True)
+        content.columnconfigure(1, weight=1)
+        content.rowconfigure(int(self.output.grid_info()['row']), weight=1)
+        self.output.grid_configure(sticky='nsew')
+        self.output.rowconfigure(0, weight=1)
         actions = ttk.Frame(self, padding=(20, 4, 20, 16), style='SE.TFrame')
-        actions.pack(fill='x')
+        actions.pack(side='bottom', fill='x')
         actions.grid_anchor('e')
         self.close_button = self._action_button(actions, 0, tr('Stop'), self.cancel, gap=8)
         self.close_button.configure(text=tr('Close'))
@@ -79,31 +83,69 @@ class MethodCallDialog(EditDialog):
         self.bind('<Return>', self.ok)
         self.bind('<KP_Enter>', self.ok)
         self.bind('<Escape>', self.cancel)
+        self.arguments.set_callback(self.update_call_enabled)
+
+    def update_call_enabled(self):
+        valid = not self.arguments.invalid and not self.arguments.missing
+        self.apply_button.configure(state='normal' if valid and not self.waiting else 'disabled')
 
     def ok(self, event=None):
         if self.waiting:
             return
-        error = self.arguments.validate()
-        self.error.configure(text=error)
-        if error:
+        if not self.arguments.revalidate():
             return
-        self.output.configure(text='')
+        self.output.set()
         self.controller.call(self)
 
     def completed(self, response):
+        self.clear_interrupt_help()
         self.waiting = False
-        self.apply_button.configure(state='normal')
+        self.arguments.context = response.get('argument_context', self.arguments.context)
+        self.arguments.revalidate()
         self.close_button.configure(text=tr('Close'))
-        self.error.configure(text=method_error(response) if 'error' in response else '')
-        self.output.configure(text='' if 'error' in response else tr('Result: {value}').format(value=response['result']))
+        self.output.set(tr('Call failed. See the Python shell.') if 'error' in response else response['result'], failed='error' in response)
 
     def cancel(self, event=None):
         if self.waiting:
             runner = get_runner()
             if runner and runner.get_backend_proxy():
+                if self.interrupt_timer is None and not self.stop_help.winfo_ismapped():
+                    self.interrupt_timer = self.after(self.INTERRUPT_TIMEOUT_MS, self.show_interrupt_help)
                 runner.get_backend_proxy().interrupt()
             return
         super().cancel(event)
+
+    def show_interrupt_help(self):
+        self.interrupt_timer = None
+        if self.waiting:
+            self.stop_help.grid()
+            self.update_idletasks()
+            # geometry() positions the window frame; winfo_root* describes its
+            # client area. Account for native decoration instead of mixing them.
+            x0, y0 = self.winfo_vrootx(), self.winfo_vrooty()
+            border = max(0, self.winfo_rootx()-self.winfo_x())
+            title = max(0, self.winfo_rooty()-self.winfo_y())
+            frame_width = self.winfo_width()+2*border
+            frame_height = self.winfo_height()+title+border
+            x = max(x0, min(self.winfo_x(), x0+self.winfo_vrootwidth()-frame_width))
+            y = max(y0, min(self.winfo_y(), y0+self.winfo_vrootheight()-frame_height))
+            self.geometry(f'+{x}+{y}')
+
+    def clear_interrupt_help(self):
+        if self.interrupt_timer is not None:
+            self.after_cancel(self.interrupt_timer)
+            self.interrupt_timer = None
+        self.stop_help.grid_remove()
+
+    def end_session(self):
+        if self.waiting:
+            runner = get_runner()
+            if runner and runner.get_backend_proxy():
+                runner.cmd_stop_restart()
+
+    def destroy(self):
+        self.clear_interrupt_help()
+        super().destroy()
 
 
 class MethodCallController:
@@ -161,8 +203,9 @@ class MethodCallController:
 
     def call(self, dialog):
         if not self.available():
-            dialog.error.configure(text=tr('Wait until the local Python interpreter is ready.'))
+            dialog.output.set(tr('Wait until the local Python interpreter is ready.'), failed=True)
             return
+        dialog.output.set()
         dialog.waiting = True
         dialog.apply_button.configure(state='disabled')
         dialog.close_button.configure(text=tr('Stop'))

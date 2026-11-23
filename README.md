@@ -6,7 +6,7 @@ Design your software right in Thonny. With structured flowcharts, UML and an int
 
 ## Contents
 
-[Features](#what-you-can-do) · [Requirements](#what-you-need) · [Getting started](#get-started) · [Manual](https://github.com/mydump/Thonny-SE/blob/v1.0.1/MANUAL.md) · [Educational references](#educational-references) · [Technical feature list](#technical-features)
+[Features](#what-you-can-do) · [Requirements](#what-you-need) · [Getting started](#get-started) · [Manual](https://github.com/mydump/Thonny-SE/blob/main/MANUAL.md) · [Educational references](#educational-references) · [Technical feature list](#technical-features)
 
 ## What you can do
 
@@ -14,42 +14,49 @@ Design your software right in Thonny. With structured flowcharts, UML and an int
 
 | Light | Dark |
 | --- | --- |
-| <a href="images/readme/01-structogram.png?raw=true"><img src="images/readme/01-structogram.png" alt="Nested loops and a branch with the expanded block palette (light mode)" width="500"></a> | <a href="images/readme/01-structogram-dark.png?raw=true"><img src="images/readme/01-structogram-dark.png" alt="Nested loops and a branch with the expanded block palette (dark mode)" width="500"></a> |
+| <a href="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.1.0/images/readme/01-structogram.png?raw=true"><img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.1.0/images/readme/01-structogram.png" alt="Nested loops and a branch with the expanded block palette (light mode)" width="500"></a> | <a href="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.1.0/images/readme/01-structogram-dark.png?raw=true"><img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.1.0/images/readme/01-structogram-dark.png" alt="Nested loops and a branch with the expanded block palette (dark mode)" width="500"></a> |
 
 `Design your classes` – Design UML class diagrams with attributes, methods and visibility. Model relationships such as inheritance or composition, and add roles and multiplicities.
 
 | Light | Dark |
 | --- | --- |
-| <a href="images/readme/02-uml.png?raw=true"><img src="images/readme/02-uml.png" alt="Six-class cat shelter with inheritance, composition and multiplicities (light mode)" width="500"></a> | <a href="images/readme/02-uml-dark.png?raw=true"><img src="images/readme/02-uml-dark.png" alt="Six-class cat shelter with inheritance, composition and multiplicities (dark mode)" width="500"></a> |
+| <a href="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.1.0/images/readme/02-uml.png?raw=true"><img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.1.0/images/readme/02-uml.png" alt="Six-class cat shelter with inheritance, composition and multiplicities (light mode)" width="500"></a> | <a href="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.1.0/images/readme/02-uml-dark.png?raw=true"><img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.1.0/images/readme/02-uml-dark.png" alt="Six-class cat shelter with inheritance, composition and multiplicities (dark mode)" width="500"></a> |
 
 `Move between models and code` – Turn your diagrams into Python code or your code into diagrams. For linked classes, you choose which changes to apply.
 
 | Light | Dark |
 | --- | --- |
-| <a href="images/readme/03-code-model.png?raw=true"><img src="images/readme/03-code-model.png" alt="Change preview with file name, transfer direction and selectable updates (light mode)" width="500"></a> | <a href="images/readme/03-code-model-dark.png?raw=true"><img src="images/readme/03-code-model-dark.png" alt="Change preview with file name, transfer direction and selectable updates (dark mode)" width="500"></a> |
+| <a href="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.1.0/images/readme/03-code-model.png?raw=true"><img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.1.0/images/readme/03-code-model.png" alt="Change preview with file name, transfer direction and selectable updates (light mode)" width="500"></a> | <a href="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.1.0/images/readme/03-code-model-dark.png?raw=true"><img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.1.0/images/readme/03-code-model-dark.png" alt="Change preview with file name, transfer direction and selectable updates (dark mode)" width="500"></a> |
 
 `Take your diagrams with you` – Save your designs as PNG, SVG or WebP. Ready for a worksheet, a presentation or your documentation.
 
-<img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.0.1/images/readme/04-export.png" alt="PNG export with image size, transparency and monochrome options" width="267">
+<img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.1.0/images/readme/04-export.png" alt="PNG export with image size, transparency and monochrome options" width="267">
 
 <br>
 
 
-`Try your objects` – Create objects from your UML classes. Explore their values, call methods and expand lists and nested objects.
+`Try your objects` – Create several objects from your UML classes. Inspect their values, call methods and expand lists and nested objects. The input fields help you supply the arguments. See the result right in the dialog.
 
 | Light | Dark |
 | --- | --- |
-| <a href="images/readme/05-objects.png?raw=true"><img src="images/readme/05-objects.png" alt="UML diagram and object bench with an expanded room in light mode" width="500"></a> | <a href="images/readme/05-objects-dark.png?raw=true"><img src="images/readme/05-objects-dark.png" alt="UML diagram and object bench with an expanded room in dark mode" width="500"></a> |
+| <a href="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.1.0/images/readme/05-objects.png?raw=true"><img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.1.0/images/readme/05-objects.png" alt="UML diagram and object bench with an expanded room in light mode" width="500"></a> | <a href="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.1.0/images/readme/05-objects-dark.png?raw=true"><img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.1.0/images/readme/05-objects-dark.png" alt="UML diagram and object bench with an expanded room in dark mode" width="500"></a> |
+
+
+Call a method. Read its description from the code, enter suitable values and inspect the return value.
+
+| Light | Dark |
+| --- | --- |
+| <a href="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.1.0/images/readme/08-method-call.png?raw=true"><img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.1.0/images/readme/08-method-call.png" alt="Method call with parameter focus, defaults, documentation and return value" width="500"></a> | <a href="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.1.0/images/readme/08-method-call-dark.png?raw=true"><img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.1.0/images/readme/08-method-call-dark.png" alt="Method call with parameter focus, defaults, documentation and return value in dark mode" width="500"></a> |
 
 `Learn and present comfortably` – Familiar controls, an uncluttered interface and clear visuals help you focus on your content. The aim is to keep everything sharp and easy to use across multiple displays with different scaling settings – while learning, explaining and presenting. Choose a light or dark appearance for Thonny SE, including its diagrams, editing controls and object bench.
 
 | Light | Dark |
 | --- | --- |
-| <a href="images/readme/06-thonny.png?raw=true"><img src="images/readme/06-thonny.png" alt="UML method editor in light mode" width="500"></a> | <a href="images/readme/06-thonny-dark.png?raw=true"><img src="images/readme/06-thonny-dark.png" alt="UML method editor in dark mode" width="500"></a> |
+| <a href="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.1.0/images/readme/06-thonny.png?raw=true"><img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.1.0/images/readme/06-thonny.png" alt="UML method editor in light mode" width="500"></a> | <a href="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.1.0/images/readme/06-thonny-dark.png?raw=true"><img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.1.0/images/readme/06-thonny-dark.png" alt="UML method editor in dark mode" width="500"></a> |
 
 `Cats` are around too.
 
-<img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.0.1/images/readme/07-cat.png" alt="Waving cat head" width="250">
+<img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.1.0/images/readme/07-cat.png" alt="Waving cat head" width="250">
 
 
 ## What you need
@@ -62,7 +69,7 @@ Tested on macOS and Windows. Also runs on Linux. Feedback on using it on Linux i
 
 Install through PyPI or download a wheel from GitHub.
 
-[Download wheel for 1.0.1](https://github.com/mydump/Thonny-SE/releases/download/v1.0.1/thonny_se-1.0.1-py3-none-any.whl) · [All releases](https://github.com/mydump/Thonny-SE/releases)
+[Download the latest release](https://github.com/mydump/Thonny-SE/releases/latest) · [All releases](https://github.com/mydump/Thonny-SE/releases)
 
 ### Through Thonny’s plug-in manager
 
@@ -101,7 +108,7 @@ Then install the plug-in through the plug-in manager or the wheel file.
 
 ## Bring your classes to life
 
-Run your UML design and try its objects. You do not need your own Python file yet. The [manual](https://github.com/mydump/Thonny-SE/blob/v1.0.1/MANUAL.md) walks you through getting started and explains how diagrams, code and the object bench work together.
+Run your UML design and try its objects. You do not need your own Python file yet. The [manual](https://github.com/mydump/Thonny-SE/blob/main/MANUAL.md) walks you through getting started and explains how diagrams, code and the object bench work together.
 
 ## Your feedback helps
 
@@ -140,7 +147,8 @@ As of 9 November 2026.
 - Methods with visibility, parameters, parameter types, default values and return type.
 - Constructor parameters and optional display of the constructor using the class name.
 - Getter/setter generation for attributes.
-- Optional static validation of known type names.
+- Automatic initial values when selecting an attribute type, with an option to turn this off.
+- Separately configurable checks for known type names and matching initial values or parameter defaults.
 - Association, directed association, aggregation, composition, inheritance and interface realization.
 - Roles, multiplicities and relationship names.
 - Self-relationships for association, aggregation and composition, with separate roles and multiplicities.
@@ -163,15 +171,19 @@ As of 9 November 2026.
 ### Object bench
 
 - Instantiation of UML classes after successful execution of the diagram. After code-affecting changes, run the diagram again before creating new objects.
-- Entry of parameter values with required fields, defaults, type information and selection of existing objects.
+- Create several instances in the same dialog, with suggested unused object names.
+- Parameter fields with required entries, grey default placeholders and selection of existing objects.
+- Optional live type checking for literals and known variables, enabled by default.
+- Matching focus highlights in the field and signature, plus documentation from Python docstrings.
 - Named instances displayed with their class, attribute values and methods.
-- Method calls with result and error display, and support for interrupting running calls.
+- Method calls with return values in the dialog and complete Python errors in the Shell.
+- Interrupt running methods and constructors; end the Python session if needed.
 - Object state updates after completed executions and method calls.
 - Expandable lists, tuples, dictionaries, sets and frozensets.
 - Incremental loading of larger collections.
 - Referenced nested objects displayed as indented object cards with callable methods.
 - Indication of shared object identities and cyclic references.
 - Preservation of expanded branches during state updates.
-- Method display selectable between a drop-down list and individual buttons.
+- Methods shown as individual buttons by default, with an optional drop-down list.
 - Indication of differences between the loaded program state and the UML design.
 - Existing objects remain available after design changes. Running the diagram again restarts the object session.

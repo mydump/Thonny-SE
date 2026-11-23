@@ -35,11 +35,18 @@ Plane deine Software direkt in Thonny. Mit Struktogrammen, UML und einer interak
 <br>
 
 
-`Objekte ausprobieren` – Erzeuge Objekte aus deinen UML-Klassen. Schau dir ihre Werte an, rufe Methoden auf und klappe Listen und Unterobjekte auf.
+`Objekte ausprobieren` – Erzeuge mehrere Objekte aus deinen UML-Klassen. Schau dir ihre Werte an, rufe Methoden auf und klappe Listen und Unterobjekte auf. Die Eingabefelder helfen dir bei den Parametern. Das Ergebnis siehst du direkt im Dialog.
 
 | Hell | Dunkel |
 | --- | --- |
 | <a href="images/readme/05-objects.png?raw=true"><img src="images/readme/05-objects.png" alt="UML-Diagramm und Objektbank mit aufgeklapptem Raum in heller Darstellung" width="500"></a> | <a href="images/readme/05-objects-dark.png?raw=true"><img src="images/readme/05-objects-dark.png" alt="UML-Diagramm und Objektbank mit aufgeklapptem Raum in dunkler Darstellung" width="500"></a> |
+
+
+Rufe eine Methode auf. Lies ihre Beschreibung aus dem Code, gib passende Werte ein und sieh dir die Rückgabe an.
+
+| Hell | Dunkel |
+| --- | --- |
+| <a href="images/readme/08-method-call.png?raw=true"><img src="images/readme/08-method-call.png" alt="Methodenaufruf mit Parameterfokus, Standardwerten, Dokumentation und Rückgabe" width="500"></a> | <a href="images/readme/08-method-call-dark.png?raw=true"><img src="images/readme/08-method-call-dark.png" alt="Methodenaufruf mit Parameterfokus, Standardwerten, Dokumentation und Rückgabe in dunkler Darstellung" width="500"></a> |
 
 `Angenehm lernen und präsentieren` – Vertraute Steuerung, eine übersichtliche Oberfläche und eine klare Darstellung helfen dir, dich auf deine Inhalte zu konzentrieren. Auch auf mehreren Displays mit unterschiedlichen Skalierungen soll alles scharf und gut bedienbar bleiben – beim Lernen, Erklären und Präsentieren. Für Thonny SE kannst du eine helle oder dunkle Darstellung wählen, auch für Diagramme, Bearbeitungsbereiche und die Objektbank.
 
@@ -60,9 +67,9 @@ Getestet auf macOS und Windows. Auch unter Linux lauffähig. Rückmeldungen zur 
 
 ## So legst du los
 
-Die Installation über PyPI und der Wheel-Download auf GitHub stehen mit der Veröffentlichung bereit.
+Installiere Thonny SE über den Pluginmanager oder lade eine Wheel-Datei von GitHub herunter.
 
-[Wheel für 1.0.1 herunterladen](https://github.com/mydump/Thonny-SE/releases/download/v1.0.1/thonny_se-1.0.1-py3-none-any.whl) · [Alle Releases](https://github.com/mydump/Thonny-SE/releases)
+[Neueste Version herunterladen](https://github.com/mydump/Thonny-SE/releases/latest) · [Alle Releases](https://github.com/mydump/Thonny-SE/releases)
 
 ### Über Thonnys Pluginmanager
 
@@ -140,7 +147,8 @@ Stand 9. November 2026.
 - Methoden mit Sichtbarkeit, Parametern, Parametertypen, Standardwerten und Rückgabetyp.
 - Konstruktorparameter und optionale Darstellung des Konstruktors unter dem Klassennamen.
 - Getter-/Setter-Erzeugung für Attribute.
-- Optionale statische Prüfung bekannter Typnamen.
+- Automatische Anfangswerte beim Auswählen eines Attributtyps, abschaltbar.
+- Getrennt einstellbare Prüfung bekannter Typnamen und passender Anfangs- beziehungsweise Parameter-Standardwerte.
 - Assoziation, gerichtete Assoziation, Aggregation, Komposition, Vererbung und Interface-Realisierung.
 - Rollen, Kardinalitäten/Multiplizitäten und Beziehungsnamen.
 - Selbstbeziehungen für Assoziation, Aggregation und Komposition mit eigenen Rollen und Kardinalitäten/Multiplizitäten.
@@ -163,15 +171,19 @@ Stand 9. November 2026.
 ### Objektbank
 
 - Instanziierung von UML-Klassen nach erfolgreicher Ausführung des Diagrammstands. Nach codewirksamen Änderungen ist für neue Objekte eine erneute Ausführung nötig.
-- Eingabe der Werte für die Parameter mit Pflichtangaben, Standardwerten, Typangaben und Auswahl vorhandener Objekte.
+- Mehrere Instanzen nacheinander im selben Dialog mit Vorschlägen für freie Objektnamen.
+- Parameterfelder mit Pflichtangaben, grauen Standardwert-Platzhaltern und Auswahl vorhandener Objekte.
+- Optionale Live-Typprüfung für Literale und bekannte Variablen; standardmäßig aktiviert.
+- Gekoppelte Fokusmarkierung im Eingabefeld und in der Signatur sowie Dokumentation aus Python-Docstrings.
 - Darstellung benannter Instanzen mit Klasse, Attributwerten und Methoden.
-- Methodenaufrufe mit Ergebnis- und Fehleranzeige sowie Unterstützung zum Unterbrechen laufender Aufrufe.
+- Methodenaufrufe mit Rückgabe im Dialog und vollständigen Pythonfehlern in der Konsole.
+- Unterbrechen laufender Methoden- und Konstruktoraufrufe; bei Bedarf die Python-Sitzung vollständig beenden.
 - Aktualisierung der Objektzustände nach abgeschlossenen Ausführungen und Methodenaufrufen.
 - Aufklappbare Listen, Tupel, Dictionaries, Sets und Frozensets.
 - Schrittweises Nachladen größerer Sammlungen.
 - Darstellung referenzierter Unterobjekte als eingerückte Objektkarten mit aufrufbaren Methoden.
 - Kennzeichnung gemeinsamer Objektidentitäten und zyklischer Referenzen.
 - Erhalt geöffneter Zweige bei Zustandsaktualisierungen.
-- Umschaltbare Methodendarstellung als Auswahlliste oder einzelne Schaltflächen.
+- Methoden standardmäßig als einzelne Schaltflächen; Auswahlliste optional.
 - Kennzeichnung von Abweichungen zwischen geladenem Programmstand und UML-Entwurf.
 - Bestehende Objekte bleiben nach Entwurfsänderungen verfügbar. Erneutes Ausführen startet die Objektsitzung neu.

@@ -9,6 +9,7 @@ APPEARANCE = "thonny_se.appearance"
 STRUCTOGRAM_CAT_BLOCKS = "thonny_se.structogram_cat_ears"
 STRUCTOGRAM_HINTS = "thonny_se.structogram_hide_hints"
 UML_HINTS = "thonny_se.uml_hide_hints"
+OBJECT_CHECK_ARGUMENTS = "thonny_se.object_check_arguments"
 OBJECT_METHODS = "thonny_se.object_show_all_methods"
 UML_GRID = "thonny_se.uml_grid"
 UML_CONSTRUCTOR_NAME = "thonny_se.uml_constructor_class_name"
@@ -27,7 +28,7 @@ def uses_dark_diagrams():
 
 def enabled(option):
     workbench = get_workbench()
-    default = option in (OBJECT_METHODS, UML_CONSTRUCTOR_NAME, UML_CHECK_TYPES, UML_AUTO_DEFAULTS, UML_CHECK_VALUES)
+    default = option in (OBJECT_CHECK_ARGUMENTS, OBJECT_METHODS, UML_CONSTRUCTOR_NAME, UML_CHECK_TYPES, UML_AUTO_DEFAULTS, UML_CHECK_VALUES)
     return workbench.get_option(option, default) if workbench is not None else default
 
 

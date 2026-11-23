@@ -812,9 +812,12 @@ class UmlCanvas(ttk.Frame):
             self._member_surface_key=None
             return
         left, top, right, bottom = (value*self.zoom for value in self.fields[self.editing])
-        max_width = max(1, canvas.winfo_width()-12)
-        max_height = max(1, canvas.winfo_height()-12)
-        min_x, min_y = canvas.canvasx(0)+6, canvas.canvasy(0)+6
+        # The native widget is inset from its drawn surround. Reserve that
+        # surround plus its stroke on every viewport edge, including at HiDPI.
+        margin = self.typography.units(6)+self.typography.units(3)
+        max_width = max(1, canvas.winfo_width()-2*margin)
+        max_height = max(1, canvas.winfo_height()-2*margin)
+        min_x, min_y = canvas.canvasx(0)+margin, canvas.canvasy(0)+margin
         max_x = min_x + max_width
         minimum_width = (right-left)*1.18
         grip = getattr(editor, "grip", None)
@@ -836,13 +839,17 @@ class UmlCanvas(ttk.Frame):
         self._place_editor(widget, x, y, width, height)
 
     def _place_editor(self, widget, x, y, width, height):
-        # Keep native widgets in a separate layer. Moving Aqua canvas window
-        # items can leave the card drawings beneath them partially unpainted.
+        # Native geometry is integral; draw its surround from these same bounds.
+        placement=(round(x-self.canvas.canvasx(0)),round(y-self.canvas.canvasy(0)),round(width),round(height))
+        x, y = self.canvas.canvasx(placement[0]), self.canvas.canvasy(placement[1])
+        width, height = placement[2:]
         if hasattr(widget,'_panel_surface'):
             fill,accent=widget._panel_surface
             gap=self.typography.units(6)
             radius=self.typography.units(12)
-            key=(round(x),round(y),round(width),round(height),fill,accent,gap,radius)
+            # Snapped vector coordinates depend on the backing pixel density.
+            # A display change must invalidate the contour even without a move.
+            key=(x,y,width,height,fill,accent,gap,radius,context_for(self).state)
             if (getattr(self,'_member_surface_key',None)!=key
                     or not self.canvas.find_withtag('member-panel-surface')):
                 clear_shapes(self.canvas,'member-panel-surface')
@@ -850,7 +857,6 @@ class UmlCanvas(ttk.Frame):
                         radius=radius,fill=fill,outline=accent,group='member-panel-surface')
                 self._member_surface_key=key
             self.canvas.tag_raise('member-panel-surface')
-        placement=(round(x-self.canvas.canvasx(0)),round(y-self.canvas.canvasy(0)),round(width),round(height))
         if getattr(widget,'_se_last_placement',None)!=placement or widget.winfo_manager()!='place':
             widget.place(in_=self.canvas,x=placement[0],y=placement[1],width=placement[2],height=placement[3])
             widget._se_last_placement=placement
@@ -1529,7 +1535,7 @@ class UmlCanvas(ttk.Frame):
             command(tr('Go to code'), lambda: self.editor.go_to_code(cid,section,row), 'document.python',
                     linked and (section not in ('attributes','methods') or row is not None))
             menu.add_separator()
-            command(tr('Instantiate object …'), lambda: self.editor.instantiate_class(cid), "class.instantiate",
+            command(tr('Instantiate objects …'), lambda: self.editor.instantiate_class(cid), "class.instantiate",
                     self.editor.card(cid).get('class_kind') not in ('abstract', 'interface')
                     and get_workbench()._thonny_se_objects.session.can_instantiate(self.editor, cid))
             menu.add_separator()

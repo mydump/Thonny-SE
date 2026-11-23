@@ -15,8 +15,12 @@ SELECTION_FILL = "#edf3fc"
 OBJECT_FILL = "#edf7f3"
 OBJECT_EDGE = "#80aaa0"
 OBJECT_SHADOW = "#dce7e2"
+OBJECT_FOCUS = "#4c8976"
+OBJECT_ACTIVE_FILL = "#d8eee4"
+DOC_FILL = "#f4f6f5"
 FIELD_BORDER = "#a8b2ba"
 ERROR = "#b42318"
+ARGUMENT_MISSING = "#b48a24"
 HINT_FILL = "#fff5da"
 HINT_BORDER = "#e4d4a7"
 HINT_INK = "#725a2a"
@@ -57,6 +61,7 @@ DARK_DIAGRAM_COLORS = {
     EDGE: "#8794a4",
     SELECT: "#83b8ff",
     ERROR: "#ffa59e",
+    ARGUMENT_MISSING: "#e4c36e",
     HINT_FILL: "#403626",
     HINT_BORDER: "#8b7754",
     HINT_BADGE: "#51422a",
@@ -83,6 +88,9 @@ DARK_DIAGRAM_COLORS = {
     OBJECT_FILL: "#2b3b36",
     OBJECT_EDGE: "#759b91",
     OBJECT_SHADOW: "#1b221f",
+    OBJECT_FOCUS: "#8dc6af",
+    OBJECT_ACTIVE_FILL: "#3d5d4f",
+    DOC_FILL: "#282e2b",
     "#b9cfe8": "#647c99",
     "#dceaff": "#384d68",
     "#28794e": "#9bd5b2",
