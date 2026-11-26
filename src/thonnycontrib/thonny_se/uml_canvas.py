@@ -50,6 +50,8 @@ class UmlCanvas(ttk.Frame):
         super().__init__(master)
         self.editor = editor
         self.zoom = 1.0
+        self.diagram_scale = 1.0
+        self._scale_job = None
         self._pending_zoom = None
         self._pending_zoom_anchor = None
         self._zoom_job = None
@@ -124,6 +126,60 @@ class UmlCanvas(ttk.Frame):
         context_for(self).subscribe(self,self._display_changed)
         self.bind("<Destroy>",self._zoom_destroyed,add=True)
 
+    def request_diagram_scale(self, value):
+        self.diagram_scale = round(max(.5, min(2., float(value))), 3)
+        if self._scale_job is None:
+            self._scale_job = self.after(16, self._draw_scale)
+
+    def _draw_scale(self):
+        self._scale_job = None
+        preserve_scroll(self.canvas, self.draw)
+
+    def flush_diagram_scale(self):
+        if self._scale_job is not None:
+            self.after_cancel(self._scale_job)
+            self._draw_scale()
+
+    def _space(self, base):
+        # 100% preserves the established UML layout; only padding changes.
+        return max(3, round(base/self.diagram_scale))
+
+    @property
+    def diagram_normal(self):
+        return self.display_bold if self.diagram_scale >= 1.5 else self.display_normal
+
+    @property
+    def diagram_abstract_method(self):
+        return self.display_abstract if self.diagram_scale >= 1.5 else self.display_method_abstract
+
+    @property
+    def layout_normal(self):
+        return self.bold if self.diagram_scale >= 1.5 else self.normal
+
+    def _appearance_metrics(self):
+        baseline = self.typography.line_height()
+        text_height = self.layout_normal.metrics('linespace')
+        old_padding = baseline-self.normal.metrics('linespace')
+        stroke = max(1, int(2*self.diagram_scale+.5))
+        self.row_height = text_height+max(stroke+4, round(old_padding/self.diagram_scale))
+
+    def _style_contours(self):
+        stroke = max(1, int(max(1, int(2*self.diagram_scale+.5))*self.zoom+.5))
+        for item in self.canvas.find_withtag('drawing'):
+            tags = self.canvas.gettags(item)
+            kind = self.canvas.type(item)
+            # Visibility glyphs and cat artwork keep their own source strokes.
+            if {'cat-head', 'comment-resize'}.intersection(tags) or any(tag.startswith('member-row:') for tag in tags):
+                continue
+            if kind in ('line', 'rectangle', 'polygon', 'oval'):
+                ink = self.canvas.itemcget(item, 'fill' if kind == 'line' else 'outline')
+                if ink:
+                    selected = ('class_selection' in tags or ink == self._color(SELECT))
+                    self.canvas.itemconfigure(item, width=stroke+2 if selected else stroke)
+            coordinates = self.canvas.coords(item)
+            if coordinates:
+                self.canvas.coords(item, *(round(v) for v in coordinates))
+
     def _wheel_zoom(self, event):
         self._zoom_at_pointer(1 if event.delta>0 else -1,event_position(self.canvas,event))
         return "break"
@@ -153,6 +209,9 @@ class UmlCanvas(ttk.Frame):
             else:self.set_zoom(target,anchor=anchor)
 
     def _zoom_destroyed(self,event):
+        if event.widget is self and self._scale_job is not None:
+            self.after_cancel(self._scale_job)
+            self._scale_job = None
         if event.widget is self and self._zoom_job is not None:
             self.after_cancel(self._zoom_job)
             self._zoom_job=self._pending_zoom=self._pending_zoom_anchor=None
@@ -301,16 +360,18 @@ class UmlCanvas(ttk.Frame):
         # Tk rounds the displayed font size; scale coordinates using its actual
         # text metrics so signatures still fit at fractional zoom levels.
         scale = self.zoom
-        normal = self.display_normal
+        normal = self.diagram_normal
         face = self.display_abstract if card.get("class_kind") == "abstract" else self.display_bold
         def member_width(row, section):
             member_face = normal
             if section == 'methods' and abstract_method(card, row):
-                member_face = self.display_method_abstract
+                member_face = self.diagram_abstract_method
             text = self._member_signature(row, section, card["name"])
-            return member_face.measure(text)/scale + self.typography.units(46)
-        return max(150, face.measure(card["name"])/scale+80,
-                   *(normal.measure(text)/scale+24 for text in self._header_details(card)),
+            left, right = self.typography.units(8), self.typography.units(10)
+            padding = self.typography.units(46)+self._space(left)-left+self._space(right)-right
+            return member_face.measure(text)/scale+padding
+        return max(150, face.measure(card["name"])/scale+max(66,2*self._space(40)),
+                   *(normal.measure(text)/scale+2*self._space(12) for text in self._header_details(card)),
                    *(member_width(row, section)
                      for section, rows in (("attributes", card["attributes"]), ("methods", methods))
                      for row in rows))
@@ -333,6 +394,7 @@ class UmlCanvas(ttk.Frame):
         return self._colors.get(color, color)
 
     def draw(self):
+        self._appearance_metrics()
         dark = not self.exporting and uses_dark_diagrams()
         self._dark_monochrome = dark and self.monochrome
         self._colors = (DARK_MONOCHROME_CONTROLS if self.monochrome else DARK_DIAGRAM_COLORS) if dark else {}
@@ -375,7 +437,7 @@ class UmlCanvas(ttk.Frame):
                 canvas.create_text(x+width/2, y+line*.7, text=details.pop(0),
                                    font=self.display_normal, fill=self._color(MUTED), tags=tags)
                 name_y += line
-            self.fields[cid, "name", None] = (x+8, name_y+2, name_right, name_y+self.row_height-2)
+            self.fields[cid, "name", None] = (x+self._space(8), name_y+2, name_right, name_y+self.row_height-2)
             title_font = self.display_abstract if card.get("class_kind") == "abstract" else self.display_bold
             name_item = canvas.create_text(x+width/2, name_y+self.row_height/2, text=card["name"], width=max(20,(width-(24 if self.exporting else 66))*self.zoom), font=title_font,
                                fill=self._color(INK), tags=tags)
@@ -396,7 +458,7 @@ class UmlCanvas(ttk.Frame):
                 for row in rows:
                     active = self.member_editor is not None and self.editing == (cid, section, row["id"]) and not self.exporting
                     row_height = self.row_height
-                    self.fields[cid, section, row["id"]] = (x+8, cursor+2, x+width-8, cursor+row_height-2)
+                    self.fields[cid, section, row["id"]] = (x+self._space(8), cursor+2, x+width-self._space(8), cursor+row_height-2)
                     if active:
                         canvas.create_rectangle(x+2, cursor+2, x+width-2, cursor+row_height-2,
                                                 fill=self._color(DELETE_FILL) if self.delete_mode else self._color(UML_SECTION_FILLS[section]) if colored else self._color("white"), outline="", tags=tags)
@@ -407,8 +469,8 @@ class UmlCanvas(ttk.Frame):
                 # A virtual add-row anchors keyboard navigation and the editor,
                 # without increasing card geometry or covering a real text row.
                 if not self.exporting:
-                    self.fields[cid, section, None] = (x+8, cursor-self.row_height+2,
-                                                       x+width-8, cursor-2)
+                    self.fields[cid, section, None] = (x+self._space(8), cursor-self.row_height+2,
+                                                       x+width-self._space(8), cursor-2)
             # Paint the contour last, over full-bleed section fills, including at zoom.
             canvas.create_rectangle(x,y,x+width,y+height,fill='',outline=self._color(EDGE),width=1,
                                     tags=(*tags,'class-border'))
@@ -446,6 +508,7 @@ class UmlCanvas(ttk.Frame):
         if self.monochrome:
             self._apply_monochrome()
         canvas.scale("drawing", 0, 0, self.zoom, self.zoom)
+        self._style_contours()
         self._draw_add_controls()
         drawing = canvas.bbox("drawing")
         if drawing:
@@ -574,13 +637,13 @@ class UmlCanvas(ttk.Frame):
             tags = ("drawing", "comment")
             width = note.get("width")
             editing = self.comment_note is note
-            text = canvas.create_text(x+10, y+8, text=note["text"] or " ", anchor="nw",
-                                      width=(width-30 if width else 240)*self.zoom,
-                                      font=self.display_normal, fill=self._color(INK), tags=tags)
+            text = canvas.create_text(x+self._space(10), y+self._space(8), text=note["text"] or " ", anchor="nw",
+                                      width=(width-2*self._space(15) if width else 240)*self.zoom,
+                                      font=self.diagram_normal, fill=self._color(INK), tags=tags)
             left, top, right, bottom = canvas.bbox(text)
             if width is None:
-                width = max(250 if editing and self.new_comment else 86, (right-left)/self.zoom + 28)
-            height = max(note.get("height", 0), (bottom-top)/self.zoom + 16)
+                width = max(250 if editing and self.new_comment else 86, (right-left)/self.zoom + 2*self._space(14))
+            height = max(note.get("height", 0), (bottom-top)/self.zoom + 2*self._space(8))
             if editing:
                 height = max(76, height)
                 canvas.itemconfigure(text, state="hidden")
@@ -594,7 +657,7 @@ class UmlCanvas(ttk.Frame):
             canvas.create_line(right-12, y, right-12, y+12, right, y+12, fill=edge, tags=tags)
             if not self.exporting:
                 for offset in (6, 11):
-                    canvas.create_line(right-offset, bottom-3, right-3, bottom-offset, fill=edge, tags=tags)
+                    canvas.create_line(right-offset, bottom-3, right-3, bottom-offset, fill=edge, tags=(*tags, "comment-resize"))
             if note["target"] in self.cards:
                 points = association_points(self.notes[note["id"]], self.cards[note["target"]])
                 connector = canvas.create_line(*(value for point in points for value in point),
@@ -674,7 +737,7 @@ class UmlCanvas(ttk.Frame):
             vertical = abs(last[1]-first[1]) > abs(last[0]-first[0])
             self.relationship_labels.append(canvas.create_text(x+6 if vertical else x, y if vertical else y-5,
                                anchor="w" if vertical else "s", text=relation["label"],
-                               font=self.display_normal, fill=text_color, tags=tags))
+                               font=self.diagram_normal, fill=text_color, tags=tags))
         kind = relation["kind"]
         symbol_end = "end" if kind in ("inheritance", "realization") else "start" if kind != "association" else None
         for key, first, next_point in (("start", points[0], points[1]), ("end", points[-1], points[-2])):
@@ -696,11 +759,11 @@ class UmlCanvas(ttk.Frame):
             for suffix, side in (("multiplicity", 1), ("role", -1)):
                 text = relation[key + "_" + suffix]
                 if text:
-                    width = self.normal.measure(text)
+                    width = self.layout_normal.measure(text)
                     x, y = multiplicity_position(first, next_point, width, side=side,
                                                  clearance=self.typography.units(18) if key == symbol_end or navigable else 0)
                     self.relationship_labels.append(canvas.create_text(max(width/2+4, x), max(10, y), text=text,
-                                       fill=text_color, font=self.display_normal, tags=tags))
+                                       fill=text_color, font=self.diagram_normal, tags=tags))
 
     def _relationship_at(self, event):
         x, y = self.canvas.canvasx(event.x), self.canvas.canvasy(event.y)
@@ -778,7 +841,7 @@ class UmlCanvas(ttk.Frame):
     def _draw_member(self, card, section, row, y, tags):
         canvas = self.canvas
         u = self.typography.units
-        left = card["x"] + u(8)
+        left = card["x"] + self._space(u(8))
         center = y + self.row_height/2
         visibility = member_visibility(row, section)
         selected = (self.member_selection == (card['id'], section, row['id'])
@@ -788,11 +851,11 @@ class UmlCanvas(ttk.Frame):
         row_tags = (*tags, 'member-row:'+card['id']+':'+row['id'])
         icon_tags = (*row_tags, 'selected-member-icon') if selected else row_tags
         from .uml_python_semantics import abstract_method
-        face = self.display_method_abstract if section == 'methods' and abstract_method(card,row) else self.display_normal
+        face = self.diagram_abstract_method if section == 'methods' and abstract_method(card,row) else self.diagram_normal
         if section == "methods" and is_constructor(row):
-            symbol_item = canvas.create_text(left+u(12), center, text="c", font=self.display_normal, fill=icon_color, tags=(*icon_tags, "member-prefix"))
+            symbol_item = canvas.create_text(left+u(12), center, text="c", font=self.diagram_normal, fill=icon_color, tags=(*icon_tags, "member-prefix"))
         else:
-            symbol_item = draw_visibility_icon(canvas, left+u(12), center, visibility, self.display_normal, self.zoom*context_for(self).state.ui_scale,
+            symbol_item = draw_visibility_icon(canvas, left+u(12), center, visibility, self.diagram_normal, self.zoom*context_for(self).state.ui_scale,
                                  tags=icon_tags, color=icon_color, vector=self.exporting)
         self._symbol_items.append((symbol_item, (card['id'], section, row['id'])))
         parts = member_parts(row, section, card['name'])
@@ -896,11 +959,13 @@ class UmlCanvas(ttk.Frame):
                 canvas.create_oval(endpoint-3, line_y-3, endpoint+3, line_y+3, fill=self._color(SELECT), outline="", tags=tag)
 
     def snapshot(self):
+        self.flush_diagram_scale()
         from types import SimpleNamespace
         from .imageexport import canvas_scene
         hidden = UmlCanvas(self, SimpleNamespace(document=self.editor.document, selection=None))
         try:
             hidden.exporting = True
+            hidden.diagram_scale = self.diagram_scale
             hidden.row_height = self.row_height
             # Export at canonical 100% font metrics; displayed fonts are rounded
             # by Tk and their measured card widths vary with the current zoom.
