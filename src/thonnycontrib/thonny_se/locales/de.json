@@ -145,6 +145,7 @@
   "Inheritance": "Vererbung",
   "Inheritance cannot contain a cycle.": "Vererbung darf keinen Kreis bilden.",
   "Initial value": "Startwert",
+  "Insert": "Einfügen",
   "Insert block": "Baustein einfügen",
   "Insert block here": "Baustein hier einfügen",
   "Instantiate": "Instanziieren",
@@ -515,5 +516,11 @@
   "Call failed. See the Python shell.": "Aufruf fehlgeschlagen. Siehe Konsole.",
   "Check the highlighted fields.": "Bitte die markierten Felder prüfen.",
   "Fields marked with * must be filled in.": "Mit * gekennzeichnete Felder müssen ausgefüllt werden.",
-  "Object creation is still running. You can end the Python session. This removes all objects.": "Die Instanziierung läuft weiterhin. Du kannst die Python-Sitzung beenden. Dabei werden alle Objekte entfernt."
+  "Object creation is still running. You can end the Python session. This removes all objects.": "Die Instanziierung läuft weiterhin. Du kannst die Python-Sitzung beenden. Dabei werden alle Objekte entfernt.",
+  "Zoom out (view only)": "Ansicht verkleinern (nur Anzeige)",
+  "Zoom in (view only)": "Ansicht vergrößern (nur Anzeige)",
+  "Decrease diagram scale (preview; no effect yet)": "Diagrammskalierung verkleinern (Entwurf; noch ohne Wirkung)",
+  "Increase diagram scale (preview; no effect yet)": "Diagrammskalierung vergrößern (Entwurf; noch ohne Wirkung)",
+  "More spacing and lighter contours (also applies to exports)": "Mehr Abstand und feinere Linien (gilt auch für den Export)",
+  "Less spacing and stronger contours (also applies to exports)": "Weniger Abstand und kräftigere Linien (gilt auch für den Export)"
 }

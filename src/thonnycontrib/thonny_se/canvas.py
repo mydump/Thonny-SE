@@ -10,14 +10,15 @@ from .visual_metrics import Typography, preserve_scroll
 from .i18n import tr
 import tkinter as tk
 from random import getrandbits
+from math import ceil
 from dataclasses import dataclass
-from tkinter import ttk
+from tkinter import ttk, font as tkfont
 
 from .cat_head import draw_cat_head
 from .diagram_hint import DiagramHint
 from .diagram_preferences import uses_dark_diagrams, STRUCTOGRAM_CAT_BLOCKS, STRUCTOGRAM_HINTS, enabled
 from .model import IF_KINDS, LOOP_KINDS, Selection, body_at, child_bodies
-from .ui_style import DARK_CANVAS, DARK_DIAGRAM_COLORS, EDGE, INK, MUTED, SELECT, SELECTION_WIDTH
+from .ui_style import DARK_CANVAS, DARK_DIAGRAM_COLORS, EDGE, INK, MUTED, SELECT
 from .ui_style import DARK_MONOCHROME_CANVAS, DARK_MONOCHROME_CONTROLS, DARK_MONOCHROME_INK, DARK_MONOCHROME_SURFACE
 
 from .graphics import badge, clear_shapes
@@ -46,9 +47,15 @@ class StructogramCanvas(ttk.Frame):
         self._colors = {}
         self.render_width = None
         self.zoom = 1.0
+        self.diagram_scale = 1.0
+        self.content_width = 480
+        self._scale_job = None
         self.cat_seed = getrandbits(64)
         self.typography = Typography(self)
         self._font = self.typography["body"]
+        self.layout_typography = Typography(self)
+        self.control_typography = Typography(self)
+        self._layout_font = self.layout_typography["body"]
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
         self.canvas = tk.Canvas(self, background="#ffffff", highlightthickness=0,
@@ -77,6 +84,7 @@ class StructogramCanvas(ttk.Frame):
                               xscrollcommand=lambda *args: update_scrollbar(horizontal, *args))
         self.canvas.bind("<Button-1>", self._click)
         self.canvas.bind("<Double-Button-1>", self._double_click)
+        self.bind("<Destroy>", self._scale_destroyed, add=True)
         self.canvas.bind("<Configure>", lambda event: self.draw())
         self.canvas.bind("<Map>", lambda event: self.canvas.after_idle(self._redraw_mapped))
         self.scrolling = ScrollArea(self.canvas, self,
@@ -93,7 +101,14 @@ class StructogramCanvas(ttk.Frame):
 
     def _text(self, *args, **kwargs):
         kwargs.setdefault('font',self._font)
-        if 'width' in kwargs:kwargs['width'] *= self.zoom
+        if 'width' in kwargs:
+            if kwargs['font'] is self._font:
+                # Freeze canonical line breaks. Letting Tk wrap the rounded
+                # display font again can add a line without growing its block.
+                kwargs['text'] = self._wrapped_text(kwargs.get('text', ''), kwargs['width'])
+                kwargs['width'] = 0
+            else:
+                kwargs['width'] *= self.zoom
         return self.canvas.create_text(*args,**kwargs)
 
     def _redraw_mapped(self):
@@ -113,6 +128,26 @@ class StructogramCanvas(ttk.Frame):
         if hasattr(self, "on_zoom"):
             self.on_zoom(self.zoom)
         return self.zoom
+
+    def request_diagram_scale(self, value):
+        self.diagram_scale = round(max(.5, min(2.0, float(value))), 3)
+        if self._scale_job is None:
+            self._scale_job = self.after(16, self._draw_scale)
+
+    def _draw_scale(self):
+        self._scale_job = None
+        preserve_scroll(self.canvas, self.draw)
+
+    def flush_diagram_scale(self):
+        # An export immediately after a slider move must use the latest layout.
+        if self._scale_job is not None:
+            self.after_cancel(self._scale_job)
+            self._draw_scale()
+
+    def _scale_destroyed(self, event):
+        if event.widget is self and self._scale_job is not None:
+            self.after_cancel(self._scale_job)
+            self._scale_job = None
 
     def show(self, document, selection):
         self.document, self.selection = document, selection
@@ -155,12 +190,51 @@ class StructogramCanvas(ttk.Frame):
         if x1 < left or x2 > left + width:
             self.canvas.xview_moveto(max(0, x1 - 16) / max(extent[2], 1))
 
+    def _wrapped_text(self, text, width):
+        width = max(20, width)
+        key = (text, width)
+        if key in self._wrap_cache:
+            return self._wrap_cache[key]
+        lines = []
+        measure = self._layout_font.measure
+        for paragraph in (text or ' ').split('\n'):
+            if measure(paragraph) <= width:
+                lines.append(paragraph)
+                continue
+            while paragraph:
+                # Exponential bounds avoid measuring huge remaining paragraphs
+                # for every line of a long, unbroken label.
+                low, high = 0, 1
+                while high < len(paragraph) and measure(paragraph[:high]) <= width:
+                    low, high = high, min(len(paragraph), high * 2)
+                if measure(paragraph[:high]) <= width:
+                    lines.append(paragraph)
+                    break
+                while low + 1 < high:
+                    middle = (low + high) // 2
+                    if measure(paragraph[:middle]) <= width:
+                        low = middle
+                    else:
+                        high = middle
+                count = max(1, low)
+                space = paragraph.rfind(' ', 0, count + 1)
+                if space > 0:
+                    lines.append(paragraph[:space])
+                    paragraph = paragraph[space + 1:]
+                else:
+                    lines.append(paragraph[:count])
+                    paragraph = paragraph[count:]
+        result = '\n'.join(lines)
+        self._wrap_cache[key] = result
+        return result
+
     def _text_height(self, text, width):
         key = (text, width)
         if key not in self._height_cache:
-            item = self._text(0, 0, text=text or " ", width=max(20, width), anchor="nw")
+            item = self.canvas.create_text(0, 0, text=self._wrapped_text(text, width),
+                                           font=self._layout_font, width=0, anchor="nw")
             bounds = self.canvas.bbox(item)
-            self._height_cache[key] = (bounds[3] - bounds[1])/self.zoom if bounds else 16
+            self._height_cache[key] = bounds[3] - bounds[1] if bounds else 16
             self.canvas.delete(item)
         return self._height_cache[key]
 
@@ -197,6 +271,16 @@ class StructogramCanvas(ttk.Frame):
             return self._width_cache[key]
         width = 160
         for node in body:
+            label = self._label(node)
+            if label not in self._label_widths:
+                self._label_widths[label] = max((self._layout_font.measure(line) for line in label.split('\n')), default=0)
+            # Long labels wrap; structural nesting may require a wider diagram.
+            text_width = self._label_widths[label]
+            if node['kind'] in IF_KINDS or node['kind'] == 'switch':
+                text_width = 2 * text_width + 40
+            else:
+                text_width += 24
+            width = max(width, min(720, text_width))
             if node['kind']=='try':
                 width=max(width,20+max(self._min_width(b) for _,b,_ in child_bodies(node)))
             elif node["kind"] in IF_KINDS or node["kind"] == "switch":
@@ -208,11 +292,30 @@ class StructogramCanvas(ttk.Frame):
 
     def _head_height(self, node, width):
         if node["kind"] in IF_KINDS or node["kind"] == "switch":
-            height = max(76, 2 * self._text_height(self._label(node), width * 0.48) + 40)
+            height = 2 * self._text_height(self._label(node), width * 0.48) + 4 * self._inset(10)
             if node["kind"] == "switch":
                 height += self._case_label_height(node, width)
+            else:
+                # Labels sit below the diagonals. Reserve actual text bounds
+                # plus stroke clearance, including the edge nearest the joint.
+                layout = self._branch_layout(node, width)
+                joint = layout[0][3]
+                stroke = max(1, int(2*self.diagram_scale+.5))
+                clearance = stroke/2+2
+                bottom_gap = self._inset(4)+clearance
+                left = 0
+                for _, _, label, bw in layout:
+                    text = self._wrapped_text(label, bw-2*self._inset(6))
+                    half = max(map(self._layout_font.measure, text.split('\n')), default=0)/2+1
+                    center = left+bw/2
+                    fraction = ((center+half)/joint if center < joint else
+                                (width-center+half)/(width-joint))
+                    label_height = self._text_height(label, bw-2*self._inset(6))
+                    height = max(height, ceil((label_height+bottom_gap+clearance)/max(.05,1-fraction)))
+                    left += bw
             return height
-        return max(48, self._text_height(self._label(node), width - 24) + 20)
+        inset = 8+self._inset(4) if node["kind"] == "call" else self._inset(12)
+        return self._text_height(self._label(node), width - 2*inset) + 2*self._inset(14)
 
     def _branch_layout(self, node, width):
         branches = self._branches(node)
@@ -221,7 +324,7 @@ class StructogramCanvas(ttk.Frame):
         return [(path, body, label, m+extra) for (path, body, label), m in zip(branches, minimum)]
 
     def _case_label_height(self, node, width):
-        return max(self._text_height(label, bw-12) for _, _, label, bw in self._branch_layout(node, width)) + 12
+        return max(self._text_height(label, bw-2*self._inset(6)) for _, _, label, bw in self._branch_layout(node, width)) + 2*self._inset(6)
 
     def _body_height(self, body, width):
         key = (id(body), width)
@@ -252,19 +355,47 @@ class StructogramCanvas(ttk.Frame):
         clear_shapes(self.canvas,'try-info')
         self._try_info_points=[]
         self._try_info_regions=[]
-        self.typography.refresh(self.zoom)
+        # Layout uses canonical fonts: resizing or zooming never changes wrapping.
+        self.layout_typography.select_zoom(1.0)
+        role = "heading" if self.diagram_scale >= 1.5 else "body"
+        self._layout_font = self.layout_typography[role]
+        size = self._layout_font.actual('size')
+        canonical_pixels = abs(size) if size < 0 else size*self.winfo_fpixels('1p')
+        render_pixels = max(1, round(canonical_pixels*self.zoom))
+        self.typography.select_zoom(self.zoom, pixel_size=render_pixels)
+        # Pixel-sized immutable fonts avoid the coarser point-size rounding.
+        # Keep multiline labels inside their canonical, zoomed block height.
+        while (render_pixels > 1 and self.typography[role].metrics('linespace') >
+               self._layout_font.metrics('linespace') * self.zoom + 1e-9):
+            render_pixels -= 1
+            self.typography.select_zoom(self.zoom, pixel_size=render_pixels)
+        self._font = self.typography[role]
+        self.control_typography.select_zoom(self.zoom)
+        self._control_font = self.control_typography["body"]
         self.canvas.delete("all")
         self.regions.clear()
         self.insertion_regions.clear()
         self._height_cache.clear()
+        self._wrap_cache = {}
         # Model dictionaries are edited in place. Keep layout caches for one draw only.
         self._width_cache.clear()
+        self._label_widths = {}
         self._body_height_cache.clear()
         if self.document is None:
             return
         body = self.document["body"]
-        width = max(480, self.render_width or self.canvas.winfo_width() / self.zoom - 32, self._min_width(body))
+        width = max(480, self.render_width or 0, self._min_width(body))
+        self.content_width = width
         height = self._body_height(body, width)
+        # Hinting can widen a rounded native font even when its line height
+        # fits. Test all canonical wrap allocations before painting any label.
+        while (render_pixels > 1 and any(
+                self._font.measure(line) > available*self.zoom+1
+                for (_, available), text in self._wrap_cache.items()
+                for line in text.split('\n'))):
+            render_pixels -= 1
+            self.typography.select_zoom(self.zoom, pixel_size=render_pixels)
+            self._font = self.typography[role]
         cat_blocks = enabled(STRUCTOGRAM_CAT_BLOCKS)
         top = 60 if cat_blocks else 16
         self._render_body(("body",), 16, top, width, height, tr('Diagram'))
@@ -284,13 +415,13 @@ class StructogramCanvas(ttk.Frame):
                 if selection.at_start:
                     self.canvas.create_line(x1+3, y1+3, x2-3, y1+3, fill=self._color(SELECT), width=4, tags="selection")
                 else:
-                    self.canvas.create_rectangle(x1+2, y1+2, x2-2, y2-2, outline=self._color(SELECT), width=SELECTION_WIDTH, tags="selection")
+                    self.canvas.create_rectangle(x1+2, y1+2, x2-2, y2-2, outline=self._color(SELECT), width=3, tags="selection")
         if not self.exporting and self.selection.index is not None:
             last = self.selection.end_index if self.selection.end_index is not None else self.selection.index
             target = next((r for r in self.regions if r.selection == Selection(self.selection.path, last)), None)
             if target:
                 x1, _, x2, y = target.bounds
-                self.canvas.create_line(x1+4, y, x2-4, y, fill=self._color(SELECT), width=SELECTION_WIDTH, tags="insertion-marker")
+                self.canvas.create_line(x1+4, y, x2-4, y, fill=self._color(SELECT), width=3, tags="insertion-marker")
         if self.monochrome:
             ink = DARK_MONOCHROME_INK if dark_mono else "#000000"
             surface = DARK_MONOCHROME_SURFACE if dark_mono else "#ffffff"
@@ -304,11 +435,24 @@ class StructogramCanvas(ttk.Frame):
                     self.canvas.itemconfigure(item, outline=ink)
                     if self.canvas.itemcget(item, "fill"):
                         self.canvas.itemconfigure(item, fill=surface)
+        design_stroke = max(1, int(2 * self.diagram_scale + .5))
+        stroke = max(1, int(design_stroke * self.zoom + .5))
+        for item in self.canvas.find_all():
+            if self.canvas.type(item) != 'text' and 'cat-head' not in self.canvas.gettags(item):
+                selected = {'selection', 'insertion-marker'}.intersection(self.canvas.gettags(item))
+                self.canvas.itemconfigure(item, width=stroke + 2 if selected else stroke)
         if self.zoom != 1.0:
             self.canvas.scale("all", 0, 0, self.zoom, self.zoom)
             for region in self.regions:
                 region.bounds = tuple(value*self.zoom for value in region.bounds)
             self.insertion_regions = {path: tuple(v*self.zoom for v in bounds) for path, bounds in self.insertion_regions.items()}
+        # Use one integer coordinate grid for adjoining contours. Avoid mixing
+        # fractional zoom coordinates with integer Tk outlines at shared corners.
+        for item in self.canvas.find_all():
+            if 'cat-head' not in self.canvas.gettags(item):
+                coordinates = self.canvas.coords(item)
+                if coordinates:
+                    self.canvas.coords(item, *(round(v) for v in coordinates))
         if not self.exporting:
             u=self.typography.units
             for cx,cy in self._try_info_points:
@@ -350,7 +494,7 @@ class StructogramCanvas(ttk.Frame):
         else:self.try_tip.leave()
 
     def _try_sections(self,node,width):
-        return [(path,body,label,max(32,self._text_height(label,width-24)+16,self.typography.units(30)/self.zoom),
+        return [(path,body,label,max(24,self._text_height(label,width-2*self._inset(10))+2*self._inset(8)),
                  self._body_height(body,width-20)) for path,body,label in child_bodies(node)]
 
     def _paint_disabled(self,marker):
@@ -363,6 +507,11 @@ class StructogramCanvas(ttk.Frame):
                 self.canvas.itemconfigure(item,outline=self._color(NSD_DISABLED_EDGE))
                 if self.canvas.itemcget(item,'fill'):self.canvas.itemconfigure(item,fill=self._color(NSD_DISABLED_FILL))
         self.canvas.delete(marker,last)
+
+    def _inset(self, base):
+        # Padding follows appearance; the font and structural insets stay fixed.
+        stroke = max(1, int(2 * self.diagram_scale + .5))
+        return max(int(base * .5 / self.diagram_scale + .5), (stroke + 1) // 2 + 2)
 
     def _render_body(self, path, x, y, width, height, name):
         body = body_at(self.document, path)
@@ -380,7 +529,7 @@ class StructogramCanvas(ttk.Frame):
                 if not self.exporting:
                     self._try_info_points.append((x+width-self.typography.units(20)/self.zoom,current_y+parts[0][3]/2))
                 for relative,_,label,header,size in parts:
-                    self._text(x+10,current_y+header/2,text=label,width=width-20,fill=self._color(INK),anchor='w')
+                    self._text(x+self._inset(10),current_y+header/2,text=label,width=width-2*self._inset(10),fill=self._color(INK),anchor='w')
                     current_y+=header
                     self._render_body(path+(index,)+relative,x+20,current_y,width-20,size,label)
                     current_y+=size
@@ -415,19 +564,20 @@ class StructogramCanvas(ttk.Frame):
                                         x+width, current_y, fill=self._color(EDGE))
                 if band:
                     self.canvas.create_line(joint, current_y+triangle_height, joint, current_y+head_height, fill=self._color(EDGE))
-                self._text((x+width/2+joint)/2, current_y+8, text=self._label(node),
+                self._text((x+width/2+joint)/2, current_y+self._inset(8), text=self._label(node),
                                         width=width*0.48, fill=self._color(INK), anchor="n")
                 bx = x
                 for column, (_, _, label, bw) in enumerate(layout):
-                    self._text(bx+bw/2, current_y+head_height-(band/2 if band else 12),
-                                            text=label, width=bw-12, fill=self._color(INK))
+                    self._text(bx+bw/2, current_y+head_height-(band/2 if band else self._text_height(label, bw-2*self._inset(6))/2+self._inset(4)+max(1, int(2*self.diagram_scale+.5))/2+2),
+                                            text=label, width=bw-2*self._inset(6), fill=self._color(INK))
                     bx += bw
                     if node["kind"] == "switch" and column < len(layout)-2:
                         diagonal_y = current_y + triangle_height * (bx-x) / max(joint-x, 1)
                         self.canvas.create_line(bx, diagonal_y, bx, current_y+head_height, fill=self._color(EDGE))
             else:
-                self._text(x+12, current_y+head_height/2, text=self._label(node),
-                                        width=width-24, fill=self._color(INK), anchor="w")
+                inset = 8+self._inset(4) if node["kind"] == "call" else self._inset(12)
+                self._text(x+inset, current_y+head_height/2, text=self._label(node),
+                                        width=width-2*inset, fill=self._color(INK), anchor="w")
             if node["kind"] == "call":
                 self.canvas.create_line(x+8, current_y, x+8, current_y+head_height, fill=self._color(EDGE))
                 self.canvas.create_line(x+width-8, current_y, x+width-8, current_y+head_height, fill=self._color(EDGE))
@@ -452,5 +602,9 @@ class StructogramCanvas(ttk.Frame):
         self.insertion_regions[path] = (x, current_y, x+width, y+height)
         if self.exporting:
             return
+        full_hint = tr('Insert block here') if path == ("body",) else tr('{body} · Insert block').format(body=name)
+        available = max(0, (width-16)*self.zoom)
+        hint = next((text for text in (full_hint, tr('Insert block'), tr('Insert'))
+                     if self._control_font.measure(text) <= available), '')
         self._text(x+width/2, current_y+(y+height-current_y)/2,
-                                text=tr('Insert block here') if path == ("body",) else tr('{body} · Insert block').format(body=name), width=width-16, fill=self._color(MUTED))
+                   text=hint, fill=self._color(MUTED), font=self._control_font)

@@ -40,7 +40,7 @@ class UmlEditor(GraphicalDocument):
         self.diagram.grid(row=0, column=0, sticky="nsew")
         self._bind_clipboard()
         self.zoom_bar = ttk.Frame(self.surface)
-        self.zoom_bar.grid(row=1, column=0, sticky="e", pady=(6, 0))
+        self.zoom_bar.grid(row=1, column=0, sticky="ew", pady=(6, 0))
         self.monochrome = tk.BooleanVar(self,value=False)
         style=ttk.Style(self)
         background=style.lookup('TFrame','background') or '#ececec'
@@ -55,7 +55,7 @@ class UmlEditor(GraphicalDocument):
         self.grid_value = tk.StringVar(self, value=self.grid_choices[self.diagram.grid_mode])
         self.grid_picker = ttk.Combobox(self.zoom_bar, textvariable=self.grid_value,
             values=tuple(self.grid_choices.values()), state='readonly', width=19, style='SE.TCombobox')
-        self.grid_picker.pack(side='left', before=self.monochrome_button, padx=(0, 16))
+        self.grid_picker.pack(side='right', padx=(0, 16))
         self.grid_picker.bind('<<ComboboxSelected>>', self._grid_selected)
         self._refresh()
 

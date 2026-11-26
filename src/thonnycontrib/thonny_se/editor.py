@@ -54,7 +54,7 @@ class StructogramEditor(GraphicalDocument):
         self.surface.home_widget = self
         self.maximizable_widget = self.surface
         self.zoom_bar = ttk.Frame(self.surface)
-        self.zoom_bar.pack(side="bottom", anchor="e", pady=(6, 0))
+        self.zoom_bar.pack(side="bottom", fill="x", pady=(6, 0))
         main = ttk.Frame(self.surface)
         main.pack(fill="both", expand=True)
         main.rowconfigure(0, weight=1)
@@ -92,7 +92,9 @@ class StructogramEditor(GraphicalDocument):
         self.diagram.canvas.bind("<Button-3>", self.context_menu)
         self.diagram.canvas.bind("<Button-2>", self.context_menu)
         for widget in (self, self.surface,
-                       self.zoom_bar, self.zoom_label, self.zoom_slider, self.monochrome_button):
+                       self.zoom_bar, self.zoom_label, self.zoom_slider, self.zoom_out_button,
+                       self.zoom_in_button, self.scale_slider, self.scale_label, self.scale_down_button,
+                       self.scale_up_button, self.monochrome_button):
             self._bind_history(widget)
         self.interaction = DiagramInteraction(self)
         self._refresh()

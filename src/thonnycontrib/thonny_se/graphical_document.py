@@ -28,15 +28,77 @@ class GraphicalDocument(Editor):
         self.get_text_widget().set_read_only(True)
 
     def _build_zoom_controls(self):
+        self._build_scale_preview()
+        self.zoom_controls = ttk.Frame(self.zoom_bar)
+        self.zoom_controls.pack(side="right")
         self.zoom_text = tk.StringVar(self, value="100 %")
         self.zoom_value = tk.DoubleVar(self, value=100)
         self._updating_zoom = False
-        self.zoom_label = ttk.Label(self.zoom_bar, textvariable=self.zoom_text, width=7, anchor="e")
-        self.zoom_label.pack(side="left", padx=(0, 4))
-        self.zoom_slider = ttk.Scale(self.zoom_bar, from_=50, to=200, length=140,
+        from .tooltips import attach_tip
+        self.zoom_out_button = ttk.Button(self.zoom_controls, style="Toolbutton", width=2,
+                                          command=lambda: self._step_zoom(-10), takefocus=True)
+        self.zoom_out_button.pack(side="left", padx=(0, 3))
+        self.zoom_slider = ttk.Scale(self.zoom_controls, from_=50, to=200, length=140,
                                     variable=self.zoom_value, command=self._slide_zoom)
         self.zoom_slider.pack(side="left")
+        self.zoom_in_button = ttk.Button(self.zoom_controls, style="Toolbutton", width=2,
+                                         command=lambda: self._step_zoom(10), takefocus=True)
+        self.zoom_in_button.pack(side="left", padx=(3, 0))
+        self.zoom_label = ttk.Label(self.zoom_controls, textvariable=self.zoom_text, width=7, anchor="w")
+        self.zoom_label.pack(side="left", padx=(4, 0))
+        scalable = hasattr(self.diagram, 'request_diagram_scale')
+        for button, text in ((self.scale_down_button, tr('More spacing and lighter contours (also applies to exports)') if scalable else tr('Decrease diagram scale (preview; no effect yet)')),
+                             (self.scale_up_button, tr('Less spacing and stronger contours (also applies to exports)') if scalable else tr('Increase diagram scale (preview; no effect yet)')),
+                             (self.zoom_out_button, tr('Zoom out (view only)')),
+                             (self.zoom_in_button, tr('Zoom in (view only)'))):
+            attach_tip(button, text)
+            for sequence in ('<Return>', '<KP_Enter>'):
+                button.bind(sequence, lambda event, button=button: (button.invoke(), "break")[1])
+        self._refresh_zoom_icons()
+        self.zoom_bar.bind('<<ThemeChanged>>', lambda event: self._refresh_zoom_icons(), add=True)
         self.diagram.on_zoom = self._zoom_changed
+
+    def _build_scale_preview(self):
+        # Tab-local appearance; UML remains a UI prototype. No file-format fields.
+        self.scale_controls = ttk.Frame(self.zoom_bar)
+        self.scale_controls.pack(side="left", before=self.monochrome_button)
+        self.scale_preview_value = tk.DoubleVar(self, value=100)
+        self.scale_preview_text = tk.StringVar(self, value="100 %")
+        self.scale_down_button = ttk.Button(self.scale_controls, style="Toolbutton", width=2,
+            command=lambda: self._scale_preview_changed(self.scale_preview_value.get()-10), takefocus=True)
+        self.scale_down_button.pack(side="left", padx=(0, 3))
+        self.scale_slider = ttk.Scale(self.scale_controls, from_=50, to=200, length=140,
+            variable=self.scale_preview_value, command=self._scale_preview_changed)
+        self.scale_slider.pack(side="left")
+        self.scale_up_button = ttk.Button(self.scale_controls, style="Toolbutton", width=2,
+            command=lambda: self._scale_preview_changed(self.scale_preview_value.get()+10), takefocus=True)
+        self.scale_up_button.pack(side="left", padx=(3, 0))
+        self.scale_label = ttk.Label(self.scale_controls, textvariable=self.scale_preview_text, width=7, anchor="w")
+        self.scale_label.pack(side="left", padx=(4, 0))
+
+    def _scale_preview_changed(self, value):
+        value = max(50, min(200, float(value)))
+        self.scale_preview_value.set(value)
+        self.scale_preview_text.set(f"{round(value)} %")
+        self.scale_down_button.state(['disabled'] if value <= 50 else ['!disabled'])
+        self.scale_up_button.state(['disabled'] if value >= 200 else ['!disabled'])
+        if hasattr(self.diagram, 'request_diagram_scale'):
+            self.diagram.request_diagram_scale(value / 100)
+
+    def _refresh_zoom_icons(self):
+        from . import retina_icons
+        from .iconregistry import menu_icon
+        for button, role in ((self.scale_down_button, 'diagram.expand'),
+                             (self.scale_up_button, 'diagram.shrink'),
+                             (self.zoom_out_button, 'view.zoom_out'),
+                             (self.zoom_in_button, 'view.zoom_in')):
+            # Inherit Thonny's Toolbutton layout and all interaction colors.
+            if not retina_icons.toolbar(button, role):
+                button.configure(style='Toolbutton', image=menu_icon(get_workbench(), role), text='')
+
+    def _step_zoom(self, amount):
+        # The variable includes pending slider requests, so rapid clicks accumulate.
+        self._slide_zoom(max(50, min(200, self.zoom_value.get()+amount)))
 
     def _zoom_changed(self, value):
         self._updating_zoom = True
@@ -44,6 +106,8 @@ class GraphicalDocument(Editor):
             label=f"{round(value*100)} %"
             if self.zoom_text.get()!=label:self.zoom_text.set(label)
             if self.zoom_value.get()!=value*100:self.zoom_value.set(value*100)
+            self.zoom_out_button.state(['disabled'] if value <= .5 else ['!disabled'])
+            self.zoom_in_button.state(['disabled'] if value >= 2 else ['!disabled'])
         finally:
             self._updating_zoom = False
 

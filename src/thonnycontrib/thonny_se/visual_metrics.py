@@ -25,12 +25,13 @@ class Typography:
         self._applied = {}
         self._zoom_fonts = OrderedDict()
         self._selected_zoom = False
+        self._pixel_size = None
         self.refresh()
 
     def refresh(self, zoom=None):
         if zoom is not None:self.zoom=zoom
         if self._selected_zoom:
-            self.select_zoom(self.zoom)
+            self.select_zoom(self.zoom, pixel_size=self._pixel_size)
             return
         base = font.nametofont('TkDefaultFont',root=self.widget).actual()
         for role,target in self.fonts.items():
@@ -40,13 +41,14 @@ class Typography:
                 target.configure(**values)
                 self._applied[role] = values
 
-    def select_zoom(self, zoom):
+    def select_zoom(self, zoom, *, pixel_size=None):
         """Use immutable variants: configuring a live Tk named font broadcasts
         geometry changes throughout the host, even during a small slider move.
         """
         self._selected_zoom=True
         base=font.nametofont('TkDefaultFont',root=self.widget).actual()
-        base['size']=scaled_size(base['size'],zoom)
+        self._pixel_size = pixel_size
+        base['size'] = -max(1, round(pixel_size)) if pixel_size is not None else scaled_size(base['size'],zoom)
         key=tuple(sorted(base.items()))
         if key not in self._zoom_fonts:
             self._zoom_fonts[key]={role:font.Font(root=self.widget,**{**base,**style})

@@ -340,6 +340,50 @@
       "status": "available",
       "original": "sources/class-instantiate.svg",
       "sha256": "17da27e63ca3d9e5c89f837ad434f276f5c1c3a9a8a6e1b814ca8ef9bf94050d"
+    },
+    "view.zoom_in": {
+      "file": "lucide-zoom-in.png",
+      "dark_file": "lucide-zoom-in-dark.png",
+      "menu_file": "lucide-zoom-in-menu.png",
+      "dark_menu_file": "lucide-zoom-in-dark-menu.png",
+      "source": "lucide",
+      "status": "available",
+      "upstream_name": "zoom-in",
+      "original": "sources/zoom-in.svg",
+      "sha256": "91206ae20013e2c84f2f5d09db5a7200f11698a84fc4e857b06fab2ce7c933f1"
+    },
+    "view.zoom_out": {
+      "file": "lucide-zoom-out.png",
+      "dark_file": "lucide-zoom-out-dark.png",
+      "menu_file": "lucide-zoom-out-menu.png",
+      "dark_menu_file": "lucide-zoom-out-dark-menu.png",
+      "source": "lucide",
+      "status": "available",
+      "upstream_name": "zoom-out",
+      "original": "sources/zoom-out.svg",
+      "sha256": "28e7849b55bb9b34cb24be83b4e8ef58f2ae164fc451fbd60e026bfb507d2921"
+    },
+    "diagram.expand": {
+      "file": "lucide-expand.png",
+      "dark_file": "lucide-expand-dark.png",
+      "menu_file": "lucide-expand-menu.png",
+      "dark_menu_file": "lucide-expand-dark-menu.png",
+      "source": "lucide",
+      "status": "available",
+      "upstream_name": "expand",
+      "original": "sources/expand.svg",
+      "sha256": "3d57bfcb818a2ead60ccd221e5fdff0eaaaf39cdafc5bbec897a96eff1ddae36"
+    },
+    "diagram.shrink": {
+      "file": "lucide-shrink.png",
+      "dark_file": "lucide-shrink-dark.png",
+      "menu_file": "lucide-shrink-menu.png",
+      "dark_menu_file": "lucide-shrink-dark-menu.png",
+      "source": "lucide",
+      "status": "available",
+      "upstream_name": "shrink",
+      "original": "sources/shrink.svg",
+      "sha256": "cb474c603545297822c641aae9e55523af4f5368f9e68b4b0464dc1126b1ee4f"
     }
   }
 }

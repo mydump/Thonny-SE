@@ -19,13 +19,14 @@ from .ui_style import DARK_CANVAS, DARK_DIAGRAM_COLORS
 
 
 def snapshot(diagram, *, monochrome=None):
+    diagram.flush_diagram_scale()
     hidden = StructogramCanvas(diagram, lambda selection: None, lambda: None)
     try:
         hidden.cat_seed = diagram.cat_seed
         hidden.exporting = True
         hidden.monochrome = diagram.monochrome if monochrome is None else monochrome
-        root = next(r for r in diagram.regions if r.selection == Selection())
-        hidden.render_width = (root.bounds[2]-root.bounds[0])/diagram.zoom
+        hidden.diagram_scale = diagram.diagram_scale
+        hidden.render_width = diagram.content_width
         document = dict(diagram.document, body=active_body(diagram.document['body']))
         hidden.show(document, Selection())
         canvas = hidden.canvas
@@ -246,7 +247,15 @@ def raster_content(scene, width, height, format="PNG", *, options=None):
         else:
             stroke = max(1, round(item['width']*scale))
             if kind == 'rectangle':
-                draw.rectangle(coords, fill=item['fill'] or None, outline=item['outline'] or None, width=stroke)
+                # Pillow's rectangle outline grows inward; Canvas/SVG strokes
+                # straddle their path. Expand only the outline, not the fill.
+                if item['fill']:
+                    draw.rectangle(coords, fill=item['fill'])
+                if item['outline']:
+                    (x1,y1),(x2,y2) = coords
+                    radius = stroke/2
+                    draw.rectangle(((x1-radius,y1-radius),(x2+radius,y2+radius)),
+                                   outline=item['outline'], width=stroke)
             elif kind == 'oval':
                 draw.ellipse(coords, fill=item['fill'] or None, outline=item['outline'] or None, width=stroke)
             elif kind == 'polygon':
