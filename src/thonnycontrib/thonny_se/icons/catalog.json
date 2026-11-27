@@ -447,15 +447,15 @@
       "license_file": "licenses/LICENSE-lucide-actions.txt"
     },
     "code.goto": {
-      "file": "lucide-circle-chevrons-right.png",
-      "dark_file": "lucide-circle-chevrons-right-dark.png",
-      "menu_file": "lucide-circle-chevrons-right-menu.png",
-      "dark_menu_file": "lucide-circle-chevrons-right-dark-menu.png",
+      "file": "lucide-search-code.png",
+      "dark_file": "lucide-search-code-dark.png",
+      "menu_file": "lucide-search-code-menu.png",
+      "dark_menu_file": "lucide-search-code-dark-menu.png",
       "source": "lucide",
       "status": "available",
-      "upstream_name": "circle-chevrons-right",
-      "original": "sources/circle-chevrons-right.svg",
-      "sha256": "b6b947f6250a7bbac6b07f4b647e1964da07189d53f0ba21e1da2213cd5575da"
+      "upstream_name": "search-code",
+      "original": "sources/search-code.svg",
+      "sha256": "c877606a25890467a06657de349cdfd81f2b89ab0fbdeafc4b9b7b6ceaadf02b"
     },
     "relationship.add": {
       "file": "lucide-git-branch-plus.png",
@@ -467,6 +467,17 @@
       "upstream_name": "git-branch-plus",
       "original": "sources/git-branch-plus.svg",
       "sha256": "50463077211a9d609785ad9dc91d9bcdf479be280d24a579b7fc9d1809e13f08"
+    },
+    "relationship.detect": {
+      "file": "lucide-wand-sparkles.png",
+      "dark_file": "lucide-wand-sparkles-dark.png",
+      "menu_file": "lucide-wand-sparkles-menu.png",
+      "dark_menu_file": "lucide-wand-sparkles-dark-menu.png",
+      "source": "lucide",
+      "status": "available",
+      "upstream_name": "wand-sparkles",
+      "original": "sources/wand-sparkles.svg",
+      "sha256": "d73067ff2463118d4f11f9c532e7162be45f96835b966b4fc89977ca47a7317d"
     }
   }
 }
