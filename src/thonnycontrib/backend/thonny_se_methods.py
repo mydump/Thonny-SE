@@ -4,6 +4,7 @@
 
 """Prepare and call real instance methods without evaluating annotations/properties."""
 import inspect
+import keyword
 import sys
 import traceback
 import types
@@ -11,7 +12,7 @@ import uuid
 
 from .thonny_se_instantiation import evaluate_arguments
 from .thonny_se_argument_types import argument_context
-from .thonny_se_objects import snapshot, resolve_object, safe_signature
+from .thonny_se_objects import snapshot, resolve_object, safe_signature, is_user_instance, CONTAINERS
 
 
 def resolve_method(obj, name):
@@ -55,6 +56,8 @@ class MethodSession:
     def __init__(self, namespace):
         self.namespace = namespace
         self.prepared = {}
+        self.result_token = None
+        self.result_value = None
 
     def prepare(self, object_name, object_id, method):
         obj = resolve_object(self.namespace, object_name)
@@ -64,6 +67,7 @@ class MethodSession:
         signature, parameters = describe_method(function, receiver)
         # A single dialog can be active; release references from earlier dialogs.
         self.prepared.clear()
+        self.clear_result()
         token = uuid.uuid4().hex
         self.prepared[token] = object_name, obj, method, function, receiver, signature
         signature_text = str(signature)
@@ -80,6 +84,7 @@ class MethodSession:
                     signature=str(signature))
 
     def call(self, token, values):
+        self.clear_result()
         name, obj, method, function, receiver, signature = self.prepared[token]
         if resolve_object(self.namespace, name) is not obj:
             raise ValueError('stale_object')
@@ -89,7 +94,32 @@ class MethodSession:
         args, kwargs = evaluate_arguments(signature, values, self.namespace)
         if receiver is not None:
             args.insert(0, receiver)
-        return function(*args, **kwargs)
+        result = function(*args, **kwargs)
+        if type(result) in CONTAINERS or is_user_instance(result):
+            self.result_token = uuid.uuid4().hex
+            self.result_value = result
+        return result
+
+    def clear_result(self):
+        self.result_token = None
+        self.result_value = None
+
+    def keep_result(self, token, name):
+        if not token or token != self.result_token:
+            raise ValueError('stale_result')
+        if not isinstance(name, str) or not name.isidentifier() or keyword.iskeyword(name):
+            raise ValueError('invalid_name')
+        if name in self.namespace:
+            raise ValueError('name_exists')
+        self.namespace[name] = self.result_value
+        self.clear_result()
+        return name
+
+    def release(self, token):
+        # An old dialog closing must not invalidate a newer dialog's result.
+        if token in self.prepared:
+            self.prepared.clear()
+            self.clear_result()
 
 
 def load_plugin(backend):
@@ -108,6 +138,9 @@ def load_plugin(backend):
         try:
             result = session.call(command.token, command.values)
             response['result_is_none'] = result is None
+            response['result_token'] = session.result_token
+            response['result_class'] = type(result).__name__ if session.result_token else ''
+            response['names'] = list(session.namespace)
             try:
                 response['result'] = repr(result)[:2000]
             except Exception:
@@ -122,5 +155,23 @@ def load_plugin(backend):
         response['argument_context'] = argument_context(session.namespace)
         return response
 
+    def keep(command):
+        response = dict(request_id=command.request_id)
+        try:
+            response['kept_name'] = session.keep_result(command.result_token, command.object_name)
+        except Exception as exc:
+            response.update(error=str(exc), error_type=type(exc).__name__)
+        response.update(names=list(session.namespace), objects=snapshot(session.namespace,
+            representation_error=command.get('representation_error', '<Representation failed>'),
+            expanded=command.get('expanded', ()), item_limits=command.get('item_limits', {})),
+            argument_context=argument_context(session.namespace))
+        return response
+
+    def release(command):
+        session.release(command.token)
+        return {}
+
+    backend.add_command('thonny_se_keep_method_result', keep)
+    backend.add_command('thonny_se_release_method', release)
     backend.add_command('thonny_se_prepare_method', prepare)
     backend.add_command('thonny_se_call_method', call)

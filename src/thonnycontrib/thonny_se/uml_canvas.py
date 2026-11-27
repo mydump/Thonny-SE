@@ -239,6 +239,37 @@ class UmlCanvas(ttk.Frame):
             fonts['action']=font.Font(root=self,**{**values,'size':size+2 if size>0 else size-2,'weight':'bold'})
         return fonts['action']
 
+    def _fit_zoom_fonts(self):
+        if self.zoom == 1:
+            self.display_typography.select_zoom(1)
+            return
+        size = self.normal.actual('size')
+        pixels = abs(size) if size < 0 else size*self.winfo_fpixels('1p')
+        pixels = max(1, round(pixels*self.zoom))
+        samples = {'body': [], 'heading': [], 'abstract': [], 'abstract_method': []}
+        from .uml_python_semantics import abstract_method
+        member_role = 'heading' if self.diagram_scale >= 1.5 else 'body'
+        abstract_role = 'abstract' if self.diagram_scale >= 1.5 else 'abstract_method'
+        for card in self.editor.document['classes']:
+            samples['abstract' if card.get('class_kind') == 'abstract' else 'heading'].append(card['name'])
+            samples['body'].extend(self._header_details(card))
+            for section, rows in (('attributes', card['attributes']), ('methods', self._methods(card))):
+                for row in rows:
+                    role = abstract_role if section == 'methods' and abstract_method(card, row) else member_role
+                    samples[role].append(self._member_signature(row, section, card['name']))
+        limits = {role: [self.typography[role].measure(text)*self.zoom+1 for text in texts]
+                  for role, texts in samples.items()}
+        while True:
+            self.display_typography.select_zoom(self.zoom, pixel_size=pixels)
+            fits = all(self.display_typography[role].metrics('linespace') <=
+                       self.typography[role].metrics('linespace')*self.zoom+1 and
+                       all(self.display_typography[role].measure(text) <= limit
+                           for text, limit in zip(texts, limits[role]))
+                       for role, texts in samples.items())
+            if fits or pixels == 1:
+                return
+            pixels -= 1
+
     def _select_zoom_fonts(self):
         old={str(self.display_normal):'body',str(self.display_bold):'heading',
              str(self.display_abstract):'abstract',str(self.display_method_abstract):'abstract_method'}
@@ -249,7 +280,7 @@ class UmlCanvas(ttk.Frame):
         if old_action is not None:
             old[str(old_action)]="action"
             previous=(*previous,old_action)
-        self.display_typography.select_zoom(self.zoom)
+        self._fit_zoom_fonts()
         self.display_normal=self.display_typography['body']
         self.display_bold=self.display_typography['heading']
         self.display_abstract=self.display_typography['abstract']
@@ -357,21 +388,20 @@ class UmlCanvas(ttk.Frame):
         if self.exporting and card['id'] in self._export_widths:
             return self._export_widths[card['id']]
         from .uml_python_semantics import abstract_method
-        # Tk rounds the displayed font size; scale coordinates using its actual
-        # text metrics so signatures still fit at fractional zoom levels.
-        scale = self.zoom
-        normal = self.diagram_normal
-        face = self.display_abstract if card.get("class_kind") == "abstract" else self.display_bold
+        # Layout and relationship anchors use canonical metrics at every zoom.
+        # Raster font rounding belongs only to the displayed text.
+        normal = self.layout_normal
+        face = self.abstract if card.get("class_kind") == "abstract" else self.bold
         def member_width(row, section):
             member_face = normal
             if section == 'methods' and abstract_method(card, row):
-                member_face = self.diagram_abstract_method
+                member_face = self.abstract if self.diagram_scale >= 1.5 else self.method_abstract
             text = self._member_signature(row, section, card["name"])
             left, right = self.typography.units(8), self.typography.units(10)
             padding = self.typography.units(46)+self._space(left)-left+self._space(right)-right
-            return member_face.measure(text)/scale+padding
-        return max(150, face.measure(card["name"])/scale+max(66,2*self._space(40)),
-                   *(normal.measure(text)/scale+2*self._space(12) for text in self._header_details(card)),
+            return member_face.measure(text)+padding
+        return max(150, face.measure(card["name"])+max(66,2*self._space(40)),
+                   *(normal.measure(text)+2*self._space(12) for text in self._header_details(card)),
                    *(member_width(row, section)
                      for section, rows in (("attributes", card["attributes"]), ("methods", methods))
                      for row in rows))
@@ -394,6 +424,8 @@ class UmlCanvas(ttk.Frame):
         return self._colors.get(color, color)
 
     def draw(self):
+        if not self.exporting and self.zoom != 1:
+            previous_fonts = self._select_zoom_fonts()
         self._appearance_metrics()
         dark = not self.exporting and uses_dark_diagrams()
         self._dark_monochrome = dark and self.monochrome
@@ -967,8 +999,8 @@ class UmlCanvas(ttk.Frame):
             hidden.exporting = True
             hidden.diagram_scale = self.diagram_scale
             hidden.row_height = self.row_height
-            # Export at canonical 100% font metrics; displayed fonts are rounded
-            # by Tk and their measured card widths vary with the current zoom.
+            # Export uses the same canonical layout metrics as the view;
+            # displayed glyphs alone are fitted to the target pixel grid.
             for target, source in ((hidden.normal, self.normal), (hidden.bold, self.bold),
                                    (hidden.abstract, self.abstract), (hidden.method_abstract, self.method_abstract),
                                    (hidden.display_normal, self.normal), (hidden.display_bold, self.bold),
@@ -1567,10 +1599,10 @@ class UmlCanvas(ttk.Frame):
             menu.add_command(label=label, command=action, image=menu_icon(workbench, role),
                              compound="left", state="normal" if enabled else "disabled")
 
-        command(tr('New class'), lambda: self.editor.new_class(x, y), "edit.add",
+        command(tr('New class'), lambda: self.editor.new_class(x, y), "class.new",
                 len(self.editor.document["classes"]) < 200)
         comment_x = self.cards[cid][2]+24 if cid is not None else x
-        command(tr('New comment'), lambda: self.editor.edit_comment(comment_x, y, target=cid), "edit.add",
+        command(tr('New comment'), lambda: self.editor.edit_comment(comment_x, y, target=cid), "comment.new",
                 len(self.editor.document["comments"]) < 200)
         if note is not None:
             command(tr('Edit comment'), lambda: self.editor.edit_comment(note=note), "edit.rename")
@@ -1591,16 +1623,16 @@ class UmlCanvas(ttk.Frame):
         if cid is not None:
             menu.add_separator()
             command(tr('Edit class definition …'), lambda: self.editor.edit_class_header(cid), "edit.rename")
-            command(tr('Add attribute'), lambda: self.begin_edit(cid, "attributes"), "edit.add")
-            command(tr('Add method'), lambda: self.begin_edit(cid, "methods"), "edit.add")
-            command(tr('Add relationship …'), lambda: self._start_relationship(cid), "edit.add",
+            command(tr('Add attribute'), lambda: self.begin_edit(cid, "attributes"), "attribute.add")
+            command(tr('Add method'), lambda: self.begin_edit(cid, "methods"), "method.add")
+            command(tr('Add relationship …'), lambda: self._start_relationship(cid), "relationship.add",
                     bool(self.editor.document["classes"]))
             linked = "source" in self.editor.card(cid)
             menu.add_separator()
-            command(tr('Go to code'), lambda: self.editor.go_to_code(cid,section,row), 'document.python',
+            command(tr('Go to code'), lambda: self.editor.go_to_code(cid,section,row), 'code.goto',
                     linked and (section not in ('attributes','methods') or row is not None))
             menu.add_separator()
-            command(tr('Instantiate objects …'), lambda: self.editor.instantiate_class(cid), "class.instantiate",
+            command(tr('Instantiate objects …'), lambda: self.editor.instantiate_class(cid), "object.instantiate",
                     self.editor.card(cid).get('class_kind') not in ('abstract', 'interface')
                     and get_workbench()._thonny_se_objects.session.can_instantiate(self.editor, cid))
             menu.add_separator()

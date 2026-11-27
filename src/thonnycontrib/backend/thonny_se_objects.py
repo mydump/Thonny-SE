@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 # See LICENSE in the project root for the full license text.
 
-"""Read-only snapshots of named CPython instances for Objektinspektor SE."""
+"""Snapshots and object-bank name removal for live CPython objects."""
 import inspect
 import json
 import ast
@@ -258,10 +258,72 @@ def snapshot(namespace, *, representation_error="<Representation failed>", expan
     return result
 
 
+def remove_object_names(namespace, names, object_id):
+    """Remove only the displayed top-level bindings, never references in data.
+
+    Check all names before changing anything so a stale menu cannot partially
+    remove a card or delete a newly rebound, unrelated object.
+    """
+    if not isinstance(names, (list, tuple)) or not names or any(
+            not isinstance(name, str) or not name.isidentifier() for name in names):
+        raise ValueError('stale_object')
+    values = [namespace.get(name) for name in names]
+    if any(id(value) != object_id for value in values):
+        raise ValueError('stale_object')
+    value = values[0]
+    if type(value) not in CONTAINERS and not is_user_instance(value):
+        raise ValueError('stale_object')
+    for name in dict.fromkeys(names):
+        del namespace[name]
+
+
+def container_member_ids(namespace, path, object_id, candidates):
+    """Find visible direct members by identity without expanding/repr/equality.
+
+    Called only for the selected container, so ordinary lazy snapshots retain
+    their existing bounds even for large, closed collections.
+    """
+    value = resolve_object(namespace,path)
+    if id(value)!=object_id or type(value) not in CONTAINERS:
+        raise ValueError('stale_object')
+    remaining = set(candidates)
+    if not remaining:
+        return []
+    found = set()
+    contents = value.values() if type(value) is dict else value
+    for child in contents:
+        key = id(child)
+        if key in remaining:
+            found.add(key);remaining.remove(key)
+            if not remaining:
+                break
+    return sorted(found)
+
+
 def load_plugin(backend):
     def get_objects(command):
         objects = snapshot(vars(sys.modules['__main__']),
             representation_error=command.get('representation_error', '<Representation failed>'),
             expanded=command.get('expanded', ()), item_limits=command.get('item_limits', {}))
         return {'objects': objects}
+    def remove(command):
+        response = dict(request_id=command.request_id)
+        try:
+            remove_object_names(vars(sys.modules['__main__']), command.names, command.object_id)
+        except ValueError as exc:
+            response['error'] = str(exc)
+        response.update(get_objects(command))
+        return response
+
+    def members(command):
+        response = dict(request_id=command.request_id,object_id=command.object_id)
+        try:
+            response['member_ids'] = container_member_ids(vars(sys.modules['__main__']),
+                command.path,command.object_id,command.candidates)
+        except (ValueError,RuntimeError):
+            response.update(error='stale_object',member_ids=[])
+        return response
+
+    backend.add_command('thonny_se_container_members', members)
+    backend.add_command('thonny_se_remove_object', remove)
     backend.add_command('thonny_se_objects', get_objects)

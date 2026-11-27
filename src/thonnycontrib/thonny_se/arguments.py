@@ -59,8 +59,12 @@ def default_placeholder(field, variable, default):
         bounds = field.bbox(0)
         # Some native ttk themes return text-local bbox coordinates even for
         # non-empty entries. Never let a placeholder undercut the entry padding.
-        padding = style.lookup(field.cget('style'), 'padding') or 4
-        inset = field.winfo_pixels(field.tk.splitlist(padding)[0])+1
+        padding = style.lookup(field.cget('style'), 'padding')
+        if isinstance(padding, (str, bytes)):
+            padding = field.tk.splitlist(padding)
+        if isinstance(padding, (tuple, list)):
+            padding = padding[0] if padding else 4
+        inset = field.winfo_pixels(4 if padding is None or padding == '' else padding)+1
         left = max(inset, bounds[0]+1 if bounds else inset)
         available = max(0, field.winfo_width()-left-(24 if isinstance(field, ttk.Combobox) else 6))
         width = min(font.Font(root=field, font=face).measure(default), available)

@@ -17,20 +17,23 @@ def rounded_surface(parent, row, fill, edge):
     outer.grid(row=row, column=0, columnspan=3, sticky='ew', pady=(0, 12))
     content = tk.Frame(outer, background=ui_color(fill))
     window = outer.create_window(12, 10, window=content, anchor='nw')
+    initial_width = None
     def draw(event=None):
+        nonlocal initial_width
         background = ttk.Style(parent).lookup('TFrame', 'background')
         outer.configure(background=background)
         content.configure(background=ui_color(fill))
-        # The embedded frame follows allocated space, including shrinking
-        # again after a wider window; its request is only an initial size hint.
+        # Freeze the initial size hint: wrapped content must not feed its
+        # changing request back into the canvas's requested width.
+        if initial_width is None:
+            initial_width = content.winfo_reqwidth()+24
+            outer.configure(width=initial_width)
         width = outer.winfo_width()
         if width <= 1:
-            width = content.winfo_reqwidth()+24
+            width = initial_width
         height = content.winfo_reqheight()+20
         if int(outer.cget('height')) != height:
             outer.configure(height=height)
-        if int(outer.cget('width')) != content.winfo_reqwidth()+24:
-            outer.configure(width=content.winfo_reqwidth()+24)
         outer.itemconfigure(window, width=max(1, width-24))
         clear_shapes(outer, 'surface')
         rounded(outer, 1, 1, width-1, height-1, radius=8,
@@ -157,7 +160,13 @@ def heading(parent, title, section, letter, *, parameter_spans=None, surface=Non
                  foreground=ink, wraplength=540, justify='left', anchor='w')
         title_label.grid(row=0, column=1, sticky='ew')
         frame.columnconfigure(1, weight=1)
-        title_label.bind('<Configure>', lambda event: title_label.configure(wraplength=max(60,event.width)))
+        def fit_title(event=None):
+            # The label's request includes native padding/borders. Derive the
+            # wrap limit from its parent instead of chasing that request.
+            width = max(60, frame.winfo_width()-title_label.winfo_x()-2)
+            if int(title_label.cget('wraplength')) != width:
+                title_label.configure(wraplength=width)
+        frame.bind('<Configure>', fit_title, add=True)
         def highlight_parameter(name):
             pass
     frame.parameter_canvases = parameter_canvases

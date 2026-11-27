@@ -9,7 +9,7 @@ description = "Visual software modelling in Thonny with structured flowcharts, U
 readme = "README.md"
 authors = [{name = "Sebastian Ladhoff"}]
 license = "GPL-3.0-only AND ISC AND MIT"
-license-files = ["LICENSE", "NOTICE", "src/thonnycontrib/thonny_se/icons/licenses/LICENSE-lucide.txt"]
+license-files = ["LICENSE", "NOTICE", "src/thonnycontrib/thonny_se/icons/licenses/LICENSE-lucide.txt", "src/thonnycontrib/thonny_se/icons/licenses/LICENSE-lucide-actions.txt"]
 requires-python = ">=3.10"
 dependencies = ["thonny>=5.0,<5.1", "Pillow>=10.1"]
 

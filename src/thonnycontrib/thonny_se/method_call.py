@@ -56,6 +56,13 @@ class MethodCallDialog(EditDialog):
         self.values = self.arguments.values
         row = self.arguments.next_row
         self.output = ResultPanel(master, row)
+        # Reserve the action from the start so results never resize the dialog.
+        self.result_token = None
+        self.keep_actions = ttk.Frame(self.output)
+        self.keep_actions.grid(row=1, column=1, sticky='e', pady=(8, 0))
+        self.keep_button = self._action_button(self.keep_actions, 0, tr('Keep object …'),
+                                               lambda: self.controller.keep_result(self))
+        self.keep_button.configure(state='disabled')
         self.stop_help = warning(master,
             tr('The method is still running. You can end the Python session. This removes all objects.'), row+2)
         stop_actions = ttk.Frame(self.stop_help)
@@ -95,6 +102,8 @@ class MethodCallDialog(EditDialog):
         if not self.arguments.revalidate():
             return
         self.output.set()
+        self.result_token = None
+        self.keep_button.configure(text=tr('Keep object …'), state='disabled')
         self.controller.call(self)
 
     def completed(self, response):
@@ -103,6 +112,10 @@ class MethodCallDialog(EditDialog):
         self.arguments.context = response.get('argument_context', self.arguments.context)
         self.arguments.revalidate()
         self.close_button.configure(text=tr('Close'))
+        self.result_token = response.get('result_token')
+        self.result_class = response.get('result_class', '')
+        self.result_names = response.get('names', [])
+        self.keep_button.configure(text=tr('Keep object …'), state='normal' if self.result_token else 'disabled')
         self.output.set(tr('Call failed. See the Python shell.') if 'error' in response else response['result'], failed='error' in response)
 
     def cancel(self, event=None):
@@ -145,6 +158,9 @@ class MethodCallDialog(EditDialog):
 
     def destroy(self):
         self.clear_interrupt_help()
+        controller = getattr(self, 'controller', None)
+        if controller is not None:
+            controller.release_result(self.prepared['token'])
         super().destroy()
 
 
@@ -156,6 +172,7 @@ class MethodCallController:
         self.dialog = None
         self.workbench.bind('thonny_se_prepare_method_response', self.prepared, True)
         self.workbench.bind('thonny_se_call_method_response', self.completed, True)
+        self.workbench.bind('thonny_se_keep_method_result_response', self.kept_result, True)
         self.workbench.bind('BackendRestart', self.restart, True)
 
     def available(self):
@@ -228,6 +245,53 @@ class MethodCallController:
             self.objects.received(response)
         if dialog.winfo_exists():
             dialog.completed(response)
+
+    def keep_result(self, dialog):
+        if self.pending or not self.available() or not dialog.result_token:
+            return
+        from .object_bank import ObjectNameDialog
+        name = ObjectNameDialog(dialog, dialog.result_class, dialog.result_names).result
+        if name is None or not dialog.winfo_exists() or not self.available():
+            return
+        dialog.waiting = True
+        dialog.keep_button.configure(state='disabled')
+        dialog.apply_button.configure(state='disabled')
+        request = uuid4().hex
+        self.pending = request, dialog
+        view = self.objects.existing_view()
+        get_runner().send_command(InlineCommand('thonny_se_keep_method_result', request_id=request,
+            result_token=dialog.result_token, object_name=name,
+            expanded=list(view.expanded) if view else [], item_limits=view.item_limits if view else {},
+            representation_error=tr('<Representation failed>')))
+
+    def kept_result(self, response):
+        if not self.pending or response.get('request_id') != self.pending[0]:
+            return
+        _, dialog = self.pending
+        self.pending = None
+        self.objects.received(response)
+        if not dialog.winfo_exists():
+            return
+        dialog.waiting = False
+        dialog.result_names = response.get('names', [])
+        dialog.arguments.context = response.get('argument_context', dialog.arguments.context)
+        dialog.arguments.revalidate()
+        if 'error' in response:
+            if response['error']=='stale_result':
+                dialog.result_token = None
+            dialog.keep_button.configure(state='normal' if dialog.result_token else 'disabled')
+            messages = {'name_exists': tr('This name is already in use.'),
+                        'invalid_name': tr('Please use a valid Python name.'),
+                        'stale_result': tr('This result is no longer available. Call the method again.')}
+            messagebox.showerror(tr('Keep result object'), messages.get(response['error'],
+                tr('Call failed. See the Python shell.')), parent=dialog)
+        else:
+            dialog.result_token = None
+            dialog.keep_button.configure(text=tr('Object kept'), state='disabled')
+
+    def release_result(self, token):
+        if self.available():
+            get_runner().send_command(InlineCommand('thonny_se_release_method', token=token))
 
     def restart(self, event):
         self.pending = None

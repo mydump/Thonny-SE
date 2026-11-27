@@ -53,6 +53,19 @@
       "license": "ISC und MIT (von Feather abgeleitete Icons)",
       "license_file": "icons/licenses/LICENSE-lucide.txt",
       "modifications": "Original-SVGs unverändert. PNG-Rückfall mit ursprünglicher Strichstärke/Farbe direkt in Zielauflösung. Zusätzlich Vektorfont aus gefüllten SVG-Strichkonturen für Retina unter macOS; Originale und Lizenzen mitgeliefert."
+    },
+    {
+      "id": "lucide-actions",
+      "name": "Lucide action icons",
+      "kind": "icon-assets",
+      "bundled_by_plugin": true,
+      "title": "Lucide",
+      "author": "Lucide Icons and Contributors",
+      "url": "https://github.com/lucide-icons/lucide",
+      "revision": "1188e0d2ff889e68aaf456c95b792b169df5b2ef",
+      "license": "ISC and MIT",
+      "license_file": "icons/licenses/LICENSE-lucide-actions.txt",
+      "modifications": "Original SVGs unchanged; rows-2-plus-bottom, rows-2-plus-top and square-plus-corner added from this revision. PNG fallbacks and derived vector font."
     }
   ],
   "notes": "Verwendete Ressourcen und Host-/Laufzeitkomponenten für die Über-Ansicht. Vollständige Lucide-Lizenz in icons/licenses/LICENSE-lucide.txt; SVGs in icons/sources/. Eigener Projektcode: GPL-3.0-only, Copyright (C) 2026 Sebastian Ladhoff; Drittressourcen behalten ihre eigenen Bedingungen."

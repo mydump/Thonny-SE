@@ -384,6 +384,89 @@
       "upstream_name": "shrink",
       "original": "sources/shrink.svg",
       "sha256": "cb474c603545297822c641aae9e55523af4f5368f9e68b4b0464dc1126b1ee4f"
+    },
+    "object.instantiate": {
+      "file": "lucide-credit-card-plus.png",
+      "dark_file": "lucide-credit-card-plus-dark.png",
+      "menu_file": "lucide-credit-card-plus-menu.png",
+      "dark_menu_file": "lucide-credit-card-plus-dark-menu.png",
+      "source": "lucide",
+      "status": "available",
+      "upstream_name": "credit-card-plus",
+      "original": "sources/credit-card-plus.svg",
+      "sha256": "a21ae8dabf3bba19117aa829dc6846fdf389d90544cb7af4b0c49a06c2c7e121"
+    },
+    "comment.new": {
+      "file": "lucide-message-square-plus.png",
+      "dark_file": "lucide-message-square-plus-dark.png",
+      "menu_file": "lucide-message-square-plus-menu.png",
+      "dark_menu_file": "lucide-message-square-plus-dark-menu.png",
+      "source": "lucide",
+      "status": "available",
+      "upstream_name": "message-square-plus",
+      "original": "sources/message-square-plus.svg",
+      "sha256": "2ebbf8a69a6d2dfb27c4d273c9392de84971014981f618451a8c4aa54aab1945"
+    },
+    "method.add": {
+      "file": "lucide-rows-2-plus-bottom.png",
+      "dark_file": "lucide-rows-2-plus-bottom-dark.png",
+      "menu_file": "lucide-rows-2-plus-bottom-menu.png",
+      "dark_menu_file": "lucide-rows-2-plus-bottom-dark-menu.png",
+      "source": "lucide",
+      "status": "available",
+      "upstream_name": "rows-2-plus-bottom",
+      "original": "sources/rows-2-plus-bottom.svg",
+      "sha256": "138541618a19d21be92425a15fc62fdcb82f3c2ba3d866c3c4b9f1d13dd67ee7",
+      "revision": "1188e0d2ff889e68aaf456c95b792b169df5b2ef",
+      "license_file": "licenses/LICENSE-lucide-actions.txt"
+    },
+    "attribute.add": {
+      "file": "lucide-rows-2-plus-top.png",
+      "dark_file": "lucide-rows-2-plus-top-dark.png",
+      "menu_file": "lucide-rows-2-plus-top-menu.png",
+      "dark_menu_file": "lucide-rows-2-plus-top-dark-menu.png",
+      "source": "lucide",
+      "status": "available",
+      "upstream_name": "rows-2-plus-top",
+      "original": "sources/rows-2-plus-top.svg",
+      "sha256": "a517299c28e53b5cb4813f7181e70bfcab23c6207d14b8011282904de65f0c27",
+      "revision": "1188e0d2ff889e68aaf456c95b792b169df5b2ef",
+      "license_file": "licenses/LICENSE-lucide-actions.txt"
+    },
+    "class.new": {
+      "file": "lucide-square-plus-corner.png",
+      "dark_file": "lucide-square-plus-corner-dark.png",
+      "menu_file": "lucide-square-plus-corner-menu.png",
+      "dark_menu_file": "lucide-square-plus-corner-dark-menu.png",
+      "source": "lucide",
+      "status": "available",
+      "upstream_name": "square-plus-corner",
+      "original": "sources/square-plus-corner.svg",
+      "sha256": "fb2f58dc804f6109dc8776fbd9b26769078bc46d2734e8bf3a8a44bc2cb87fff",
+      "revision": "1188e0d2ff889e68aaf456c95b792b169df5b2ef",
+      "license_file": "licenses/LICENSE-lucide-actions.txt"
+    },
+    "code.goto": {
+      "file": "lucide-circle-chevrons-right.png",
+      "dark_file": "lucide-circle-chevrons-right-dark.png",
+      "menu_file": "lucide-circle-chevrons-right-menu.png",
+      "dark_menu_file": "lucide-circle-chevrons-right-dark-menu.png",
+      "source": "lucide",
+      "status": "available",
+      "upstream_name": "circle-chevrons-right",
+      "original": "sources/circle-chevrons-right.svg",
+      "sha256": "b6b947f6250a7bbac6b07f4b647e1964da07189d53f0ba21e1da2213cd5575da"
+    },
+    "relationship.add": {
+      "file": "lucide-git-branch-plus.png",
+      "dark_file": "lucide-git-branch-plus-dark.png",
+      "menu_file": "lucide-git-branch-plus-menu.png",
+      "dark_menu_file": "lucide-git-branch-plus-dark-menu.png",
+      "source": "lucide",
+      "status": "available",
+      "upstream_name": "git-branch-plus",
+      "original": "sources/git-branch-plus.svg",
+      "sha256": "50463077211a9d609785ad9dc91d9bcdf479be280d24a579b7fc9d1809e13f08"
     }
   }
 }
