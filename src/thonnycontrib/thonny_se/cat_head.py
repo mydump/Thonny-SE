@@ -7,7 +7,7 @@ from random import Random
 
 
 def draw_cat_head(canvas, left, top, right, seed, *, scale, fill="#ffffff", bottom=None, tags=(),
-                  ink="#000000", detail="#ffffff"):
+                  ink="#000000", detail="#ffffff", stroke=1, zoom=1):
     variant = Random(seed)
     scale *= variant.uniform(0.93, 1.07)
     on_left = variant.choice((True, False))
@@ -18,6 +18,14 @@ def draw_cat_head(canvas, left, top, right, seed, *, scale, fill="#ffffff", bott
     ear_style = variant.choice(("pointed", "wide", "folded", "tufted"))
     tags = (*tags, "cat-head", "cat-" + expression, "ears-" + ear_style)
     height_scale = 0.72 if expression == "hunting" else 1
+    contour = max(1, int(stroke * zoom + .5))
+    # Outer contours follow the diagram. Facial details grow more gently so
+    # small UML heads retain separate eyes, mouth and inner ears.
+    detail_weight = max(.8, (stroke / 2) ** .25)
+    detail_contour = max(1, int(min(2, stroke) * zoom + .5))
+
+    def detail_width(width):
+        return max(1, int(width * scale * detail_weight * zoom + .5))
 
     def points(*offsets):
         return [
@@ -26,11 +34,12 @@ def draw_cat_head(canvas, left, top, right, seed, *, scale, fill="#ffffff", bott
         ]
 
     def line(offsets, width=2):
-        canvas.create_line(points(*offsets), fill=ink, width=width * scale,
+        canvas.create_line(points(*offsets), fill=ink, width=detail_width(width),
                            capstyle="round", joinstyle="round", tags=tags)
 
     def polygon(offsets, color=fill):
-        canvas.create_polygon(points(*offsets), fill=color, outline=ink, tags=tags)
+        canvas.create_polygon(points(*offsets), fill=color, outline=ink,
+                              width=contour if color == fill else detail_contour, tags=tags)
 
     if expression == "paws":
         for paw_x in (25, 65):
@@ -46,7 +55,7 @@ def draw_cat_head(canvas, left, top, right, seed, *, scale, fill="#ffffff", bott
                 (51, 15), (51, 3))
         canvas.create_polygon(
             [(px, tail_top + py - top - 3 * scale) for px, py in points(*tail)],
-            fill=fill, outline=ink, tags=tags,
+            fill=fill, outline=ink, width=contour, tags=tags,
         )
         return
 
@@ -64,9 +73,13 @@ def draw_cat_head(canvas, left, top, right, seed, *, scale, fill="#ffffff", bott
         + tuple((98 - dx, dy + right_ear) for dx, dy in reversed(ear))
         + ((94, -6), (98, 0))
     )
-    polygon(outline)
-    # Überdeckt die gemeinsame Grundlinie mit der Füllfarbe des Blocks.
-    canvas.create_line(points((1, 0), (97, 0)), fill=fill, width=2, tags=tags)
+    # Fill the head without closing its outline across the diagram's edge.
+    canvas.create_polygon(points(*outline), fill=fill, outline='', tags=tags)
+    inset = min(8, stroke / (2 * scale))
+    canvas.create_line(points((inset, 0), (98-inset, 0)), fill=fill,
+                       width=contour+2, capstyle='butt', tags=(*tags, 'cat-seam'))
+    canvas.create_line(points(*outline), fill=ink, width=contour,
+                       capstyle='butt', joinstyle='round', tags=(*tags, 'cat-contour'))
     for mirrored, shift in ((False, left_ear), (True, right_ear)):
         inner = ((14, -15), (16, -24), (20, -28), (25, -23), (29, -20))
         if ear_style == "folded":
@@ -127,14 +140,14 @@ def draw_cat_head(canvas, left, top, right, seed, *, scale, fill="#ffffff", bott
         mouse_tags = (*tags, "cat-mouse")
         canvas.create_line(
             mouse_points((16, -5), (22, -8), (25, -5), (22, -2)),
-            fill=ink, width=scale, tags=mouse_tags,
+            fill=ink, width=detail_width(1), tags=mouse_tags,
         )
         canvas.create_polygon(
             mouse_points((0, -2), (4, -7), (9, -10), (15, -9), (18, -5), (17, 0), (4, 0)),
-            fill=fill, outline=ink, tags=mouse_tags,
+            fill=fill, outline=ink, width=contour, tags=mouse_tags,
         )
         canvas.create_polygon(
             mouse_points((7, -8), (6, -13), (9, -16), (12, -14), (12, -9)),
-            fill=detail, outline=ink, tags=mouse_tags,
+            fill=detail, outline=ink, width=detail_contour, tags=mouse_tags,
         )
-        canvas.create_line(mouse_points((4, -4), (5, -4)), fill=ink, width=2 * scale, tags=mouse_tags)
+        canvas.create_line(mouse_points((4, -4), (5, -4)), fill=ink, width=detail_width(2), tags=mouse_tags)

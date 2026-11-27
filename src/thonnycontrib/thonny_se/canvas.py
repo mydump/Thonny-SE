@@ -403,7 +403,8 @@ class StructogramCanvas(ttk.Frame):
             fill = self._color(HEADER[body[0]["kind"]]) if body else self._color("#ffffff")
             draw_cat_head(self.canvas, 16, top, 16 + width, self.cat_seed,
                           scale=1.3, fill=fill, bottom=top + height,
-                          ink=self._color("#000000"), detail=self._color("#ffffff"))
+                          stroke=max(1, int(2*self.diagram_scale+.5)), zoom=self.zoom,
+                          ink=self._color(EDGE), detail=self._color("#ffffff"))
         # Auswahlrahmen zuletzt zeichnen, damit er auch Körper vollständig umfasst.
         selections = [self.selection]
         if self.selection.index is not None and self.selection.end_index is not None:
@@ -428,6 +429,16 @@ class StructogramCanvas(ttk.Frame):
             for item in self.canvas.find_all():
                 # Monochrome applies to diagram content, not editor interaction cues.
                 if {'selection','insertion-marker'}.intersection(self.canvas.gettags(item)):
+                    continue
+                tags = self.canvas.gettags(item)
+                if 'cat-head' in tags:
+                    if self.canvas.type(item) == 'line':
+                        self.canvas.itemconfigure(item, fill=surface if 'cat-seam' in tags else ink)
+                    else:
+                        if self.canvas.itemcget(item, 'outline'):
+                            self.canvas.itemconfigure(item, outline=ink)
+                        if self.canvas.itemcget(item, 'fill'):
+                            self.canvas.itemconfigure(item, fill=surface)
                     continue
                 if self.canvas.type(item) in ("text", "line"):
                     self.canvas.itemconfigure(item, fill=ink)

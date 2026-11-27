@@ -508,8 +508,9 @@ class UmlCanvas(ttk.Frame):
                                     tags=(*tags,'class-border'))
             if show_cats:
                 draw_cat_head(canvas, x, y, x + width, cid, scale=0.64,
+                              stroke=max(1, int(2*self.diagram_scale+.5)), zoom=self.zoom,
                               fill=self._color(UML_SECTION_FILLS['name']) if colored else self._color('white'),
-                              bottom=y + height, tags=tags, ink=self._color("#000000"),
+                              bottom=y + height, tags=tags, ink=self._color(EDGE),
                               detail=self._color("#ffffff"))
             if not self.exporting:
                 tracker = getattr(self.editor, 'source_status', None)
@@ -623,6 +624,15 @@ class UmlCanvas(ttk.Frame):
             if "class_selection" in tags or "source-save" in tags or "add-control" in tags:
                 continue
             kind = canvas.type(item)
+            if 'cat-head' in tags:
+                if kind == 'line':
+                    canvas.itemconfigure(item, fill=surface if 'cat-seam' in tags else ink)
+                else:
+                    if canvas.itemcget(item, 'outline'):
+                        canvas.itemconfigure(item, outline=ink)
+                    if canvas.itemcget(item, 'fill'):
+                        canvas.itemconfigure(item, fill=surface)
+                continue
             options = ("fill", "outline") if kind in ("rectangle", "polygon", "oval") else ("fill",) if kind in ("text", "line") else ()
             for option in options:
                 value = canvas.itemcget(item, option)
@@ -1643,7 +1653,7 @@ class UmlCanvas(ttk.Frame):
             command(label, lambda: self.editor.update_from_python(cid, reassign=True), "document.open")
         if cid is None and note is None and relationship is None:
             menu.add_separator()
-            command(tr('Detect relationships automatically'), self.editor.detect_relationships, "import.python",
+            command(tr('Detect relationships automatically'), self.editor.detect_relationships, "relationship.detect",
                     bool(self.editor.document["classes"]))
             menu.add_separator()
             command(tr('Code from diagram'), self.editor.export_python_code, "export.python",

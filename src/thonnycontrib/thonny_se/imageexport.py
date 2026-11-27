@@ -45,10 +45,12 @@ def canvas_scene(canvas, width, height):
         tags = canvas.gettags(item)
         # Relationship diamonds/triangles carry meaning through their fill.
         # Keep those distinct from the backgrounds of cards and blocks.
-        model_fill = (kind in ('rectangle', 'polygon')
+        model_fill = ('cat-seam' in tags or kind in ('rectangle', 'polygon')
                       and not any(tag.startswith('relationship:') for tag in tags)
                       and not ('cat-head' in tags and fill in ('black', '#000000')))
         data = dict(kind=kind, coords=canvas.coords(item), fill=fill, model_fill=model_fill)
+        if 'cat-seam' in tags:
+            data['surface_mask'] = True
         if kind == 'text':
             font = tkfont.Font(root=canvas, font=canvas.itemcget(item, 'font'))
             text = canvas.itemcget(item, 'text')
@@ -95,10 +97,58 @@ def canvas_scene(canvas, width, height):
     return width, height, scene
 
 
+def _cut_masked_edges(items):
+    """Keep head openings when transparent export removes the covering fill."""
+    masks = [item['coords'] for item in items if item.get('surface_mask')]
+    if not masks:
+        return items
+    def pieces(a, b):
+        if abs(a[1]-b[1]) > 1e-6:
+            return [(a, b)]
+        spans = [(min(a[0], b[0]), max(a[0], b[0]))]
+        for x1, y1, x2, y2 in masks:
+            if abs(a[1]-y1) > 1e-6:
+                continue
+            left, right = sorted((x1, x2))
+            spans = [(start, end) for lo, hi in spans
+                     for start, end in ((lo, min(hi, left)), (max(lo, right), hi))
+                     if start < end]
+        return [((lo, a[1]), (hi, a[1])) for lo, hi in spans]
+    result = []
+    for item in items:
+        kind = item['kind']
+        color = item.get('fill') if kind == 'line' else item.get('outline')
+        if not color or item.get('surface_mask') or kind not in ('line', 'rectangle', 'polygon'):
+            result.append(item)
+            continue
+        c = item['coords']
+        if kind == 'rectangle':
+            x1, y1, x2, y2 = c
+            points = [(x1,y1),(x2,y1),(x2,y2),(x1,y2),(x1,y1)]
+        else:
+            points = list(zip(c[::2], c[1::2]))
+            if kind == 'polygon':
+                points.append(points[0])
+        segments = [pieces(a,b) for a,b in zip(points,points[1:])]
+        if all(segment == [(a,b)] or segment == [(b,a)]
+               for segment,a,b in zip(segments,points,points[1:])):
+            result.append(item)
+            continue
+        if kind != 'line' and item.get('fill'):
+            result.append(dict(item, outline=''))
+        for segment in segments:
+            for a,b in segment:
+                result.append(dict(item,kind='line',coords=[*a,*b],fill=color,
+                                   outline='',model_fill=False,capstyle='butt'))
+    return result
+
+
 def styled_scene(scene, options):
     if options is None:
         return scene
     width, height, items = scene
+    if options.models_are_transparent:
+        items = _cut_masked_edges(items)
     styled = []
     for original in items:
         item = dict(original)
