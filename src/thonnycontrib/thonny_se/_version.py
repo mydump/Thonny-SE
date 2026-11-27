@@ -4,4 +4,4 @@
 
 """Paketversion für Setuptools und den Über-Dialog."""
 
-__version__ = "1.1.0"
+__version__ = "1.2.0"

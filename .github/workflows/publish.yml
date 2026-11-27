@@ -16,7 +16,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: publish-1.1.0-${{ inputs.destination }}
+  group: publish-1.2.0-${{ inputs.destination }}
   cancel-in-progress: false
 
 jobs:
@@ -28,20 +28,20 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - name: Download approved 1.1.0 release files
+      - name: Download approved 1.2.0 release files
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
           mkdir -p packages
-          gh release download v1.1.0 --dir packages \
-            --pattern thonny_se-1.1.0-py3-none-any.whl \
-            --pattern thonny_se-1.1.0.tar.gz \
+          gh release download v1.2.0 --dir packages \
+            --pattern thonny_se-1.2.0-py3-none-any.whl \
+            --pattern thonny_se-1.2.0.tar.gz \
             --pattern SHA256SUMS
           cd packages
           sha256sum --check SHA256SUMS
           mkdir ../dist
-          mv thonny_se-1.1.0-py3-none-any.whl thonny_se-1.1.0.tar.gz ../dist/
+          mv thonny_se-1.2.0-py3-none-any.whl thonny_se-1.2.0.tar.gz ../dist/
       - name: Publish to TestPyPI
         if: inputs.destination == 'testpypi'
         uses: pypa/gh-action-pypi-publish@release/v1

@@ -14,29 +14,29 @@ Design your software right in Thonny. With structured flowcharts, UML and an int
 
 | Light | Dark |
 | --- | --- |
-| <a href="https://raw.githubusercontent.com/mydump/Thonny-SE/main/images/readme/01-structogram.png?raw=true"><img src="https://raw.githubusercontent.com/mydump/Thonny-SE/main/images/readme/01-structogram.png" alt="Structogram with nested loops, a branch and separate design and zoom controls" width="500"></a> | <a href="https://raw.githubusercontent.com/mydump/Thonny-SE/main/images/readme/01-structogram-dark.png?raw=true"><img src="https://raw.githubusercontent.com/mydump/Thonny-SE/main/images/readme/01-structogram-dark.png" alt="Structogram with nested loops, a branch and separate design and zoom controls (dark mode)" width="500"></a> |
+| <a href="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.2.0/images/readme/01-structogram.png?raw=true"><img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.2.0/images/readme/01-structogram.png" alt="Structogram with nested loops, a branch and separate design and zoom controls" width="500"></a> | <a href="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.2.0/images/readme/01-structogram-dark.png?raw=true"><img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.2.0/images/readme/01-structogram-dark.png" alt="Structogram with nested loops, a branch and separate design and zoom controls (dark mode)" width="500"></a> |
 
 `Design your classes` – Design UML class diagrams with attributes, methods and visibility. Model relationships such as inheritance or composition, and add roles and multiplicities.
 
 | Light | Dark |
 | --- | --- |
-| <a href="https://raw.githubusercontent.com/mydump/Thonny-SE/main/images/readme/02-uml.png?raw=true"><img src="https://raw.githubusercontent.com/mydump/Thonny-SE/main/images/readme/02-uml.png" alt="Bank model with inheritance, aggregation and the diagram design control" width="500"></a> | <a href="https://raw.githubusercontent.com/mydump/Thonny-SE/main/images/readme/02-uml-dark.png?raw=true"><img src="https://raw.githubusercontent.com/mydump/Thonny-SE/main/images/readme/02-uml-dark.png" alt="Bank model with inheritance, aggregation and the diagram design control (dark mode)" width="500"></a> |
+| <a href="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.2.0/images/readme/02-uml.png?raw=true"><img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.2.0/images/readme/02-uml.png" alt="Bank model with inheritance, aggregation and the diagram design control" width="500"></a> | <a href="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.2.0/images/readme/02-uml-dark.png?raw=true"><img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.2.0/images/readme/02-uml-dark.png" alt="Bank model with inheritance, aggregation and the diagram design control (dark mode)" width="500"></a> |
 
 `Move between models and code` – Turn your diagrams into Python code or your code into diagrams. For linked classes, you choose which changes to apply.
 
 | Light | Dark |
 | --- | --- |
-| <a href="https://raw.githubusercontent.com/mydump/Thonny-SE/main/images/readme/03-code-model.png?raw=true"><img src="https://raw.githubusercontent.com/mydump/Thonny-SE/main/images/readme/03-code-model.png" alt="Change preview with file name, transfer direction and selectable updates (light mode)" width="500"></a> | <a href="https://raw.githubusercontent.com/mydump/Thonny-SE/main/images/readme/03-code-model-dark.png?raw=true"><img src="https://raw.githubusercontent.com/mydump/Thonny-SE/main/images/readme/03-code-model-dark.png" alt="Change preview with file name, transfer direction and selectable updates (dark mode)" width="500"></a> |
+| <a href="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.2.0/images/readme/03-code-model.png?raw=true"><img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.2.0/images/readme/03-code-model.png" alt="Change preview with file name, transfer direction and selectable updates (light mode)" width="500"></a> | <a href="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.2.0/images/readme/03-code-model-dark.png?raw=true"><img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.2.0/images/readme/03-code-model-dark.png" alt="Change preview with file name, transfer direction and selectable updates (dark mode)" width="500"></a> |
 
 `Make diagrams fit your purpose` – Make your diagrams more compact and give them stronger lines. At higher design settings, the text becomes bold. The changes also appear in image exports. Zoom only changes your view on screen.
 
 | Design: 100% | Design: 175% |
 | --- | --- |
-| <a href="https://raw.githubusercontent.com/mydump/Thonny-SE/main/images/readme/09-design-before.png?raw=true"><img src="https://raw.githubusercontent.com/mydump/Thonny-SE/main/images/readme/09-design-before.png" alt="Structogram at 100% design" width="500"></a> | <a href="https://raw.githubusercontent.com/mydump/Thonny-SE/main/images/readme/09-design-after.png?raw=true"><img src="https://raw.githubusercontent.com/mydump/Thonny-SE/main/images/readme/09-design-after.png" alt="The same structogram at 175% design, with stronger lines and more compact spacing" width="500"></a> |
+| <a href="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.2.0/images/readme/09-design-before.png?raw=true"><img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.2.0/images/readme/09-design-before.png" alt="Structogram at 100% design" width="500"></a> | <a href="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.2.0/images/readme/09-design-after.png?raw=true"><img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.2.0/images/readme/09-design-after.png" alt="The same structogram at 175% design, with stronger lines and more compact spacing" width="500"></a> |
 
 `Take your diagrams with you` – Save your designs as PNG, SVG or WebP. Ready for a worksheet, a presentation or your documentation.
 
-<img src="https://raw.githubusercontent.com/mydump/Thonny-SE/main/images/readme/04-export.png" alt="PNG export with image size, transparency and monochrome options" width="267">
+<img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.2.0/images/readme/04-export.png" alt="PNG export with image size, transparency and monochrome options" width="267">
 
 <br>
 
@@ -45,24 +45,24 @@ Design your software right in Thonny. With structured flowcharts, UML and an int
 
 | Light | Dark |
 | --- | --- |
-| <a href="https://raw.githubusercontent.com/mydump/Thonny-SE/main/images/readme/05-objects.png?raw=true"><img src="https://raw.githubusercontent.com/mydump/Thonny-SE/main/images/readme/05-objects.png" alt="Object bench with related accounts highlighted, a changed balance and collapsed cards" width="500"></a> | <a href="https://raw.githubusercontent.com/mydump/Thonny-SE/main/images/readme/05-objects-dark.png?raw=true"><img src="https://raw.githubusercontent.com/mydump/Thonny-SE/main/images/readme/05-objects-dark.png" alt="Object bench with related accounts highlighted, a changed balance and collapsed cards (dark mode)" width="500"></a> |
+| <a href="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.2.0/images/readme/05-objects.png?raw=true"><img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.2.0/images/readme/05-objects.png" alt="Object bench with related accounts highlighted, a changed balance and collapsed cards" width="500"></a> | <a href="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.2.0/images/readme/05-objects-dark.png?raw=true"><img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.2.0/images/readme/05-objects-dark.png" alt="Object bench with related accounts highlighted, a changed balance and collapsed cards (dark mode)" width="500"></a> |
 
 
 Call a method. Read its description from the code, enter suitable values and inspect the return value. If it returns an object, keep it under your own name in the object bench and explore it further.
 
 | Light | Dark |
 | --- | --- |
-| <a href="https://raw.githubusercontent.com/mydump/Thonny-SE/main/images/readme/08-method-call.png?raw=true"><img src="https://raw.githubusercontent.com/mydump/Thonny-SE/main/images/readme/08-method-call.png" alt="Method call with code documentation and a returned object ready to keep" width="500"></a> | <a href="https://raw.githubusercontent.com/mydump/Thonny-SE/main/images/readme/08-method-call-dark.png?raw=true"><img src="https://raw.githubusercontent.com/mydump/Thonny-SE/main/images/readme/08-method-call-dark.png" alt="Method call with code documentation and a returned object ready to keep (dark mode)" width="500"></a> |
+| <a href="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.2.0/images/readme/08-method-call.png?raw=true"><img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.2.0/images/readme/08-method-call.png" alt="Method call with code documentation and a returned object ready to keep" width="500"></a> | <a href="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.2.0/images/readme/08-method-call-dark.png?raw=true"><img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.2.0/images/readme/08-method-call-dark.png" alt="Method call with code documentation and a returned object ready to keep (dark mode)" width="500"></a> |
 
 `Learn and present comfortably` – Familiar controls, an uncluttered interface and clear visuals help you focus on your content. The aim is to keep everything sharp and easy to use across multiple displays with different scaling settings – while learning, explaining and presenting. Choose a light or dark appearance for Thonny SE, including its diagrams, editing controls and object bench.
 
 | Light | Dark |
 | --- | --- |
-| <a href="https://raw.githubusercontent.com/mydump/Thonny-SE/main/images/readme/06-thonny.png?raw=true"><img src="https://raw.githubusercontent.com/mydump/Thonny-SE/main/images/readme/06-thonny.png" alt="UML method editor in light mode" width="500"></a> | <a href="https://raw.githubusercontent.com/mydump/Thonny-SE/main/images/readme/06-thonny-dark.png?raw=true"><img src="https://raw.githubusercontent.com/mydump/Thonny-SE/main/images/readme/06-thonny-dark.png" alt="UML method editor in dark mode" width="500"></a> |
+| <a href="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.2.0/images/readme/06-thonny.png?raw=true"><img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.2.0/images/readme/06-thonny.png" alt="UML method editor in light mode" width="500"></a> | <a href="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.2.0/images/readme/06-thonny-dark.png?raw=true"><img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.2.0/images/readme/06-thonny-dark.png" alt="UML method editor in dark mode" width="500"></a> |
 
 `Cats` are around too.
 
-<img src="https://raw.githubusercontent.com/mydump/Thonny-SE/main/images/readme/07-cat.png" alt="Waving cat head" width="250">
+<img src="https://raw.githubusercontent.com/mydump/Thonny-SE/v1.2.0/images/readme/07-cat.png" alt="Waving cat head" width="250">
 
 
 ## What you need

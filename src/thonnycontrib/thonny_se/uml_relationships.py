@@ -111,6 +111,12 @@ def role_name(text):
     return text
 
 
+# Shared footprint for open arrows, triangles and diamonds. Keep the opening
+# readable even at the strongest diagram contour setting.
+RELATIONSHIP_HEAD_LENGTH = 24
+RELATIONSHIP_HEAD_HALF_WIDTH = 9
+
+
 def association_arrow(endpoint, next_point, *, scale=1):
     x, y = endpoint
     dx, dy = next_point[0]-x, next_point[1]-y
@@ -118,8 +124,9 @@ def association_arrow(endpoint, next_point, *, scale=1):
     if not length:
         return ()
     ux, uy = dx/length, dy/length
-    return (x+scale*(12*ux-6*uy), y+scale*(12*uy+6*ux), x, y,
-            x+scale*(12*ux+6*uy), y+scale*(12*uy-6*ux))
+    depth, half_width = RELATIONSHIP_HEAD_LENGTH, RELATIONSHIP_HEAD_HALF_WIDTH
+    return (x+scale*(depth*ux-half_width*uy), y+scale*(depth*uy+half_width*ux), x, y,
+            x+scale*(depth*ux+half_width*uy), y+scale*(depth*uy-half_width*ux))
 
 
 def endpoint_symbol(kind, endpoint, next_point, *, scale=1):
@@ -129,7 +136,10 @@ def endpoint_symbol(kind, endpoint, next_point, *, scale=1):
     if not length:
         return ()
     ux, uy = dx/length, dy/length
-    points = ((0, 0), (15, -9), (15, 9)) if kind in BASE_RELATIONSHIPS else ((0, 0), (9, -6), (18, 0), (9, 6))
+    depth, half_width = RELATIONSHIP_HEAD_LENGTH, RELATIONSHIP_HEAD_HALF_WIDTH
+    points = (((0, 0), (depth, -half_width), (depth, half_width))
+              if kind in BASE_RELATIONSHIPS else
+              ((0, 0), (depth/2, -half_width), (depth, 0), (depth/2, half_width)))
     return tuple(coordinate for along, across in points
                  for coordinate in (x+scale*(along*ux-across*uy), y+scale*(along*uy+across*ux)))
 

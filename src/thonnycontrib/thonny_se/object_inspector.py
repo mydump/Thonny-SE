@@ -466,11 +466,12 @@ class ObjectInspectorSE(ttk.Frame):
 
     def _background_menu(self, event):
         x, y = self.canvas.canvasx(event.x), self.canvas.canvasy(event.y)
-        # Cards already own their context menu through their canvas tags.
-        if any(left <= x <= right and top <= y <= bottom
-               for left, top, right, bottom in self.card_bounds.values()):
-            return 'break'
-        return self._card_menu(None, event)
+        # Nested references have their own canvas tags. Resolve their enclosing
+        # root card as well, so lists and their contents share the card menu.
+        key = next((key for key, (left, top, right, bottom) in self.card_bounds.items()
+                    if left <= x <= right and top <= y <= bottom), None)
+        obj = next((obj for obj in self.objects if obj['id'] == key), None)
+        return self._card_menu(obj, event)
 
     def _add_instantiation_menu(self, menu):
         session = get_workbench()._thonny_se_objects.session

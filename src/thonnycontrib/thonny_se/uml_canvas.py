@@ -756,13 +756,22 @@ class UmlCanvas(ttk.Frame):
         if groups:
             canvas.tag_lower("relationship-line", "class-card")
 
+    def _relationship_card_bounds(self, bounds):
+        # Cards store the centreline of their outline. Attach to its painted
+        # outer edge, using canonical metrics shared by the view and export.
+        inset = max(1, int(2*self.diagram_scale+.5)) / 2
+        left, top, right, bottom = bounds
+        return left-inset, top-inset, right+inset, bottom+inset
+
     def _draw_relationship(self, relation, lane):
         canvas = self.canvas
-        points = association_points(self.cards[relation["start"]], self.cards[relation["end"]], lane)
+        start_bounds = self._relationship_card_bounds(self.cards[relation["start"]])
+        end_bounds = self._relationship_card_bounds(self.cards[relation["end"]])
+        points = association_points(start_bounds, end_bounds, lane)
         if relation['start'] == relation['end']:
-            points = self_relationship_points(self.cards[relation['start']], lane, relation.get('bend',0))
+            points = self_relationship_points(start_bounds, lane, relation.get('bend',0))
         elif relation.get('bend'):
-            points = curved_points(self.cards[relation['start']], self.cards[relation['end']], relation['bend'])
+            points = curved_points(start_bounds, end_bounds, relation['bend'])
         selected = relation["id"] == self.editor.selection and not self.exporting
         color = self._color(SELECT) if selected else self._color(EDGE)
         text_color = self._color(SELECT) if selected else self._color(INK)
@@ -833,6 +842,7 @@ class UmlCanvas(ttk.Frame):
         x, y = self.relationship_pointer
         x = canvas.canvasx(max(0, min(x, canvas.winfo_width()-1)))
         y = canvas.canvasy(max(0, min(y, canvas.winfo_height()-1)))
+        bounds = self._relationship_card_bounds(bounds)
         scaled = tuple(value*self.zoom for value in bounds)
         if scaled[0] <= x <= scaled[2] and scaled[1] <= y <= scaled[3]:
             points = self_relationship_points(bounds)
