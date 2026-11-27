@@ -8,6 +8,7 @@ from .display_context import context_for
 from .visual_metrics import Typography, preserve_scroll
 from .i18n import tr
 from uuid import uuid4
+from functools import lru_cache
 import time
 import tkinter as tk
 from tkinter import ttk, font, messagebox
@@ -55,6 +56,7 @@ class ObjectInspectorSE(ttk.Frame):
         self.typography = Typography(self)
         self.normal = self.typography['body']
         self.bold = self.typography['object_heading']
+        self._selection_restore = {}
         self._action_bindings = []
         self._click_actions = {}
         self._toggle_regions = []
@@ -192,16 +194,24 @@ class ObjectInspectorSE(ttk.Frame):
         self._click_actions.clear()
         self._toggle_regions = []
         canvas.delete('all')
+        self._selection_restore.clear()
         self.card_bounds = {}
         self.node_regions = []
         self._glows = []
         self._header_tags = set()
+        # Identical instances share signatures. Cache only within this draw,
+        # so changed fonts, widths and themes cannot leave stale measurements.
+        measure = lru_cache(maxsize=2048)(self.normal.measure)
+        min_width = lru_cache(maxsize=256)(lambda name, signature:
+            minimum_method_width(name, signature, measure))
+        wrapped = lru_cache(maxsize=256)(lambda name, signature, width:
+            wrap_method(name, signature, measure, width))
         show_all = enabled(OBJECT_METHODS)
         # Keep names, complete parameters and the return type indivisible.
         minimum = self.typography.units(300)
         if show_all:
-            minimum = max(minimum, max((minimum_method_width(
-                member_label(name, obj.get('class_names', [obj['class_name']])), signature, self.normal.measure)+100
+            minimum = max(minimum, max((min_width(
+                member_label(name, obj.get('class_names', [obj['class_name']])), signature)+100
                 for obj in self.objects if obj['id'] not in self.bank_layout.collapsed
                 for name, signature in obj.get('methods', {}).items()), default=0))
         width = max(minimum, canvas.winfo_width())
@@ -364,7 +374,7 @@ class ObjectInspectorSE(ttk.Frame):
                     row_top = y
                     label = member_label(name, owners)
                     item = canvas.create_text(left+44, y+9, anchor='nw',
-                        text=wrap_method(label, signature, self.normal.measure, max(45, text_width-42)),
+                        text=wrapped(label, signature, max(45, text_width-42)),
                         font=self.normal, fill=ui_color(SELECT), tags=(tag, action_tag, 'object_method'))
                     row_bottom = canvas.bbox(item)[3]+9
                     button = rounded(left+10, row_top, right-10, row_bottom,
@@ -607,7 +617,8 @@ class ObjectInspectorSE(ttk.Frame):
         node = self._selected_node()
         container = node is not None and node.get('kind')=='container'
         self.nested_focus = bool(key is not None and (nested or container))
-        preserve_scroll(self.canvas,self.draw)
+        self._apply_object_selection()
+        self._paint_value_changes()
         self._queue_container_focus()
 
     def _queue_container_focus(self):
@@ -640,8 +651,23 @@ class ObjectInspectorSE(ttk.Frame):
         edge = ui_color(SELECT if active else '#b9cfe8')
         self.canvas.itemconfigure(item,fill=self._dim_color(fill,owner),outline=self._dim_color(edge,owner))
 
+    def _selection_style(self, item, **options):
+        original = self._selection_restore.setdefault(item, {})
+        for option in options:
+            if option not in original:
+                original[option] = self.canvas.itemcget(item, option)
+        self.canvas.itemconfigure(item, **options)
+
     def _apply_object_selection(self):
         canvas = self.canvas
+        canvas.delete('object-selection')
+        # Restore only what the previous selection changed. Geometry, item ids
+        # and mouse bindings stay intact; selection never rebuilds the cards.
+        for item, options in self._selection_restore.items():
+            canvas.itemconfigure(item, **options)
+        self._selection_restore.clear()
+        background = DARK_CANVAS if uses_dark_ui() else 'white'
+        canvas.configure(background=self._mix(background, 'black', .84) if self.nested_focus else background)
         if self.nested_focus:
             for item in canvas.find_all():
                 tags = canvas.gettags(item)
@@ -652,15 +678,15 @@ class ObjectInspectorSE(ttk.Frame):
                 options = ('fill','outline') if kind in ('rectangle','polygon','oval') else ('fill',) if kind in ('line','text') else ()
                 for option in options:
                     color = canvas.itemcget(item,option)
-                    if color:canvas.itemconfigure(item,**{option:self._dim_color(color,owner)})
+                    if color:self._selection_style(item,**{option:self._dim_color(color,owner)})
         if self.selected_id is None:
             return
         for item in canvas.find_withtag('object_card'):
             if any('node:'+str(key) in canvas.gettags(item) for key in self.focus_ids):
-                canvas.itemconfigure(item,outline=ui_color(SELECT),width=2)
+                self._selection_style(item,outline=ui_color(SELECT),width=2)
         for item in canvas.find_withtag('object_shadow'):
             if any('node:'+str(key) in canvas.gettags(item) for key in self.focus_ids):
-                canvas.itemconfigure(item,fill=self._mix(ui_color(SELECT),ui_color(OBJECT_SHADOW),.28))
+                self._selection_style(item,fill=self._mix(ui_color(SELECT),ui_color(OBJECT_SHADOW),.28))
         for region in self.node_regions:
             if region['id'] in self.focus_ids and region['reference']:
                 left,top,right,bottom = region['box']
@@ -793,7 +819,8 @@ class ObjectController:
         self.members_request = None
         if view.winfo_exists() and view.selected_id==key:
             view.focus_ids = {key,*response.get('member_ids',())}
-            preserve_scroll(view.canvas,view.draw)
+            view._apply_object_selection()
+            view._paint_value_changes()
 
     def remove_object(self, obj):
         if self.remove_request or not self.session.available():
