@@ -11,7 +11,7 @@ What would you like to do? Jump straight to the task you need. The screenshots s
 | Getting started | [create a diagram](#create-a-diagram) · [edit something](#edit-something) · [save or zoom](#save-and-keep-your-bearings) · [change the appearance](#choose-light-or-dark-appearance) · [export an image](#export-a-diagram-as-an-image) |
 | Structograms | [build an algorithm](#build-an-algorithm) · [show more blocks](#switch-between-basic-and-expanded-palettes) · [transfer Python](#transfer-between-structograms-and-python) |
 | UML | [create classes](#create-classes-and-relationships) · [edit attributes and methods](#edit-attributes-methods-and-parameters) · [use the grid](#align-classes-with-the-grid) · [choose settings](#choose-your-teaching-settings) |
-| Object bench | [instantiate objects](#instantiate-objects) · [enter arguments](#enter-arguments) · [call methods](#inspect-values-and-call-methods) · [stop a call](#stop-a-running-call) · [restart after changes](#restart-after-a-change) |
+| Object bench | [instantiate objects](#instantiate-objects) · [organise cards](#organise-the-object-bench) · [enter arguments](#enter-arguments) · [call methods](#inspect-values-and-call-methods) · [keep returned objects](#keep-working-with-returned-objects) · [stop a call](#stop-a-running-call) · [restart after changes](#restart-after-a-change) |
 | Model and code | [generate or import code](#generate-or-import-code) · [use one or several files](#use-one-or-several-python-files) · [apply changes](#apply-changes) · [understand saving and running](#save-transfer-or-run) |
 
 ## 1. Getting started
@@ -31,6 +31,15 @@ Click the block, class or relationship you want to change. To add elements, righ
 Save your diagram like other documents in Thonny. Use undo to take back edits.
 
 Use the zoom slider or <kbd>Ctrl</kbd> + mouse wheel, or <kbd>Command</kbd> + mouse wheel on a Mac. This zooms at the point under your pointer. On a Mac, you can also pinch with two fingers on the trackpad. Scroll large diagrams horizontally and vertically.
+
+Use the design slider at the bottom left to adjust how compact and bold your diagram looks. The zoom on the right changes your view of it. Image exports also use the design setting. Neither slider changes the algorithm or class structure.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="images/manual/design-controls-dark.png">
+  <img src="images/manual/design-controls.png" alt="UML diagram with the design slider on the left, grid selection and zoom on the right" width="900">
+</picture>
+
+*Design is set to 150 % on the left, view zoom to 105 % on the right. Choose the grid in the middle.*
 
 ### Choose light or dark appearance
 
@@ -132,12 +141,7 @@ Thonny SE can suggest an initial value when you choose an attribute type. It can
 
 Choose a grid mode at the bottom of the UML editor. A visual grid helps with alignment. The magnetic grid snaps classes into place as you move them. Choose no grid to position them freely.
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="images/manual/grid-zoom-dark.png">
-  <img src="images/manual/grid-zoom.png" alt="Grid selector, monochrome option and zoom at the bottom of the UML editor" width="760">
-</picture>
-
-*Choose the grid at the bottom of the UML editor. The zoom controls sit to its right.*
+*The grid selector sits between design and zoom; see the current toolbar under “Save and keep your bearings” above.*
 
 ### Choose your teaching settings
 
@@ -165,6 +169,8 @@ Under `Tools → Options → Thonny SE`, choose the input aids you need:
 3. Right-click the class and choose `Instantiate objects …`.
 4. Enter an object name and the required arguments.
 5. Click `Instantiate`. The new object's name and class appear below.
+
+You can also right-click directly in the object bench and choose a class under `Instantiate object`. Run the diagram first.
 
 The dialog stays open. You can create the next object straight away. An unused name is suggested. Click `Close` to return to the diagram.
 
@@ -211,18 +217,22 @@ Object-bench type checking is on by default. It checks literals such as `[2, 4, 
 
 *`"two"` is a string. The parameter `portions: int` expects an integer.*
 
+### Organise the object bench
+
+Drag object cards into the order you want. You can also move, collapse or remove them through the context menu. Removing an object releases its name; references from other objects remain. Card order and collapsed cards apply to the current session.
+
 ### Inspect values and call methods
 
 An object card shows its name, class and attribute values. Method buttons appear below them. You can choose a drop-down list in the options instead.
 
-Expand the arrow beside a collection or nested object to look inside. Nested objects stay in the same object bench. You can call their methods too.
+Expand the arrow beside a collection or nested object to look inside. Nested objects stay in the same object bench. You can call their methods too. Select a collection to highlight its directly contained objects in the object bench.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="images/manual/objects-dark.png">
-  <img src="images/manual/objects.png" alt="Object cards with attributes, separators, method buttons and an expanded list" width="420">
+  <img src="images/manual/objects.png" alt="Object bench with a selected collection, highlighted accounts and collapsed cards" width="420">
 </picture>
 
-*Luna and Milo are two `Cat` objects. Expand `cats` inside `shelter` to inspect the collection.*
+*Selecting `bank.accounts` highlights the accounts `mia` and `ben`. The cards for `ben` and `other` are collapsed.*
 
 Click a method, enter its arguments and choose `Call`. The description comes from the documentation in the Python code. When you change fields, the highlight follows in the signature.
 
@@ -245,6 +255,17 @@ If execution fails, the output area turns red. The dialog points you to the Shel
 </picture>
 
 *The right type does not guarantee a successful call. Here, the Python code rejects a negative number of portions.*
+
+### Keep working with returned objects
+
+If a method returns an object or a collection, choose `Keep object …` to add the result to the object bench under a name of your own. You keep working with the same returned object – the method is not called again.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="images/manual/keep-object-dark.png">
+  <img src="images/manual/keep-object.png" alt="Method returning an Account object with the Keep object button" width="760">
+</picture>
+
+*`bank.open_account` returns the new account. Choose `Keep object …` to add it to the object bench.*
 
 ### Stop a running call
 

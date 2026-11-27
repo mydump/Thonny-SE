@@ -14,19 +14,25 @@ Plane deine Software direkt in Thonny. Mit Struktogrammen, UML und einer interak
 
 | Hell | Dunkel |
 | --- | --- |
-| <a href="images/readme/01-structogram.png?raw=true"><img src="images/readme/01-structogram.png" alt="Verschachtelte Schleifen und Verzweigung mit geöffneter Bausteinpalette (helle Darstellung)" width="500"></a> | <a href="images/readme/01-structogram-dark.png?raw=true"><img src="images/readme/01-structogram-dark.png" alt="Verschachtelte Schleifen und Verzweigung mit geöffneter Bausteinpalette (dunkle Darstellung)" width="500"></a> |
+| <a href="images/readme/01-structogram.png?raw=true"><img src="images/readme/01-structogram.png" alt="Struktogramm mit verschachtelter Schleife, Verzweigung und getrennten Reglern für Gestaltung und Zoom" width="500"></a> | <a href="images/readme/01-structogram-dark.png?raw=true"><img src="images/readme/01-structogram-dark.png" alt="Struktogramm mit verschachtelter Schleife, Verzweigung und getrennten Reglern für Gestaltung und Zoom (dunkle Darstellung)" width="500"></a> |
 
 `Klassen entwerfen` – Entwirf UML-Klassendiagramme mit Attributen, Methoden und Sichtbarkeiten. Modelliere Beziehungen wie Vererbung oder Komposition und ergänze Rollen sowie Kardinalitäten/Multiplizitäten.
 
 | Hell | Dunkel |
 | --- | --- |
-| <a href="images/readme/02-uml.png?raw=true"><img src="images/readme/02-uml.png" alt="Katzenheim mit sechs Klassen, Vererbung, Komposition und Kardinalitäten/Multiplizitäten (helle Darstellung)" width="500"></a> | <a href="images/readme/02-uml-dark.png?raw=true"><img src="images/readme/02-uml-dark.png" alt="Katzenheim mit sechs Klassen, Vererbung, Komposition und Kardinalitäten/Multiplizitäten (dunkle Darstellung)" width="500"></a> |
+| <a href="images/readme/02-uml.png?raw=true"><img src="images/readme/02-uml.png" alt="Bankmodell mit Vererbung, Aggregation und Gestaltungsregler" width="500"></a> | <a href="images/readme/02-uml-dark.png?raw=true"><img src="images/readme/02-uml-dark.png" alt="Bankmodell mit Vererbung, Aggregation und Gestaltungsregler (dunkle Darstellung)" width="500"></a> |
 
 `Zwischen Modell und Code wechseln` – Erzeuge Python-Code aus deinen Diagrammen oder Diagramme aus deinem Code. Bei verknüpften Klassen entscheidest du, welche Änderungen du übernimmst.
 
 | Hell | Dunkel |
 | --- | --- |
 | <a href="images/readme/03-code-model.png?raw=true"><img src="images/readme/03-code-model.png" alt="Änderungsvorschau mit Dateiname, Übertragungsrichtung und auswählbaren Änderungen (helle Darstellung)" width="500"></a> | <a href="images/readme/03-code-model-dark.png?raw=true"><img src="images/readme/03-code-model-dark.png" alt="Änderungsvorschau mit Dateiname, Übertragungsrichtung und auswählbaren Änderungen (dunkle Darstellung)" width="500"></a> |
+
+`Diagramme passend darstellen` – Stelle deine Diagramme kompakter dar und gib ihnen kräftigere Linien. Bei höherer Gestaltungsstufe wird die Schrift fett. Die Änderungen erscheinen auch im Grafikexport. Der Zoom verändert nur deine Ansicht auf dem Bildschirm.
+
+| Gestaltung: 100 % | Gestaltung: 175 % |
+| --- | --- |
+| <a href="images/readme/09-design-before.png?raw=true"><img src="images/readme/09-design-before.png" alt="Struktogramm mit 100 Prozent Gestaltung" width="500"></a> | <a href="images/readme/09-design-after.png?raw=true"><img src="images/readme/09-design-after.png" alt="Dasselbe Struktogramm mit 175 Prozent Gestaltung, kräftigeren Linien und kompakteren Abständen" width="500"></a> |
 
 `Diagramme mitnehmen` – Speichere deine Entwürfe als PNG, SVG oder WebP. Für dein Arbeitsblatt, deine Präsentation oder deine Dokumentation.
 
@@ -35,18 +41,18 @@ Plane deine Software direkt in Thonny. Mit Struktogrammen, UML und einer interak
 <br>
 
 
-`Objekte ausprobieren` – Erzeuge mehrere Objekte aus deinen UML-Klassen. Schau dir ihre Werte an, rufe Methoden auf und klappe Listen und Unterobjekte auf. Die Eingabefelder helfen dir bei den Parametern. Das Ergebnis siehst du direkt im Dialog.
+`Objekte ausprobieren` – Erzeuge mehrere Objekte aus deinen UML-Klassen. Schau dir ihre Werte an, rufe Methoden auf und klappe Listen und Unterobjekte auf. Verschiebe die Karten, klappe sie ein oder entferne Objekte aus der Objektbank. Geänderte Werte leuchten kurz auf. Wähle ein Unterobjekt oder eine Liste, um zusammengehörige Objekte hervorzuheben.
 
 | Hell | Dunkel |
 | --- | --- |
-| <a href="images/readme/05-objects.png?raw=true"><img src="images/readme/05-objects.png" alt="UML-Diagramm und Objektbank mit aufgeklapptem Raum in heller Darstellung" width="500"></a> | <a href="images/readme/05-objects-dark.png?raw=true"><img src="images/readme/05-objects-dark.png" alt="UML-Diagramm und Objektbank mit aufgeklapptem Raum in dunkler Darstellung" width="500"></a> |
+| <a href="images/readme/05-objects.png?raw=true"><img src="images/readme/05-objects.png" alt="Objektbank mit gemeinsam hervorgehobenen Konten, geändertem Kontostand und eingeklappten Karten" width="500"></a> | <a href="images/readme/05-objects-dark.png?raw=true"><img src="images/readme/05-objects-dark.png" alt="Objektbank mit gemeinsam hervorgehobenen Konten, geändertem Kontostand und eingeklappten Karten (dunkle Darstellung)" width="500"></a> |
 
 
-Rufe eine Methode auf. Lies ihre Beschreibung aus dem Code, gib passende Werte ein und sieh dir die Rückgabe an.
+Rufe eine Methode auf. Lies ihre Beschreibung aus dem Code, gib passende Werte ein und sieh dir die Rückgabe an. Gibt die Methode ein Objekt zurück, kannst du es unter einem eigenen Namen in die Objektbank übernehmen und weiter untersuchen.
 
 | Hell | Dunkel |
 | --- | --- |
-| <a href="images/readme/08-method-call.png?raw=true"><img src="images/readme/08-method-call.png" alt="Methodenaufruf mit Parameterfokus, Standardwerten, Dokumentation und Rückgabe" width="500"></a> | <a href="images/readme/08-method-call-dark.png?raw=true"><img src="images/readme/08-method-call-dark.png" alt="Methodenaufruf mit Parameterfokus, Standardwerten, Dokumentation und Rückgabe in dunkler Darstellung" width="500"></a> |
+| <a href="images/readme/08-method-call.png?raw=true"><img src="images/readme/08-method-call.png" alt="Methodenaufruf mit Dokumentation aus dem Code und einem Objekt zum Übernehmen" width="500"></a> | <a href="images/readme/08-method-call-dark.png?raw=true"><img src="images/readme/08-method-call-dark.png" alt="Methodenaufruf mit Dokumentation aus dem Code und einem Objekt zum Übernehmen (dunkle Darstellung)" width="500"></a> |
 
 `Angenehm lernen und präsentieren` – Vertraute Steuerung, eine übersichtliche Oberfläche und eine klare Darstellung helfen dir, dich auf deine Inhalte zu konzentrieren. Auch auf mehreren Displays mit unterschiedlichen Skalierungen soll alles scharf und gut bedienbar bleiben – beim Lernen, Erklären und Präsentieren. Für Thonny SE kannst du eine helle oder dunkle Darstellung wählen, auch für Diagramme, Bearbeitungsbereiche und die Objektbank.
 
@@ -134,6 +140,8 @@ Stand 9. November 2026.
 - Bausteine aktivieren und deaktivieren. Deaktivierte Teilbäume bleiben im Entwurf erhalten und werden beim Python- und Grafikexport ausgelassen.
 - Drag-and-drop, Gesamt- und zusammenhängende Mehrfachauswahl sowie Zwischenablage, auch zwischen Diagramm-Tabs.
 - Rückgängig/Wiederholen, Zoom und Scrollen sowie Tastaturnavigation und Tastaturbearbeitung.
+- Einstellbare Diagrammgestaltung mit Linienstärke, Innenabständen und Schriftstärke; auch für den Grafikexport.
+- Die Gestaltung gilt für den geöffneten Tab und wird nicht in der Diagrammdatei gespeichert.
 - Python-Import aus dem gesamten Editorinhalt oder einer Textauswahl. Nicht strukturell unterstützte Konstrukte werden als Codeblöcke übernommen.
 - Python-Export des gesamten Diagramms oder einer Bausteinauswahl. Nicht ausführbare Anweisungstexte werden als Kommentare übernommen, Kontrollausdrücke werden geprüft.
 - Monochrome Ansicht.
@@ -165,6 +173,8 @@ Stand 9. November 2026.
 - Navigation zur verknüpften Klassen-, Methoden- oder Attributdefinition im Python-Code.
 - Ausführung des aktuellen Diagrammstands über Thonnys Befehl `Ausführen` / <kbd>F5</kbd>, ohne vorheriges Speichern oder eigene Python-Datei.
 - Rückgängig/Wiederholen, Zoom und Scrollen.
+- Einstellbare Diagrammgestaltung mit Linienstärke, Innenabständen und Schriftstärke; auch für den Grafikexport.
+- Die Gestaltung gilt für den geöffneten Tab und wird nicht in der Diagrammdatei gespeichert.
 - Lesbares, textbasiertes JSON-Dateiformat.
 - Unkomplizierter PNG-, SVG- und WebP-Export mit einstellbarer Rasterauflösung, Transparenz und monochromer Ausgabe.
 
@@ -176,6 +186,11 @@ Stand 9. November 2026.
 - Optionale Live-Typprüfung für Literale und bekannte Variablen; standardmäßig aktiviert.
 - Gekoppelte Fokusmarkierung im Eingabefeld und in der Signatur sowie Dokumentation aus Python-Docstrings.
 - Darstellung benannter Instanzen mit Klasse, Attributwerten und Methoden.
+- Objektkarten umsortieren und vollständig einklappen; Objekte aus der Objektbank entfernen.
+- Gemeinsame Hervorhebung referenzierter Objekte und der Objekte einer Liste, auch wenn die Liste zugeklappt ist.
+- Geänderte Werte leuchten kurz auf.
+- Zurückgegebene Objekte unter einem eigenen Namen in die Objektbank übernehmen.
+- Optimierte Darstellung und Auswahl bei vielen Objekten.
 - Methodenaufrufe mit Rückgabe im Dialog und vollständigen Pythonfehlern in der Konsole.
 - Unterbrechen laufender Methoden- und Konstruktoraufrufe; bei Bedarf die Python-Sitzung vollständig beenden.
 - Aktualisierung der Objektzustände nach abgeschlossenen Ausführungen und Methodenaufrufen.

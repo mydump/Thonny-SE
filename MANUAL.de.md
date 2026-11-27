@@ -11,7 +11,7 @@ Was möchtest du machen? Springe zur passenden Aufgabe. Die Bilder zeigen die en
 | Einstieg | [ein Diagramm öffnen](#ein-diagramm-anlegen) · [etwas bearbeiten](#etwas-bearbeiten) · [speichern oder zoomen](#speichern-und-den-überblick-behalten) · [die Darstellung wechseln](#helle-oder-dunkle-darstellung-wählen) · [ein Bild exportieren](#ein-diagramm-als-bild-exportieren) |
 | Struktogramme | [einen Ablauf aufbauen](#einen-ablauf-aufbauen) · [mehr Bausteine anzeigen](#zwischen-einfacher-und-erweiterter-palette-wechseln) · [Python übertragen](#struktogramm-und-python-ineinander-übertragen) |
 | UML | [Klassen anlegen](#klassen-und-beziehungen-anlegen) · [Attribute und Methoden bearbeiten](#attribute-methoden-und-parameter-bearbeiten) · [das Raster nutzen](#klassen-am-raster-ausrichten) · [Einstellungen wählen](#einstellungen-für-deinen-unterricht) |
-| Objektbank | [Objekte instanziieren](#objekte-instanziieren) · [Parameter eingeben](#parameter-eingeben) · [Methoden aufrufen](#werte-ansehen-und-methoden-aufrufen) · [einen Aufruf beenden](#einen-laufenden-aufruf-beenden) · [nach Änderungen neu starten](#nach-einer-änderung-neu-starten) |
+| Objektbank | [Objekte instanziieren](#objekte-instanziieren) · [aufräumen](#die-objektbank-aufräumen) · [Parameter eingeben](#parameter-eingeben) · [Methoden aufrufen](#werte-ansehen-und-methoden-aufrufen) · [Rückgabeobjekte übernehmen](#mit-zurückgegebenen-objekten-weiterarbeiten) · [einen Aufruf beenden](#einen-laufenden-aufruf-beenden) · [nach Änderungen neu starten](#nach-einer-änderung-neu-starten) |
 | Modell und Code | [Code erzeugen oder einlesen](#code-erzeugen-oder-einlesen) · [eine oder mehrere Dateien verwenden](#eine-oder-mehrere-python-dateien-verwenden) · [Änderungen abgleichen](#änderungen-abgleichen) · [Speichern und Ausführen unterscheiden](#speichern-übertragen-oder-ausführen) |
 
 ## 1. Einstieg
@@ -31,6 +31,15 @@ Klicke den Baustein, die Klasse oder die Beziehung an, um die es geht. Für neue
 Speichere dein Diagramm wie andere Dokumente in Thonny. Mit Rückgängig nimmst du Bearbeitungsschritte zurück.
 
 Nutze den Zoomregler oder <kbd>Strg</kbd> + Mausrad, auf dem Mac <kbd>Command</kbd> + Mausrad. So zoomst du an der Stelle unter dem Mauszeiger. Auf dem Mac kannst du auch die Pinch-Geste mit zwei Fingern auf dem Trackpad nutzen. Große Diagramme kannst du horizontal und vertikal scrollen.
+
+Mit dem Gestaltungsregler links unten stellst du ein, wie kompakt und kräftig dein Diagramm dargestellt wird. Der Zoom rechts verändert deinen Blick darauf. Die Gestaltung wird auch beim Bildexport berücksichtigt. Beide Regler verändern weder den Ablauf noch die Klassenstruktur.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="images/manual/design-controls-dark.png">
+  <img src="images/manual/design-controls.png" alt="UML-Diagramm mit Gestaltungsregler links, Rasterauswahl und Zoom rechts" width="900">
+</picture>
+
+*Links steht die Gestaltung auf 150 %, rechts der Ansichtszoom auf 105 %. Das Raster wählst du in der Mitte.*
 
 ### Helle oder dunkle Darstellung wählen
 
@@ -132,12 +141,7 @@ Thonny SE kann beim Auswählen eines Attributtyps einen passenden Startwert vors
 
 Wähle unten im UML-Editor den gewünschten Rastermodus. Ein sichtbares Raster hilft beim Ausrichten. Das magnetische Raster lässt Klassen beim Verschieben einrasten. Ohne Raster kannst du sie frei platzieren.
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="images/manual/grid-zoom-dark.png">
-  <img src="images/manual/grid-zoom.png" alt="Rasterauswahl, monochrome Ansicht und Zoom unten im UML-Editor" width="760">
-</picture>
-
-*Unten im UML-Editor wählst du das Raster. Rechts daneben findest du den Zoom.*
+*Die Rasterauswahl liegt zwischen Gestaltung und Zoom; die aktuelle Leiste siehst du oben unter „Speichern und den Überblick behalten“.*
 
 ### Einstellungen für deinen Unterricht
 
@@ -165,6 +169,8 @@ Unter `Werkzeuge → Optionen → Thonny SE` passt du die Eingabehilfen an:
 3. Klicke die gewünschte Klasse rechts an und wähle `Objekte instanziieren …`.
 4. Gib einen Objektnamen und die benötigten Parameter ein.
 5. Klicke auf `Instanziieren`. Unten erscheint das neue Objekt mit Name und Klasse.
+
+Du kannst auch direkt in der Objektbank rechtsklicken und unter `Objekt instanziieren` die gewünschte Klasse wählen. Das Diagramm muss dafür bereits ausgeführt sein.
 
 Der Dialog bleibt offen. Du kannst gleich das nächste Objekt erzeugen. Ein neuer freier Name wird vorgeschlagen. Mit `Schließen` gehst du zurück zum Diagramm.
 
@@ -211,18 +217,22 @@ Die Typprüfung für die Objektbank ist standardmäßig eingeschaltet. Sie prüf
 
 *`"two"` ist ein Text. Für `portions: int` wird eine ganze Zahl erwartet.*
 
+### Die Objektbank aufräumen
+
+Ziehe Objektkarten an die gewünschte Stelle. Über das Kontextmenü kannst du sie auch verschieben, einklappen oder entfernen. Entfernen löst den Namen des Objekts; Verweise aus anderen Objekten bleiben erhalten. Reihenfolge und eingeklappte Karten gelten für die aktuelle Sitzung.
+
 ### Werte ansehen und Methoden aufrufen
 
 Die Objektkarte zeigt dir Namen, Klasse und Attributwerte. Darunter stehen die Methoden als Schaltflächen. In den Optionen kannst du stattdessen die Auswahlliste wählen.
 
-Klappe den Pfeil vor einer Sammlung oder einem Unterobjekt auf, um weiter hineinzuschauen. Unterobjekte bleiben in derselben Objektbank. Du kannst auch ihre Methoden aufrufen.
+Klappe den Pfeil vor einer Sammlung oder einem Unterobjekt auf, um weiter hineinzuschauen. Unterobjekte bleiben in derselben Objektbank. Du kannst auch ihre Methoden aufrufen. Wählst du eine Sammlung aus, werden ihre direkt enthaltenen Objekte in der Objektbank hervorgehoben.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="images/manual/objects-dark.png">
-  <img src="images/manual/objects.png" alt="Objektkarten mit Attributen, Trennlinie, Methodenschaltflächen und aufgeklappter Liste" width="420">
+  <img src="images/manual/objects.png" alt="Objektbank mit ausgewählter Sammlung, hervorgehobenen Konten und eingeklappten Karten" width="420">
 </picture>
 
-*Luna und Milo sind zwei `Cat`-Objekte. In `shelter` kannst du die Sammlung `cats` aufklappen.*
+*Die ausgewählte Sammlung `bank.accounts` hebt die Konten `mia` und `ben` hervor. `ben` und `other` sind eingeklappt.*
 
 Klicke auf eine Methode, gib ihre Parameter ein und wähle `Aufrufen`. Die Beschreibung im Dialog stammt aus der Dokumentation im Python-Code. Beim Wechsel des Eingabefelds folgt die Markierung in der Signatur.
 
@@ -245,6 +255,17 @@ Schlägt die Ausführung fehl, wird die Ausgabefläche rot. Der Dialog verweist 
 </picture>
 
 *Ein gültiger Datentyp garantiert noch keinen erfolgreichen Aufruf. Hier lehnt der Python-Code eine negative Portionszahl ab.*
+
+### Mit zurückgegebenen Objekten weiterarbeiten
+
+Gibt eine Methode ein Objekt oder eine Sammlung zurück, kannst du das Ergebnis mit `Objekt übernehmen …` unter einem eigenen Namen in die Objektbank aufnehmen. Du arbeitest mit derselben Rückgabe weiter – die Methode wird dafür nicht erneut aufgerufen.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="images/manual/keep-object-dark.png">
+  <img src="images/manual/keep-object.png" alt="Methodenrückgabe eines Account-Objekts mit der Schaltfläche Keep object" width="760">
+</picture>
+
+*`bank.open_account` gibt das neue Konto zurück. Mit `Keep object …` nimmst du es in die Objektbank auf.*
 
 ### Einen laufenden Aufruf beenden
 
