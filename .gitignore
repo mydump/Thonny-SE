@@ -88,6 +88,14 @@
 !/images/manual/options.png
 !/images/manual/options-dark.png
 
+# Ergänzte Dokumentationsbilder für Version 1.2.
+!/images/manual/design-controls.png
+!/images/manual/design-controls-dark.png
+!/images/manual/keep-object.png
+!/images/manual/keep-object-dark.png
+!/images/readme/09-design-before.png
+!/images/readme/09-design-after.png
+
 # Keine Tests, generierten Python-Reste oder Betriebssystemdateien.
 **/test_*.py
 **/*_test.py
