@@ -12,10 +12,23 @@ license = "GPL-3.0-only AND ISC AND MIT"
 license-files = ["LICENSE", "NOTICE", "src/thonnycontrib/thonny_se/icons/licenses/LICENSE-lucide.txt", "src/thonnycontrib/thonny_se/icons/licenses/LICENSE-lucide-actions.txt"]
 requires-python = ">=3.10"
 dependencies = ["thonny>=5.0,<5.1", "Pillow>=10.1"]
+keywords = ["thonny", "education", "uml", "structogram", "software modelling", "tkinter"]
+classifiers = [
+    "Environment :: Plugins",
+    "Intended Audience :: Education",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Education",
+    "Topic :: Software Development",
+]
 
 [project.urls]
+Homepage = "https://github.com/mydump/Thonny-SE"
 Repository = "https://github.com/mydump/Thonny-SE"
 Issues = "https://github.com/mydump/Thonny-SE/issues"
+Documentation = "https://github.com/mydump/Thonny-SE/blob/main/MANUAL.md"
+Changelog = "https://github.com/mydump/Thonny-SE/releases"
 
 [tool.setuptools.packages.find]
 where = ["src"]

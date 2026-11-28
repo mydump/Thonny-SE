@@ -350,6 +350,34 @@ class UmlEditor(GraphicalDocument):
             python_name = header["name"] if "source" in card else updated["name"]
             declaration = class_header({"name": python_name, "bases": bases})
             updated_header = header_data(ast.parse(declaration + "\n    pass").body[0])
+        if bases != header['bases']:
+            from .uml_relationships import class_references
+            import builtins
+            references = class_references(candidate['classes'])
+            occupied_names = {item['name'] for item in candidate['classes']}
+            declaration_node = ast.parse(class_header(updated_header) + '\n    pass').body[0]
+            base_nodes = declaration_node.bases
+            right = max((bounds[2] for bounds in self.diagram.cards.values()),
+                        default=max(item['x'] + 280 for item in candidate['classes']))
+            for base in base_nodes:
+                # Only bare class names denote new local classes; qualified and
+                # generic Python expressions keep their existing meaning.
+                if not isinstance(base, ast.Name) or base.id in references or base.id in occupied_names:
+                    continue
+                if isinstance(getattr(builtins, base.id, None), type):
+                    continue
+                normalized = uml_model.class_name(base.id)
+                if normalized in references or normalized in occupied_names:
+                    base.id = normalized
+                    continue
+                x, y = self.diagram.snap_position(right + 80, max(8, updated['y']))
+                parent = uml_model.new_class(base.id, x, y)
+                base.id = parent['name']
+                candidate['classes'].append(parent)
+                occupied_names.add(base.id)
+                references[base.id] = parent['id']
+                right = x + 280
+            updated_header = header_data(declaration_node)
         relations = updated_inheritance(candidate, cid, header['bases'], updated_header['bases'])
         if bases != header["bases"]:
             if baseline and "header" not in updated["source"]:
@@ -363,7 +391,9 @@ class UmlEditor(GraphicalDocument):
         else:
             updated["class_kind"] = kind
         candidate["relationships"] = relations
-        return synchronized_inheritance(candidate)
+        result = synchronized_inheritance(candidate)
+        uml_model.validate(result)
+        return result
 
     def link_diagram_source(self):
         from .uml_batch_actions import relink
@@ -593,6 +623,9 @@ class UmlEditor(GraphicalDocument):
             super().redo()
 
     def _refresh(self):
+        if self.document["classes"] and not self.execution_hint_seen:
+            self.execution_hint_seen = True
+            self.execution_hint_visible = True
         if hasattr(self, "source_status"):
             self.source_status.schedule()
         controller = getattr(get_workbench(), '_thonny_se_objects', None)

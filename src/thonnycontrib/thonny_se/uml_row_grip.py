@@ -48,7 +48,7 @@ class RowGrip(tk.Canvas):
             widget.bindtags((self.drag_tag, *tags))
 
     def draw(self, event=None):
-        paint_panel_badge(self, self.row_editor.section, self.row_editor.diagram.display_bold, SELECT, color_map=ui_color)
+        paint_panel_badge(self, self.row_editor.section, self.row_editor.diagram.bold, SELECT, color_map=ui_color)
 
     def _press(self, event):
         self.start = event.x_root, event.y_root

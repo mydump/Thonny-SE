@@ -35,6 +35,7 @@ class InlineMemberEditor(tk.Frame):
         self.diagram, self.editor, self.cid, self.section, self.row_id = diagram, diagram.editor, cid, section, row_id
         self.fill = ui_color(UML_SECTION_FILLS[section])
         self.ready, self.dirty = False, False
+        self.return_to_add_row = False
         self.reorder_mode = False
         self.reorder_anchor = None
         self.invalid_field = None
@@ -108,7 +109,7 @@ class InlineMemberEditor(tk.Frame):
 
     @property
     def font(self):
-        return self.diagram.display_normal
+        return self.diagram.normal
 
     def _parameter_vars(self, data):
         result = {key: tk.StringVar(self, value=data.get(key, "")) for key in ("name", "type", "default")}
@@ -117,6 +118,10 @@ class InlineMemberEditor(tk.Frame):
         for variable in result.values():
             variable.trace_add("write", self._changed)
         return result
+
+    def _active_parameters(self):
+        return [row for row in self.parameters
+                if any(row[key].get().strip() for key in ('name', 'type', 'default'))]
 
     def payload(self):
         name = self.name.get().strip()
@@ -129,7 +134,7 @@ class InlineMemberEditor(tk.Frame):
         kind = "constructor" if name == "__init__" else self.kind.get()
         return dict(kind=kind, name="__init__" if kind == "constructor" else name, visibility="public" if kind == "constructor" else visibility,
                     return_type=self.typename.get().strip() if kind=="function" else "",
-                    parameters=[{key: value.get().strip() for key,value in row.items()} for row in self.parameters])
+                    parameters=[{key: value.get().strip() for key,value in row.items()} for row in self._active_parameters()])
 
     def _checked_accessors(self):
         return {kind for kind, enabled in self.accessors.items() if enabled.get()}
@@ -140,6 +145,7 @@ class InlineMemberEditor(tk.Frame):
         if self.section == "methods" and not self._syncing_method:
             self._update_method_kind()
         self.dirty = self.payload() != self.initial or self._checked_accessors() != self.initial_accessors
+        self.down_arrow.refresh_state()
         if self.invalid_field is not None:
             self.invalid_field.set_error()
             self.invalid_field = None
@@ -149,14 +155,20 @@ class InlineMemberEditor(tk.Frame):
     def _refresh_type_feedback(self):
         if not self.ready:
             return
+        for row in self.parameters:
+            if not any(row[key].get().strip() for key in ('name', 'type', 'default')):
+                for key in ('type', 'default'):
+                    feedback = self.input_fields.get(str(row[key]))
+                    if feedback is not None:
+                        feedback.set_error('')
         for field, text in member_type_fields(self.payload(), self.section):
-            variable = self.parameters[field[0]][field[1]] if isinstance(field, tuple) else self.typename
+            variable = self._active_parameters()[field[0]][field[1]] if isinstance(field, tuple) else self.typename
             feedback = self.input_fields.get(str(variable))
             if feedback is not None:
                 feedback.set_error(type_error(text) if enabled(UML_CHECK_TYPES) and not self.type_context.check(text) else "")
 
         for field, typename, text in member_initial_fields(self.payload(), self.section):
-            variable = self.parameters[field[0]][field[1]] if isinstance(field, tuple) else self.default
+            variable = self._active_parameters()[field[0]][field[1]] if isinstance(field, tuple) else self.default
             feedback = self.input_fields.get(str(variable))
             if feedback is not None:
                 feedback.set_error(initial_value_error(typename, text, self.editor.document) if enabled(UML_CHECK_VALUES) else '')
@@ -440,7 +452,7 @@ class InlineMemberEditor(tk.Frame):
         field = getattr(error, "field", "name")
         if isinstance(field, tuple):
             index, key = field
-            variable = self.parameters[index][key]
+            variable = self._active_parameters()[index][key]
         else:
             variable = {"name": self.name, "type": self.typename, "default": self.default}.get(field, self.name)
         if self.invalid_field is not None:
@@ -528,6 +540,7 @@ class InlineMemberEditor(tk.Frame):
             diagram, cid, row_id = self.diagram, self.cid, proposal['existing_id']
             self.close(refresh=False)
             diagram.begin_edit(cid, 'methods', row_id)
+            diagram.member_editor.return_to_add_row = True
             return
         data = proposal['method']
         self.suggested_accessor = copy.deepcopy(proposal.get('accessor'))
@@ -623,52 +636,68 @@ class InlineMemberEditor(tk.Frame):
         self.diagram.canvas.focus_set()
         return "break"
 
-    def commit(self, explicit=False, cancel=False):
-        if cancel or (not explicit and not self.dirty):
-            self.close()
-            return True
+    def can_create_member(self):
+        if not self.dirty:
+            return False
+        try:
+            self._candidate_document()
+        except ValueError:
+            return False
+        return True
+
+    def _candidate_document(self, *, refresh_types=False):
         value = self.payload()
         row_id, original = self.row_id, self.original
         if self.section == 'methods' and value['kind'] == 'constructor' and row_id is None:
             existing = hidden_constructor(self.editor.card(self.cid))
             if existing is not None:
                 row_id, original = existing['id'], existing
-        try:
-            if self.section == 'methods' and value['name'] == '__new__':
-                raise ValueError(tr('__new__ must be edited directly in Python.'))
-            (validate_attribute if self.section=="attributes" else validate_method)(value)
-            if enabled(UML_CHECK_VALUES):
-                validate_member_initial_values(value, self.section, self.editor.document)
-            if enabled(UML_CHECK_TYPES):
+        if self.section == 'methods' and value['name'] == '__new__':
+            raise ValueError(tr('__new__ must be edited directly in Python.'))
+        (validate_attribute if self.section=="attributes" else validate_method)(value)
+        if enabled(UML_CHECK_VALUES):
+            validate_member_initial_values(value, self.section, self.editor.document)
+        if enabled(UML_CHECK_TYPES):
+            if refresh_types:
                 from .integration import read_python_source
                 self.type_context = TypeContext(self.editor.document, self.editor.card(self.cid), read_python_source)
-                validate_member_types(value, self.section, self.type_context)
-            if self.section == "methods" and value["kind"]=="constructor" and any(r["id"]!=row_id and is_constructor(r) for r in self.editor.card(self.cid)["methods"]):
-                raise ValueError(tr('This class already has a constructor.'))
-            if self.section == 'methods' and any(r['id'] != row_id and
-                    ('__init__' if is_constructor(r) else draft_from_row(r)[0]['name']) == value['name']
-                    for r in self.editor.card(self.cid)['methods']):
-                raise ValueError(tr('The class member {p0!r} occurs more than once.').format(p0=value['name']))
-            candidate = copy.deepcopy(self.editor.document)
-            card = next(c for c in candidate["classes"] if c["id"]==self.cid)
-            key = "attribute" if self.section=="attributes" else "method"
-            row = dict(id=row_id or uuid4().hex, **{key:value})
-            if self.section == 'methods' and original and 'abstract' in original:
-                row['abstract'] = original['abstract']
-            if self.section == "methods":
-                proposal = method_suggestions(card, self.row_id).get(value['name'], {})
-                if self.suggested_accessor and proposal.get('accessor') == self.suggested_accessor:
-                    row['accessor'] = copy.deepcopy(self.suggested_accessor)
-                elif self.original and 'accessor' in self.original and value == self.original['method']:
-                    row['accessor'] = self.original['accessor']
-            if row_id is None:
-                card[self.section].append(row)
-            else:
-                card[self.section] = [row if r["id"]==row_id else r for r in card[self.section]]
-            if self.section == "attributes":
-                set_accessors(card, row, self._checked_accessors())
-            from .uml_model import validate
-            validate(candidate)
+            validate_member_types(value, self.section, self.type_context)
+        if self.section == "methods" and value["kind"]=="constructor" and any(r["id"]!=row_id and is_constructor(r) for r in self.editor.card(self.cid)["methods"]):
+            raise ValueError(tr('This class already has a constructor.'))
+        if self.section == 'methods' and any(r['id'] != row_id and
+                ('__init__' if is_constructor(r) else draft_from_row(r)[0]['name']) == value['name']
+                for r in self.editor.card(self.cid)['methods']):
+            raise ValueError(tr('The class member {p0!r} occurs more than once.').format(p0=value['name']))
+        candidate = copy.deepcopy(self.editor.document)
+        card = next(c for c in candidate["classes"] if c["id"]==self.cid)
+        key = "attribute" if self.section=="attributes" else "method"
+        row = dict(id=row_id or uuid4().hex, **{key:value})
+        if self.section == 'methods' and original and 'abstract' in original:
+            row['abstract'] = original['abstract']
+        if self.section == "methods":
+            proposal = method_suggestions(card, self.row_id).get(value['name'], {})
+            if self.suggested_accessor and proposal.get('accessor') == self.suggested_accessor:
+                row['accessor'] = copy.deepcopy(self.suggested_accessor)
+            elif self.original and 'accessor' in self.original and value == self.original['method']:
+                row['accessor'] = self.original['accessor']
+        if row_id is None:
+            card[self.section].append(row)
+        else:
+            card[self.section] = [row if r["id"]==row_id else r for r in card[self.section]]
+        if self.section == "methods" and is_constructor(row):
+            card["methods"] = [row] + [item for item in card["methods"] if item["id"] != row["id"]]
+        if self.section == "attributes":
+            set_accessors(card, row, self._checked_accessors())
+        from .uml_model import validate
+        validate(candidate)
+        return candidate
+
+    def commit(self, explicit=False, cancel=False):
+        if cancel or (not explicit and not self.dirty):
+            self.close()
+            return True
+        try:
+            candidate = self._candidate_document(refresh_types=True)
         except ValueError as exc:
             self._mark_invalid(exc)
             return False
@@ -742,13 +771,13 @@ class DeleteMemberPanel(tk.Frame):
         size = max(22, diagram.display_normal.metrics("linespace")+4)
         mark = tk.Canvas(row, width=size, height=size, background=ui_color(DELETE_FILL), highlightthickness=0)
         if section == "methods" and is_constructor(member):
-            mark.create_text(size/2,size/2,text="c",font=diagram.display_normal,fill=ui_color(MUTED))
+            mark.create_text(size/2,size/2,text="c",font=diagram.normal,fill=ui_color(MUTED))
         else:
             draw_visibility_icon(mark, size/2, size/2, visibility, diagram.display_normal, diagram.zoom, color=ui_color(MUTED))
         mark.pack(side="left")
         self.signature = tk.Label(row, text=diagram._member_signature(member, section),
                                   justify="left", anchor="w", padx=5, background=ui_color(DELETE_FILL),
-                                  foreground=ui_color(ERROR), font=diagram.display_normal)
+                                  foreground=ui_color(ERROR), font=diagram.normal)
         self.signature.pack(side="left", fill="both", expand=True)
         for widget in (button, self.switch):
             diagram.bind_row_navigation(widget)

@@ -533,5 +533,8 @@
   "Collapse object": "Objekt einklappen",
   "Drag the card to reorder. Right-click for options.": "Ziehe die Karte, um die Reihenfolge zu ändern. Rechtsklick für weitere Aktionen.",
   "Remove object": "Objekt entfernen",
-  "This object has changed. Please select it again.": "Dieses Objekt hat sich geändert. Bitte wähle es erneut aus."
+  "This object has changed. Please select it again.": "Dieses Objekt hat sich geändert. Bitte wähle es erneut aus.",
+  "To instantiate objects, run the diagram first (F5 or click):": "Zum Instanziieren von Objekten zuerst das Diagramm ausführen (F5 oder Klick):",
+  "Run the diagram with {F5} or click {run}.": "Das Diagramm mit {F5} ausführen oder auf {run} klicken.",
+  "Right-click for the context menu.": "Rechtsklick für das Kontextmenü."
 }

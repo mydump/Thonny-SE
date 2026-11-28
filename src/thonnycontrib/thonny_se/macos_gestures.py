@@ -90,7 +90,14 @@ class MagnifyMonitor:
         widget = self.root.winfo_containing(x, y)
         if widget is None:
             return None
-        tags = widget.bindtags()
+        # Native editor controls may be created after the diagram's scroll
+        # bindings. Pinch targets the enclosing diagram, independent of the
+        # editor's own wheel/scroll handling.
+        tags = set()
+        current = widget
+        while current is not None:
+            tags.update(current.bindtags())
+            current = current.master
         for area in list(self.areas):
             canvas = area.canvas
             if area.tag not in tags or not canvas.winfo_ismapped():

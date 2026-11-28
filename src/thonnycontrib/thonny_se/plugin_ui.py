@@ -99,7 +99,7 @@ class AboutDialog(CommonDialog):
 
         self.source_scrolling = ScrollArea(sources.canvas, sources, axes='y')
 
-        ttk.Button(content, text=tr('Close'), command=self.destroy).pack(anchor="e", pady=(gap, 0))
+        ttk.Button(content, text=tr('Close'), width=max(12, len(tr('Close')) + 4), command=self.destroy).pack(anchor="e", pady=(gap, 0))
         self.bind("<Escape>", lambda event: self.destroy())
         self.bind("<Return>", lambda event: self.destroy())
         self.bind("<KP_Enter>", lambda event: self.destroy())

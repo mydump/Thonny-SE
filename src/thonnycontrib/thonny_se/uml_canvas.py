@@ -117,6 +117,8 @@ class UmlCanvas(ttk.Frame):
         from .tooltips import CanvasToolTip
         self.save_tip = CanvasToolTip(self.canvas)
         self.canvas.bind("<Escape>", self._escape)
+        self.canvas.bind("<Return>", self._edit_selected_class)
+        self.canvas.bind("<KP_Enter>", self._edit_selected_class)
         self.canvas.bind("<Delete>", lambda e: self.editor.delete_selection() if not self.delete_mode else "break")
         self.canvas.bind("<BackSpace>", lambda e: self.editor.delete_selection() if not self.delete_mode else "break")
         self.scrolling = ScrollArea(self.canvas, self,
@@ -232,12 +234,32 @@ class UmlCanvas(ttk.Frame):
             self.on_zoom(self.zoom)
 
     def action_font(self):
-        fonts=self.display_typography.fonts
-        if 'action' not in fonts:
-            values=self.display_normal.actual()
-            size=values['size']
-            fonts['action']=font.Font(root=self,**{**values,'size':size+2 if size>0 else size-2,'weight':'bold'})
-        return fonts['action']
+        # This editor-only font is not a model typography role. Keep its Tk
+        # identity stable across display refreshes without modifying that registry.
+        values = self.normal.actual()
+        size = values['size']
+        values = {**values, 'size': size+2 if size>0 else size-2, 'weight': 'bold'}
+        if not hasattr(self, '_action_font'):
+            self._action_font = font.Font(root=self, **values)
+        elif self._action_font.actual() != values:
+            self._action_font.configure(**values)
+        return self._action_font
+
+    def _empty_member_hint_font(self):
+        values = self.display_normal.actual()
+        size = values['size']
+        values = {**values, 'size': (-1 if size < 0 else 1)*max(1, round(abs(size)*.82)),
+                  'weight': 'normal'}
+        if not hasattr(self, '_empty_hint_font'):
+            self._empty_hint_font = font.Font(root=self, **values)
+        elif self._empty_hint_font.actual() != values:
+            self._empty_hint_font.configure(**values)
+        return self._empty_hint_font
+
+    def _empty_member_hint_color(self, background):
+        ink = self.canvas.winfo_rgb(self._color(MUTED))
+        surface = self.canvas.winfo_rgb(background)
+        return '#' + ''.join(f'{round((a*.7+b*.3)/257):02x}' for a,b in zip(ink,surface))
 
     def _fit_zoom_fonts(self):
         if self.zoom == 1:
@@ -271,38 +293,20 @@ class UmlCanvas(ttk.Frame):
             pixels -= 1
 
     def _select_zoom_fonts(self):
-        old={str(self.display_normal):'body',str(self.display_bold):'heading',
-             str(self.display_abstract):'abstract',str(self.display_method_abstract):'abstract_method'}
-        # Keep old variants alive until native entry/label bindings are updated.
+        # Zoom fonts belong exclusively to the drawn model. Native overlay
+        # editors use the unzoomed UI typography throughout their lifetime.
         previous=(self.display_normal,self.display_bold,self.display_abstract,self.display_method_abstract)
-        member=getattr(self,"member_editor",None)
-        old_action=getattr(member,"action_font",None)
-        if old_action is not None:
-            old[str(old_action)]="action"
-            previous=(*previous,old_action)
         self._fit_zoom_fonts()
         self.display_normal=self.display_typography['body']
         self.display_bold=self.display_typography['heading']
         self.display_abstract=self.display_typography['abstract']
         self.display_method_abstract=self.display_typography['abstract_method']
-        if old_action is not None:member.action_font=self.action_font()
-        if all(str(self.display_typography[role])==name for name,role in old.items()):return previous
-        def update(widget):
-            # Fetch only the font, not Tk's full option metadata on every zoom.
-            # Containers without a font option still need their children visited.
-            try:
-                role=old.get(str(widget.cget('font')))
-            except tk.TclError:
-                role=None
-            if role:widget.configure(font=self.display_typography[role])
-            for child in widget.winfo_children():update(child)
-        member=getattr(self,'member_editor',None)
-        panel=member or getattr(self,'input_frame',None)
-        if panel is not None and panel.winfo_exists():update(panel)
         return previous
 
     def _display_changed(self, state):
         self.typography.refresh()
+        if hasattr(self, '_action_font'):
+            self.action_font()
         previous_fonts=self._select_zoom_fonts()
         self.row_height = self.typography.line_height()
         if self.winfo_ismapped():
@@ -497,6 +501,12 @@ class UmlCanvas(ttk.Frame):
                     self._draw_member(card, section, row, cursor, tags)
                     cursor += row_height
                 if not rows:
+                    if not self.exporting:
+                        canvas.create_text(x+width/2, cursor+self.row_height/2,
+                                           anchor="center", text=tr('Add attribute') if section == 'attributes' else tr('Add method'),
+                                           font=self._empty_member_hint_font(),
+                                           fill=self._empty_member_hint_color(self._color(UML_SECTION_FILLS[section]) if colored else self._color('white')),
+                                           tags=(*tags, 'empty-member-hint'))
                     cursor += self.row_height
                 # A virtual add-row anchors keyboard navigation and the editor,
                 # without increasing card geometry or covering a real text row.
@@ -568,7 +578,7 @@ class UmlCanvas(ttk.Frame):
                 box = self.fields[field]
                 cy = (box[1]+box[3])/2
                 u = self.typography.units
-                bounds = (right+u(5), cy-u(12), right+u(37), cy+u(12))
+                bounds = (right+u(5)/self.zoom, cy-u(12)/self.zoom, right+u(37)/self.zoom, cy+u(12)/self.zoom)
                 self.add_regions[field] = bounds
                 tags = ('drawing', 'add-control')
                 accent = self._color(UML_SECTION_INKS[section])
@@ -576,14 +586,14 @@ class UmlCanvas(ttk.Frame):
                 # overlay: scaling a contour afterwards defeats pixel alignment
                 # and cannot resize raster fallbacks on Windows/X11.
                 display_bounds = tuple(value*self.zoom for value in bounds)
-                surface = rounded(self.canvas, *display_bounds, radius=u(5)*self.zoom,
+                surface = rounded(self.canvas, *display_bounds, radius=u(5),
                         fill=self._color(UML_SECTION_FILLS[section]), outline=accent, group='add-control')
                 self.canvas.addtag_withtag('drawing', 'add-control')
                 # Center on the rendered contour after its pixel alignment,
                 # rather than rounding the glyph and its container separately.
                 left, top, right_edge, bottom = self.canvas.bbox(surface)
-                icon(self.canvas, (left+right_edge)/2, (top+bottom)/2, 'edit.add', self.display_normal,
-                     accent, pixels=u(16)*self.zoom, tags=tags)
+                icon(self.canvas, (left+right_edge)/2, (top+bottom)/2, 'edit.add', self.normal,
+                     accent, pixels=u(16), tags=tags)
 
     def _add_at(self, event):
         x, y = self.point(event)
@@ -867,10 +877,12 @@ class UmlCanvas(ttk.Frame):
                 if not self.relationship_hint_dismissed:
                     text = tr('Click the target class (or the same class) · Esc to cancel')
             elif self.editor.execution_hint_visible:
-                text = tr('Before instantiating objects, click')
+                text = tr('Run the diagram with {F5} or click {run}.')
+                if not self.intro_context_seen:
+                    text = tr('Right-click for the context menu.') + '\n' + text
             elif not self.editor.document["classes"] and not self.editor.document["comments"]:
                 if not self.intro_context_seen:
-                    text = tr('Right-click for the context menu')
+                    text = tr('Right-click for the context menu.')
             elif not self.intro_edit_seen:
                 text = tr('Double-click a class row to edit it')
         image = None
@@ -934,7 +946,7 @@ class UmlCanvas(ttk.Frame):
         max_height = max(1, canvas.winfo_height()-2*margin)
         min_x, min_y = canvas.canvasx(0)+margin, canvas.canvasy(0)+margin
         max_x = min_x + max_width
-        minimum_width = (right-left)*1.18
+        minimum_width = 0  # The editor size follows its controls, never model zoom.
         grip = getattr(editor, "grip", None)
         if grip is not None and editor.reorder_mode:
             self._position_grip_preview(editor, grip, top, min_x, min_y, max_x, max_height)
@@ -1039,6 +1051,12 @@ class UmlCanvas(ttk.Frame):
         finally:
             hidden.destroy()
 
+    def _edit_selected_class(self, event=None):
+        selected = self.editor.selected_class_ids()
+        if self.editing is None and self.comment_input is None and len(selected) == 1:
+            self.begin_edit(next(iter(selected)), "name")
+        return "break"
+
     def begin_edit(self, cid, section="name", row=None, before=None):
         if section=="methods" and row is not None and not any(r["id"]==row for r in self.editor.card(cid)["methods"]):
             return
@@ -1078,12 +1096,12 @@ class UmlCanvas(ttk.Frame):
         self.header_bases = tk.StringVar(self.input_frame, value=self.original_header["bases"])
         header_controls = tk.Frame(header_panel, background=self._color(UML_SECTION_FILLS["name"]))
         header_controls.pack(fill="x", padx=8, pady=4)
-        panel_badge(header_controls, "name", self.display_bold, color=self._color).pack(side="left", padx=(0, 6))
+        panel_badge(header_controls, "name", self.bold, color=self._color).pack(side="left", padx=(0, 6))
         kind_frame, kind_field = header_picker(header_controls, self.header_kind, tuple(tr(label) for label in CLASS_KINDS.values()), width=16, color=self._color)
         kind_frame.pack(side="left", padx=(0, 5))
         self.input = tk.Text(header_controls, width=12, height=1, wrap="none", undo=True, borderwidth=0,
                              background=self._color("white"), foreground=self._color(INK), insertbackground=self._color(INK),
-                             cursor="xterm", font=self.display_bold, padx=5, pady=2)
+                             cursor="xterm", font=self.bold, padx=5, pady=2)
         self.input.pack(side="left", fill="x", expand=True)
         tk.Label(header_controls, text=tr('inherits from'), background=self._color(UML_SECTION_FILLS["name"]), foreground=self._color(INK),
                  padx=7).pack(side="left")
@@ -1149,7 +1167,7 @@ class UmlCanvas(ttk.Frame):
         self.editor.selection = note["id"]
         self.comment_input = tk.Text(self, wrap="word", undo=True, borderwidth=0,
                                      background=self._color(HINT_FILL), foreground=self._color(INK), insertbackground=self._color(INK),
-                                     font=self.display_normal, padx=2, pady=2)
+                                     font=self.normal, padx=2, pady=2)
         self.scrolling.bind(self.comment_input)
         self.comment_feedback = FieldFeedback(self.comment_input, tr('Ctrl+Enter to apply · Esc to cancel'))
         self.comment_input.insert("1.0", note["text"])
@@ -1250,6 +1268,8 @@ class UmlCanvas(ttk.Frame):
             if current != updated:
                 current.clear()
                 current.update(updated)
+        existing_ids = {card['id'] for card in self.editor.document['classes']}
+        self.editor.document['classes'].extend(card for card in candidate['classes'] if card['id'] not in existing_ids)
         self.editor.document["relationships"] = candidate["relationships"]
         self.editor._record(before)
         return True
@@ -1305,23 +1325,25 @@ class UmlCanvas(ttk.Frame):
         color = self._color if self.editing is not None and self.editing[1] == "name" else ui_color
         accent, hover = color(accent), color(hover)
         arrow = tk.Canvas(parent, width=42, height=ROW_ARROW_HEIGHT, background=background, highlightthickness=0)
-        enabled = self._adjacent_row(direction) is not None or (
-            direction > 0 and not self.delete_mode and self.editing is not None
-            and self.editing[1] in ('attributes','methods') and self.editing[2] is None)
+        def enabled():
+            member = self.member_editor
+            return self._adjacent_row(direction) is not None or (
+                direction > 0 and not self.delete_mode and self.editing is not None
+                and self.editing[1] in ('attributes', 'methods') and self.editing[2] is None
+                and member is not None and member.can_create_member())
 
-        def draw(event):
+        def draw(event=None):
             arrow.delete("all")
-            x, y = event.width/2, event.height/2
-            disabled = color(DISABLED)
-            draw_chevron(arrow, x, y, direction, accent if enabled else disabled,
+            x, y = arrow.winfo_width()/2, arrow.winfo_height()/2
+            draw_chevron(arrow, x, y, direction, accent if enabled() else color(DISABLED),
                          tags=("chevron", "insert"))
 
+        arrow.refresh_state = draw
         arrow.bind("<Configure>", draw)
-        if enabled:
-            create_tooltip(arrow, tr('Previous row (↑)') if direction < 0 else tr('Next row (↓)'))
-            arrow.bind("<Enter>", lambda event: arrow.itemconfigure("chevron", fill=hover), add=True)
-            arrow.bind("<Leave>", lambda event: arrow.itemconfigure("chevron", fill=accent), add=True)
-            arrow.bind("<Button-1>", lambda event: self._navigate_row(direction))
+        create_tooltip(arrow, tr('Previous row (↑)') if direction < 0 else tr('Next row (↓)'))
+        arrow.bind("<Enter>", lambda event: arrow.itemconfigure("chevron", fill=hover) if enabled() else None, add=True)
+        arrow.bind("<Leave>", draw, add=True)
+        arrow.bind("<Button-1>", lambda event: self._navigate_row(direction) if enabled() else "break")
         return arrow
 
     def _adjacent_row(self, direction):
@@ -1337,11 +1359,17 @@ class UmlCanvas(ttk.Frame):
             return "break"
         before = self._edit_order(current[0])
         previous_index = before.index(current)
+        member = self.member_editor
+        return_to_add = (member is not None and member.dirty and
+                         (current[2] is None or member.return_to_add_row))
         deleting = self.delete_mode
         if not self.finish_edit():
             return "break"
         self.delete_mode = deleting
         order = self._edit_order(current[0])
+        if direction > 0 and return_to_add and not deleting:
+            self.begin_edit(current[0], current[1], None)
+            return "break"
         # Committing a new member inserts it immediately before the add-row.
         # Navigate from that new member, rather than the old add-row position.
         anchor = current
